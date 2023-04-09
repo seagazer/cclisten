@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "lyric",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}
