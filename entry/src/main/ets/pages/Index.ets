@@ -1,14 +1,6 @@
 import { LyricView, Lyric, LyricParser } from '@seagazer/lyric';
 import { MockData } from './MockData';
 
-function printD(msg: string) {
-    console.debug(msg)
-}
-
-function printW(msg: string) {
-    console.warn(msg)
-}
-
 @Entry
 @Component
 struct Index {
@@ -34,6 +26,8 @@ struct Index {
     build() {
         Column() {
             LyricView({ lrcList: this.lrcList, duration: $duration, targetIndex: $testIndex })
+                .width("100%")
+                .height("60%")
             Row() {
                 Button('Pre')
                     .onClick(() => {
@@ -58,9 +52,9 @@ struct Index {
             }
             .width("100%")
             .justifyContent(FlexAlign.Center)
-            .margin({ top: 24 })
+            .margin({ top: 36 })
 
-            Text(this.duration + "ms")
+            Text(this.duration / 1000 + "s")
                 .fontSize(24)
                 .margin({ top: 16 })
         }

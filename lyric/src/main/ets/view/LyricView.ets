@@ -1,12 +1,6 @@
+import { printW } from '../extensions/Extension';
+import { printD } from '../extensions/Extension';
 import { Lyric } from '../bean/Lyric';
-
-function printD(msg: string) {
-    console.debug(msg)
-}
-
-function printW(msg: string) {
-    console.warn(msg)
-}
 
 class LyricWrapper extends Lyric {
     readonly height: number
@@ -20,15 +14,19 @@ class LyricWrapper extends Lyric {
 @Component
 export struct LyricView {
     private lrcList = new Array<Lyric>()
-    private extLrcList = new Array<LyricWrapper>()
-    private settings = new RenderingContextSettings(true)
-    private canvasCtx = new CanvasRenderingContext2D(this.settings)
+    readonly extLrcList = new Array<LyricWrapper>()
+    readonly settings = new RenderingContextSettings(true)
+    readonly canvasCtx = new CanvasRenderingContext2D(this.settings)
+    private textColor = "#ff929292"
+    private highLightColor = "#000000"
+    private edgeColor = "#ffffff"
     private w = 0
     private h = 0
     private centerH = 0
     private centerW = 0
     private lineSpace = vp2px(8)
     private scrollY = 0
+    private edge = 100
     private targetScrollY = 0
     private centerYOffset = 0
     private currentIndex = 0
@@ -53,8 +51,8 @@ export struct LyricView {
             .onAppear(() => {
                 printD("-----------------on appear")
                 // init paint
-                this.canvasCtx.fillStyle = "#000000"
-                this.canvasCtx.strokeStyle = "#ff0000"
+                this.canvasCtx.fillStyle = this.textColor
+                this.canvasCtx.strokeStyle = this.textColor
                 this.canvasCtx.lineWidth = 1
                 this.canvasCtx.font = '56px'
                 this.canvasCtx.textAlign = "center"
@@ -82,8 +80,6 @@ export struct LyricView {
                 this.lastVisibleIndex = this.getLastVisibleIndex(this.currentIndex)
                 this.invalidate()
             })
-            .width("100%")
-            .height("50%")
             .onAreaChange((_, newSize) => {
                 printD("-----------------on size changed")
                 this.w = newSize.width as number
@@ -91,16 +87,32 @@ export struct LyricView {
                 this.centerW = this.w / 2
                 this.centerH = this.h / 2
             })
-            .backgroundColor("#cccc")
     }
 
     private invalidate() {
         // clear canvas
         this.canvasCtx.clearRect(0, 0, this.w, this.h)
         // draw center line
-        this.drawCenterLine()
+        //        this.drawCenterLine()
         // draw lrc text
         this.drawLrc()
+        this.drawEdge()
+    }
+
+    private drawEdge() {
+        this.canvasCtx.save()
+        let grad1 = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.edge)
+        grad1.addColorStop(0.0, this.edgeColor)
+        grad1.addColorStop(1.0, '#00ffffff')
+        this.canvasCtx.fillStyle = grad1
+        this.canvasCtx.fillRect(0, 0, this.w, this.edge)
+        let grad2 = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.edge)
+        grad2.addColorStop(0.0, this.edgeColor)
+        grad2.addColorStop(1.0, '#00ffffff')
+        this.canvasCtx.fillStyle = grad2
+        this.canvasCtx.fillRect(0, this.h - this.edge, this.w, this.edge)
+        this.canvasCtx.restore()
+
     }
 
     private drawCenterLine() {
@@ -130,7 +142,7 @@ export struct LyricView {
             if (i == this.currentIndex) {
                 this.canvasCtx.save()
                 this.canvasCtx.font = '72px'
-                this.canvasCtx.fillStyle = "#ff0000"
+                this.canvasCtx.fillStyle = this.highLightColor
                 this.canvasCtx.fillText(lrc.text, this.centerW, startY)
                 this.canvasCtx.restore()
             } else {
