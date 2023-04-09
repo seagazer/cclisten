@@ -28,6 +28,7 @@ struct Index {
             LyricView({ lrcList: this.lrcList, duration: $duration, targetIndex: $testIndex })
                 .width("100%")
                 .height("60%")
+                .padding({ left: 16, right: 16 })
             Row() {
                 Button('Pre')
                     .onClick(() => {
