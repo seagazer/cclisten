@@ -20,7 +20,7 @@ export struct LyricView {
     private highLightScale = 1.2
     private edgeColor = "#ffffff"
     private lineSpace = vp2px(8)
-    private animDuration = 800
+    private animDuration = 600
     private frameRate = 30
     @Watch("onProgressChanged") @Link duration: number
     @Watch("onIndexChanged") @Link targetIndex: number

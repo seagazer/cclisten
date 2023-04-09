@@ -58,6 +58,19 @@ struct Index {
             Text(this.duration / 1000 + "s")
                 .fontSize(24)
                 .margin({ top: 16 })
+
+            Slider({
+                style: SliderStyle.InSet,
+                max: this.lrcList[this.lrcList.length-1].timestamp,
+                value: this.duration
+            })
+                .width("100%")
+                .onChange((value, mode) => {
+                    if (mode == SliderChangeMode.End || mode == 3) {
+                        console.debug("---------" + value)
+                        this.duration = value
+                    }
+                })
         }
         .width('100%')
         .height('100%')
