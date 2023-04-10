@@ -25,12 +25,23 @@ struct Index {
 
     build() {
         Column() {
-            LyricView({ lrcList: this.lrcList, duration: $duration, targetIndex: $testIndex })
+            LyricView({
+                lrcList: this.lrcList,
+                duration: $duration,
+                targetIndex: $testIndex,
+                textSize: 32,
+                highLightScale: 1.2,
+                lineSpace: 16,
+                textColor: "#cccd7942",
+                highLightColor: "#ffb936d0",
+            })
                 .width("100%")
-                .height("60%")
+                .height("70%")
                 .padding({ left: 16, right: 16 })
             Row() {
-                Button('Pre')
+                Button('PreIndex')
+                    .fontSize(16)
+                    .padding(16)
                     .onClick(() => {
                         let temp = this.testIndex - 1
                         if (temp < 0) {
@@ -38,7 +49,9 @@ struct Index {
                         }
                         this.testIndex = temp
                     })
-                Button('Next')
+                Button('NextIndex')
+                    .fontSize(16)
+                    .padding(16)
                     .onClick(() => {
                         let temp = this.testIndex + 1
                         if (temp > this.lrcList.length - 1) {
@@ -46,7 +59,9 @@ struct Index {
                         }
                         this.testIndex = temp
                     }).margin({ left: 16 })
-                Button('Auto')
+                Button('AutoPlay')
+                    .fontSize(16)
+                    .padding(16)
                     .onClick(() => {
                         this.test()
                     }).margin({ left: 16 })
@@ -56,7 +71,7 @@ struct Index {
             .margin({ top: 36 })
 
             Text(this.duration / 1000 + "s")
-                .fontSize(24)
+                .fontSize(18)
                 .margin({ top: 16 })
 
             Slider({

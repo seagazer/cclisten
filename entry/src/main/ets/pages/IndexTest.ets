@@ -1,6 +1,5 @@
-import router from '@ohos.router';
-import { CoverView } from '../widget/CoverView';
-import { ActionController } from '../widget/ActionController';
+import { CoverView } from '../view/CoverView';
+import { ActionController } from '../view/ActionController';
 
 @Extend(Image) function playBtnStyle(size: Length, padding: Length, margin: Length, color: ResourceColor) {
     .width(size)
@@ -43,6 +42,9 @@ struct Index {
     }
 
     private playPre() {
+    }
+
+    aboutToAppear() {
     }
 
     build() {
