@@ -10,40 +10,58 @@ class LyricWrapper extends Lyric {
     }
 }
 
+// default config
+const DEFAULT_LINE_SPACE = 16
+const DEFAULT_TEXT_SIZE = 48
+const DEFAULT_HIGHLIGHT_SCALE = 1.15
+const DEFAULT_TEXT_COLOR = "#ff929292"
+const DEFAULT_HIGHLIGHT_COLOR = "#000000"
+const DEFAULT_EDGE_COLOR = "#ffffff"
+const DEFAULT_FRAME_RATE = 40
+const DEFAULT_ANIM_DURATION = 500
+
 @Component
 export struct LyricView {
     /*------------------------------setter----------------------------------*/
-    private lrcList = new Array<Lyric>()
-    private textColor = "#ff929292"
-    private textSize = 56
-    private highLightColor = "#000000"
-    private highLightScale = 1.2
-    private edgeColor = "#ffffff"
-    private lineSpace = vp2px(8)
-    private animDuration = 600
-    private frameRate = 30
+    private lrcList: Array<Lyric> = new Array<Lyric>()
+    private textColor: string = DEFAULT_TEXT_COLOR
+    private textSize: number = DEFAULT_TEXT_SIZE
+    private highLightColor: string = DEFAULT_HIGHLIGHT_COLOR
+    private highLightScale: number = DEFAULT_HIGHLIGHT_SCALE
+    private edgeColor: string = DEFAULT_EDGE_COLOR
+    private lineSpace: number = DEFAULT_LINE_SPACE
+    private animDuration: number = DEFAULT_ANIM_DURATION
+    private frameRate: number = DEFAULT_FRAME_RATE
     @Watch("onProgressChanged") @Link duration: number
     @Watch("onIndexChanged") @Link targetIndex: number
     /*----------------------------------------------------------------------*/
     readonly extLrcList = new Array<LyricWrapper>()
     readonly settings = new RenderingContextSettings(true)
     readonly canvasCtx = new CanvasRenderingContext2D(this.settings)
-    private highLightTextSize = this.textSize * this.highLightScale
+    private highLightTextSize = DEFAULT_TEXT_SIZE
+    private highLightDrawOffset = 0
     private w = 0
     private h = 0
     private centerH = 0
     private centerW = 0
     private scrollY = 0
-    private edge = 100
-    private targetScrollY = 0
-    private centerYOffset = 0
+    private linearGradientEdge = 150 // the size of linear gradient at top and bottom.
+    private targetScrollY = 0 // the target end scrollY of the animation.
+    private centerYOffset = 0 // the center y of the lyric view.
     private currentIndex = 0
-    private firstVisibleIndex = 0
-    private lastVisibleIndex = 0
-    private topOverOffIndex = -1
+    private firstVisibleIndex = 0 // the first visible item index at top.
+    private lastVisibleIndex = 0 // the last visible item index at bottom.
+    private topOverOffIndex = -1 // the index of highlight item when has one more item out off the top.
     private animateTask = -1
-    readonly frameCount = Math.floor(this.animDuration / 1000 * this.frameRate)
-    readonly frameDuration = Math.floor(1000 / this.frameRate)
+    private frameCount = 20 // all the frame picture size of the animation.
+    private frameDuration = 25 // the cost time by one frame of the animation.
+
+    aboutToAppear() {
+        this.highLightTextSize = this.textSize * this.highLightScale
+        this.highLightDrawOffset = this.textSize * (this.highLightScale - 1) / 2
+        this.frameCount = Math.floor(this.animDuration / 1000 * this.frameRate)
+        this.frameDuration = Math.floor(1000 / this.frameRate)
+    }
 
     build() {
         Canvas(this.canvasCtx)
@@ -51,29 +69,8 @@ export struct LyricView {
                 printD("-----------------on appear")
                 // init paint
                 this.initPaint()
-                // init size
-                this.scrollY = this.h / 2 // layout center when first display
-                let tempH = 0
-                for (let i = 0;i < this.lrcList.length; i++) {
-                    let lrc = this.lrcList[i]
-                    let textMeasure = this.canvasCtx.measureText(lrc.text)
-                    let lines = Math.floor(textMeasure.width / this.w + 1)
-                    let lineHeight = lines > 1 ? lines * textMeasure.height : textMeasure.height
-                    if (i == 0) {
-                        tempH = Math.floor(textMeasure.height / 2)
-                        this.centerYOffset = tempH
-                    } else if (tempH < this.h / 2) {
-                        tempH += lineHeight + this.lineSpace
-                    } else if (this.topOverOffIndex == -1) {
-                        this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
-                        printW("over top index=" + this.topOverOffIndex)
-                    }
-
-                    this.extLrcList.push(new LyricWrapper(lrc, lineHeight))
-                }
-                this.firstVisibleIndex = this.getFirstVisibleIndex(this.currentIndex)
-                this.lastVisibleIndex = this.getLastVisibleIndex(this.currentIndex)
-                this.invalidate()
+                // TODO preview call initSize here, the onAppear is later than onAreaChanged
+                this.initSize()
             })
             .onAreaChange((_, newSize) => {
                 printD("-----------------on size changed")
@@ -82,6 +79,9 @@ export struct LyricView {
                 printD("canvas size=" + this.w + " * " + this.h)
                 this.centerW = this.w / 2
                 this.centerH = this.h / 2
+                // init size
+                // TODO real device call initSize here, the onAreaChanged is later than onAppear
+                // this.initSize()
             })
     }
 
@@ -92,6 +92,31 @@ export struct LyricView {
         this.canvasCtx.font = this.textSize + "px"
         // TODO: the center textAlign has bugs when multi line in OpenHarmony 3.2
         // this.canvasCtx.textAlign = "center"
+    }
+
+    private initSize() {
+        this.scrollY = this.h / 2 // layout center when first display
+        let tempH = 0
+        for (let i = 0;i < this.lrcList.length; i++) {
+            let lrc = this.lrcList[i]
+            let textMeasure = this.canvasCtx.measureText(lrc.text)
+            let lines = Math.floor(textMeasure.width / this.w + 1)
+            let lineHeight = lines > 1 ? lines * textMeasure.height : textMeasure.height
+            if (i == 0) {
+                tempH = Math.floor(textMeasure.height / 2)
+                this.centerYOffset = tempH
+            } else if (tempH < this.h / 2) {
+                tempH += lineHeight + this.lineSpace
+            } else if (this.topOverOffIndex == -1) {
+                this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
+                printW("over top index=" + this.topOverOffIndex)
+            }
+
+            this.extLrcList.push(new LyricWrapper(lrc, lineHeight))
+        }
+        this.firstVisibleIndex = this.getFirstVisibleIndex(this.currentIndex)
+        this.lastVisibleIndex = this.getLastVisibleIndex(this.currentIndex)
+        this.invalidate()
     }
 
     private invalidate() {
@@ -143,7 +168,7 @@ export struct LyricView {
         this.canvasCtx.save()
         this.canvasCtx.font = this.highLightTextSize + "px"
         this.canvasCtx.fillStyle = this.highLightColor
-        this.canvasCtx.fillText(lrc.text, 0, startY)
+        this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
         let textMeasure = this.canvasCtx.measureText(lrc.text)
         let height = Math.floor(textMeasure.height)
         let width = textMeasure.width
@@ -156,16 +181,16 @@ export struct LyricView {
 
     private drawEdge() {
         this.canvasCtx.save()
-        let grad1 = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.edge)
+        let grad1 = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)
         grad1.addColorStop(0.0, this.edgeColor)
         grad1.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = grad1
-        this.canvasCtx.fillRect(0, 0, this.w, this.edge)
-        let grad2 = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.edge)
+        this.canvasCtx.fillRect(0, 0, this.w, this.linearGradientEdge)
+        let grad2 = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.linearGradientEdge)
         grad2.addColorStop(0.0, this.edgeColor)
         grad2.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = grad2
-        this.canvasCtx.fillRect(0, this.h - this.edge, this.w, this.edge)
+        this.canvasCtx.fillRect(0, this.h - this.linearGradientEdge, this.w, this.linearGradientEdge)
         this.canvasCtx.restore()
     }
 
