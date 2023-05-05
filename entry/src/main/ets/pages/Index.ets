@@ -82,7 +82,6 @@ struct Index {
                 .width("100%")
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == 3) {
-                        console.debug("---------" + value)
                         this.duration = value
                     }
                 })

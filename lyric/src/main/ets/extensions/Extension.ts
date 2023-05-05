@@ -1,7 +1,11 @@
+import hilog from '@ohos.hilog';
+
+const TAG = "LyricView"
+
 export function printD(msg: string) {
-    console.debug(msg)
+    hilog.debug(0, TAG, msg)
 }
 
 export function printW(msg: string) {
-    console.warn(msg)
+    hilog.warn(0, TAG, msg)
 }
