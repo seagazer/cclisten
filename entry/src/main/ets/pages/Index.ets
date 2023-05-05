@@ -29,7 +29,7 @@ struct Index {
                 lrcList: this.lrcList,
                 duration: $duration,
                 targetIndex: $testIndex,
-                textSize: 32,
+                textSize: 48,
                 highLightScale: 1.2,
                 lineSpace: 16,
                 textColor: "#cccd7942",
@@ -70,7 +70,7 @@ struct Index {
             .justifyContent(FlexAlign.Center)
             .margin({ top: 36 })
 
-            Text(this.duration / 1000 + "s")
+            Text(Math.round(this.duration / 1000) + "s")
                 .fontSize(18)
                 .margin({ top: 16 })
 

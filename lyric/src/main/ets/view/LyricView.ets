@@ -1,14 +1,7 @@
+import { LyricWrapper } from '../bean/LyricWrapper';
 import { printD, printW } from '../extensions/Extension';
 import { Lyric } from '../bean/Lyric';
-
-class LyricWrapper extends Lyric {
-    readonly height: number
-
-    constructor(src: Lyric, height: number) {
-        super(src.timestamp, src.text)
-        this.height = height
-    }
-}
+import animator, { AnimatorResult } from '@ohos.animator';
 
 // default config
 const DEFAULT_LINE_SPACE = 16
@@ -17,7 +10,6 @@ const DEFAULT_HIGHLIGHT_SCALE = 1.15
 const DEFAULT_TEXT_COLOR = "#ff929292"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
 const DEFAULT_EDGE_COLOR = "#ffffff"
-const DEFAULT_FRAME_RATE = 40
 const DEFAULT_ANIM_DURATION = 500
 
 @Component
@@ -31,7 +23,6 @@ export struct LyricView {
     private edgeColor: string = DEFAULT_EDGE_COLOR
     private lineSpace: number = DEFAULT_LINE_SPACE
     private animDuration: number = DEFAULT_ANIM_DURATION
-    private frameRate: number = DEFAULT_FRAME_RATE
     @Watch("onProgressChanged") @Link duration: number
     @Watch("onIndexChanged") @Link targetIndex: number
     /*----------------------------------------------------------------------*/
@@ -52,15 +43,28 @@ export struct LyricView {
     private firstVisibleIndex = 0 // the first visible item index at top.
     private lastVisibleIndex = 0 // the last visible item index at bottom.
     private topOverOffIndex = -1 // the index of highlight item when has one more item out off the top.
-    private animateTask = -1
-    private frameCount = 20 // all the frame picture size of the animation.
-    private frameDuration = 25 // the cost time by one frame of the animation.
+    private anim: AnimatorResult
+    private isAnimRunning = false
 
     aboutToAppear() {
         this.highLightTextSize = this.textSize * this.highLightScale
         this.highLightDrawOffset = this.textSize * (this.highLightScale - 1) / 2
-        this.frameCount = Math.floor(this.animDuration / 1000 * this.frameRate)
-        this.frameDuration = Math.floor(1000 / this.frameRate)
+        this.anim = animator.create({
+            duration: this.animDuration,
+            easing: "ease-in-out",
+            delay: 0,
+            fill: "forwards",
+            direction: "normal",
+            iterations: 1,
+            begin: this.scrollY,
+            end: this.targetScrollY
+        })
+        this.anim.oncancel = () => {
+            this.isAnimRunning = false
+        }
+        this.anim.onfinish = () => {
+            this.isAnimRunning = false
+        }
     }
 
     build() {
@@ -100,18 +104,26 @@ export struct LyricView {
         for (let i = 0;i < this.lrcList.length; i++) {
             let lrc = this.lrcList[i]
             let textMeasure = this.canvasCtx.measureText(lrc.text)
-            let lines = Math.floor(textMeasure.width / this.w + 1)
+            let lp = textMeasure.width / this.w
+            let lines = 1
+            if (textMeasure.width % this.w != 0) {
+                lines = lp < 1 ? 1 : Math.round(lp) + 1
+            } else {
+                lines = lp
+            }
             let lineHeight = lines > 1 ? lines * textMeasure.height : textMeasure.height
             if (i == 0) {
                 tempH = Math.floor(textMeasure.height / 2)
                 this.centerYOffset = tempH
-            } else if (tempH < this.h / 2) {
-                tempH += lineHeight + this.lineSpace
-            } else if (this.topOverOffIndex == -1) {
-                this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
-                printW("over top index=" + this.topOverOffIndex)
             }
-
+            if (tempH < this.h / 2) {
+                tempH += lineHeight + this.lineSpace
+            } else {
+                if (this.topOverOffIndex == -1) {
+                    this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
+                    printW("over top index=" + this.topOverOffIndex)
+                }
+            }
             this.extLrcList.push(new LyricWrapper(lrc, lineHeight))
         }
         this.firstVisibleIndex = this.getFirstVisibleIndex(this.currentIndex)
@@ -172,8 +184,13 @@ export struct LyricView {
         let textMeasure = this.canvasCtx.measureText(lrc.text)
         let height = Math.floor(textMeasure.height)
         let width = textMeasure.width
-        let lines = Math.floor(width / this.w + 1)
-        printW("highLight: " + lrc.text + ", h=" + height + ", w=" + width + ", line=" + lines)
+        let lp = textMeasure.width / this.w
+        let lines = 1
+        if (textMeasure.width % this.w != 0) {
+            lines = lp < 1 ? 1 : Math.round(lp) + 1
+        } else {
+            lines = lp
+        }
         let scaleHeight = height * lines
         this.canvasCtx.restore()
         return scaleHeight
@@ -269,50 +286,38 @@ export struct LyricView {
         this.currentIndex = index
         printD("firstTop=" + this.firstVisibleIndex + ", lastBottom=" + this.lastVisibleIndex + ", currentHighLight=" + this.currentIndex)
         // the animation is running, end it
-        if (this.animateTask != -1) {
-            clearInterval(this.animateTask)
+        if (this.isAnimRunning) {
+            this.anim.cancel()
             this.scrollY = this.targetScrollY
             this.invalidate()
             printW("intercept and end anim!")
         }
-        // get the offset of one frame
-        this.targetScrollY = Math.floor(isUp ? this.scrollY - animOffset : this.scrollY + animOffset)
-        let frameOffset = animOffset / this.frameCount
         // at end, stop scroll
         if (this.currentIndex > this.extLrcList.length - 1) {
             return
         }
         printD("-->start anim")
+        // get the offset of one frame
+        this.targetScrollY = Math.floor(isUp ? this.scrollY - animOffset : this.scrollY + animOffset)
         // start animate
-        let currentFrame = 0
-        this.animateTask = setInterval(() => {
-            currentFrame++
-            if ((isUp && this.scrollY <= this.targetScrollY) || (!isUp && this.scrollY >= this.targetScrollY)) {
-                clearInterval(this.animateTask)
-                this.animateTask = -1
-                if (this.scrollY != this.targetScrollY) {
-                    printW("----------------resize")
-                    this.scrollY = this.targetScrollY
-                    this.invalidate()
-                }
-                printD("-->end anim")
-            } else {
-                // invalidate
-                if (currentFrame >= this.frameCount) { // last frame
-                    let end = isUp ? this.scrollY - frameOffset : this.scrollY + frameOffset
-                    let overY = Math.abs(end - this.targetScrollY)
-                    let dy = Math.floor(Math.abs(frameOffset - overY))
-                    printD("end=" + end + ", overY=" + overY + ", frameCount=" + this.frameCount + ", lastFrame=" + currentFrame + ", dy=" + dy + ", totalOffset=" + animOffset + ", frameOffset=" + frameOffset)
-                    this.scrollY = Math.floor(isUp ? this.scrollY - dy : this.scrollY + dy + 1)
-                    printW("curY=" + this.scrollY + ", targetY=" + this.targetScrollY)
-                } else {
-                    printD("frameCount=" + this.frameCount + ", curFrame=" + currentFrame + ", totalOffset=" + animOffset + ", frameOffset=" + frameOffset)
-                    this.scrollY = Math.floor(isUp ? this.scrollY - frameOffset : this.scrollY + frameOffset + 1)
-                    printW("curY=" + this.scrollY + ", targetY=" + this.targetScrollY)
-                }
-                this.invalidate()
-            }
-        }, this.frameDuration)
+        let startY = this.scrollY
+        printD("-->start anim " + startY + " -> " + this.targetScrollY)
+        this.anim.reset({
+            duration: this.animDuration,
+            easing: "ease-in-out",
+            delay: 0,
+            fill: "forwards",
+            direction: "normal",
+            iterations: 1,
+            begin: startY,
+            end: this.targetScrollY
+        })
+        this.anim.onframe = (value) => {
+            this.scrollY = value
+            this.invalidate()
+        }
+        this.anim.play()
+        this.isAnimRunning = true
     }
 
     private onIndexChanged() {
