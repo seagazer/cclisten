@@ -183,7 +183,6 @@ export struct LyricView {
         this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
         let textMeasure = this.canvasCtx.measureText(lrc.text)
         let height = Math.floor(textMeasure.height)
-        let width = textMeasure.width
         let lp = textMeasure.width / this.w
         let lines = 1
         if (textMeasure.width % this.w != 0) {
@@ -220,7 +219,7 @@ export struct LyricView {
         if (position > last) {
             return this.extLrcList.length - 1
         }
-        for (let i = 0;i < this.extLrcList.length; i++) {
+        for (let i = 0; i < this.extLrcList.length - 1; i++) {
             let l1 = this.extLrcList[i].timestamp
             let l2 = this.extLrcList[i+1].timestamp
             if (position > l1 && position < l2) {
