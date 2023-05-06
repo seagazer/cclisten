@@ -11,6 +11,7 @@ const DEFAULT_TEXT_COLOR = "#ff929292"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
 const DEFAULT_EDGE_COLOR = "#ffffff"
 const DEFAULT_ANIM_DURATION = 500
+const DEFAULT_CACHE_COUNT = 2
 
 @Component
 export struct LyricView {
@@ -23,6 +24,7 @@ export struct LyricView {
     private edgeColor: string = DEFAULT_EDGE_COLOR
     private lineSpace: number = DEFAULT_LINE_SPACE
     private animDuration: number = DEFAULT_ANIM_DURATION
+    private cacheCount: number = DEFAULT_CACHE_COUNT
     @Watch("onProgressChanged") @Link duration: number
     @Watch("onIndexChanged") @Link targetIndex: number
     /*----------------------------------------------------------------------*/
@@ -113,7 +115,7 @@ export struct LyricView {
             }
             let lineHeight = lines > 1 ? lines * textMeasure.height : textMeasure.height
             if (i == 0) {
-                tempH = Math.floor(textMeasure.height / 2)
+                tempH = Math.round(textMeasure.height / 2)
                 this.centerYOffset = tempH
             }
             if (tempH < this.h / 2) {
@@ -155,19 +157,19 @@ export struct LyricView {
         // the draw count is the max visible lines in screen + 4 caches(2 top & 2 bottom)
         for (let i = 0;i < this.extLrcList.length; i++) {
             let lrc = this.extLrcList[i]
-            // out the top of screen, the cache is 2 lines
-            if (i < this.firstVisibleIndex - 2) {
+            // out the top of screen, the default cache is 2 lines
+            if (i < this.firstVisibleIndex - this.cacheCount) {
                 startY += (lrc.height + this.lineSpace)
                 continue
             }
-            // out the bottom of screen, the cache is 2 lines
-            if (i > this.lastVisibleIndex + 2) {
+            // out the bottom of screen, the default cache is 2 lines
+            if (i > this.lastVisibleIndex + this.cacheCount) {
                 break
             }
             // draw with high light for current line
             if (i == this.currentIndex) {
                 let scaleHeight = this.drawHighLight(lrc, startY)
-                startY += (scaleHeight + this.lineSpace)
+                startY += (scaleHeight + this.lineSpace + this.highLightDrawOffset)
             } else {
                 this.canvasCtx.fillText(lrc.text, 0, startY)
                 startY += (lrc.height + this.lineSpace)
@@ -178,11 +180,11 @@ export struct LyricView {
 
     private drawHighLight(lrc: LyricWrapper, startY: number): number {
         this.canvasCtx.save()
-        this.canvasCtx.font = this.highLightTextSize + "px"
+        this.canvasCtx.font = this.highLightTextSize + "px" + " bold"
         this.canvasCtx.fillStyle = this.highLightColor
         this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
         let textMeasure = this.canvasCtx.measureText(lrc.text)
-        let height = Math.floor(textMeasure.height)
+        let height = Math.round(textMeasure.height)
         let lp = textMeasure.width / this.w
         let lines = 1
         if (textMeasure.width % this.w != 0) {
@@ -197,15 +199,15 @@ export struct LyricView {
 
     private drawEdge() {
         this.canvasCtx.save()
-        let grad1 = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)
-        grad1.addColorStop(0.0, this.edgeColor)
-        grad1.addColorStop(1.0, '#00ffffff')
-        this.canvasCtx.fillStyle = grad1
+        let topFade = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)
+        topFade.addColorStop(0.0, this.edgeColor)
+        topFade.addColorStop(1.0, '#00ffffff')
+        this.canvasCtx.fillStyle = topFade
         this.canvasCtx.fillRect(0, 0, this.w, this.linearGradientEdge)
-        let grad2 = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.linearGradientEdge)
-        grad2.addColorStop(0.0, this.edgeColor)
-        grad2.addColorStop(1.0, '#00ffffff')
-        this.canvasCtx.fillStyle = grad2
+        let bottomFade = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.linearGradientEdge)
+        bottomFade.addColorStop(0.0, this.edgeColor)
+        bottomFade.addColorStop(1.0, '#00ffffff')
+        this.canvasCtx.fillStyle = bottomFade
         this.canvasCtx.fillRect(0, this.h - this.linearGradientEdge, this.w, this.linearGradientEdge)
         this.canvasCtx.restore()
     }
@@ -297,7 +299,7 @@ export struct LyricView {
         }
         printD("-->start anim")
         // get the offset of one frame
-        this.targetScrollY = Math.floor(isUp ? this.scrollY - animOffset : this.scrollY + animOffset)
+        this.targetScrollY = Math.round(isUp ? this.scrollY - animOffset : this.scrollY + animOffset)
         // start animate
         let startY = this.scrollY
         printD("-->start anim " + startY + " -> " + this.targetScrollY)
