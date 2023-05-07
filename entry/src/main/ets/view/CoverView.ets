@@ -19,9 +19,9 @@ export struct CoverView {
             .aspectRatio(1)
             .rotate({ angle: this.angle })
             .border({
-                radius: '200',
+                radius: 120,
                 color: this.themeColor,
-                width: 8
+                width: 6
             })
             .margin({ top: 64, bottom: 64 })
             .animation({
