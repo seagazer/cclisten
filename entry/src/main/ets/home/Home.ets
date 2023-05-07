@@ -16,9 +16,6 @@ import { ActionController } from '../view/ActionController';
 @Entry
 @Component
 struct Index {
-    private ctx = new CanvasRenderingContext2D()
-    private w = 0
-    private h = 0
     private themeColor = '#ff000000'
     @State isPlaying: boolean = false
 
@@ -108,5 +105,17 @@ struct Index {
         .alignContent(Alignment.TopEnd)
         .width('100%')
         .height('100%')
+        .scale({ x: this.animScale, y: this.animScale })
+        .opacity(this.animAlpha)
+    }
+
+    @State animScale: number = 0.5
+    @State animAlpha: number = 0.2
+
+    pageTransition() {
+        PageTransitionEnter({ duration: 600 }).onEnter((type: RouteType, progress: number) => {
+            this.animScale = progress
+            this.animAlpha = progress
+        })
     }
 }

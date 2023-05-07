@@ -6,7 +6,8 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "@seagazer/lyric": "file:../cclyric"
+    "@seagazer/cclyric": "file:../cclyric",
+    "@seagazer/ccplayer": "file:./lib/seagazer-ccplayer-1.0.0.tgz"
   }
 }
 

@@ -1,4 +1,4 @@
-import { LyricView, Lyric, LyricParser } from '@seagazer/lyric';
+import { LyricView, Lyric, LyricParser } from '@seagazer/cclyric';
 import { MockData } from './MockData';
 
 @Entry
