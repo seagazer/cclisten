@@ -32,8 +32,8 @@ struct Index {
                 textSize: 48,
                 highLightScale: 1.2,
                 lineSpace: 16,
-                textColor: "#cccd7942",
-                highLightColor: "#ffb936d0",
+                textColor: "#cc8a8a8a",
+                highLightColor: "#ff2f2f2f",
             })
                 .width("100%")
                 .height("70%")
@@ -41,7 +41,6 @@ struct Index {
             Row() {
                 Button('PreIndex')
                     .fontSize(16)
-                    .padding(16)
                     .onClick(() => {
                         let temp = this.testIndex - 1
                         if (temp < 0) {
@@ -51,7 +50,6 @@ struct Index {
                     })
                 Button('NextIndex')
                     .fontSize(16)
-                    .padding(16)
                     .onClick(() => {
                         let temp = this.testIndex + 1
                         if (temp > this.lrcList.length - 1) {
@@ -61,7 +59,6 @@ struct Index {
                     }).margin({ left: 16 })
                 Button('AutoPlay')
                     .fontSize(16)
-                    .padding(16)
                     .onClick(() => {
                         this.test()
                     }).margin({ left: 16 })

@@ -1,6 +1,6 @@
 {
   "module": {
-    "name": "lyric",
+    "name": "cclyric",
     "type": "har",
     "deviceTypes": [
       "default"

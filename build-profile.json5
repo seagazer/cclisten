@@ -24,8 +24,8 @@
       ]
     },
     {
-      "name": "lyric",
-      "srcPath": "./lyric"
+      "name": "cclyric",
+      "srcPath": "./cclyric"
     }
   ]
 }

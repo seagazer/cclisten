@@ -1,0 +1,9 @@
+{
+  "name": "cclyric",
+  "version": "1.0.0",
+  "description": "A lyric library for OpenHarmony.",
+  "main": "index.ets",
+  "author": "seagazer",
+  "license": "Apache-2.0",
+  "dependencies": {}
+}
