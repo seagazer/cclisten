@@ -1,6 +1,19 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "material": {
+          "certpath": "./keystore/com.seagazer.listen.cer",
+          "storePassword": "0000001A631CFEBC5306E5AD6408DE47D9BD361476ED6B04C2E3E8F5FD6DE78D7F02AD6A20AA65652421",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001AE6D518BB22D62FBDABD9333652E4999564D09C7E46E571A6B9535C88257F63EC81EDC6DE11C5",
+          "profile": "./keystore/com.seagazer.listen.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "./keystore/com.seagazer.listen.p12"
+        }
+      }
+    ],
     "compileSdkVersion": 9,
     "compatibleSdkVersion": 9,
     "products": [
@@ -22,10 +35,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "cclyric",
-      "srcPath": "./cclyric"
     }
   ]
 }

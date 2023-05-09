@@ -23,12 +23,17 @@ export struct ActionController {
         .backgroundColor("#cce2e2e2")
     }
 
+    @Styles normalStyles(){
+        .backgroundColor(null)
+    }
+
     build() {
         Row() {
             Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
                 .playBtnStyle(72, 4, 0, this.themeColor)
                 .stateStyles({
-                    pressed: this.pressedStyles
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
                 })
                 .onClick(() => {
                     this.actionPlayOrPause?.()
@@ -36,7 +41,8 @@ export struct ActionController {
             Image($r('app.media.ic_pre'))
                 .playBtnStyle(48, 4, 16, this.themeColor)
                 .stateStyles({
-                    pressed: this.pressedStyles
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
                 })
                 .onClick(() => {
                     this.actionPlayPre?.()
@@ -44,7 +50,8 @@ export struct ActionController {
             Image($r('app.media.ic_next'))
                 .playBtnStyle(48, 4, 0, this.themeColor)
                 .stateStyles({
-                    pressed: this.pressedStyles
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
                 })
                 .onClick(() => {
                     this.actionPlayNext?.()

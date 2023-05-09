@@ -54,6 +54,6 @@ struct Index {
     }
 
     pageTransition() {
-        PageTransitionExit({ duration: 600 }).scale({ x: 0.5, y: 0.5 }).opacity(0)
+        PageTransitionExit({ duration: 600 }).scale({ x: 0, y: 0 }).opacity(0)
     }
 }

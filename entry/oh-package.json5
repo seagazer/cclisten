@@ -1,13 +1,13 @@
 {
+  "license": "MIT License",
+  "devDependencies": {},
+  "author": "seagazer",
   "name": "entry",
-  "version": "1.0.0",
   "description": "Please describe the basic information.",
   "main": "",
-  "author": "",
-  "license": "",
+  "version": "1.0.0",
   "dependencies": {
-    "@seagazer/cclyric": "file:../cclyric",
-    "@seagazer/ccplayer": "file:./lib/seagazer-ccplayer-1.0.0.tgz"
+    "@seagazer/cclyric": "file:./libs/cclyric-1.0.0.har",
+    "@seagazer/ccplayer": "file:./libs/seagazer-ccplayer-1.0.0.tgz"
   }
 }
-

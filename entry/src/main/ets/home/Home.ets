@@ -23,6 +23,10 @@ struct Index {
         .backgroundColor("#cce2e2e2")
     }
 
+    @Styles normalStyles(){
+        .backgroundColor(null)
+    }
+
     @Builder
     Title() {
         Text('可能').fontSize(56).fontColor(this.themeColor)
@@ -99,7 +103,8 @@ struct Index {
                     radius: 48,
                 })
                 .stateStyles({
-                    pressed: this.pressedStyles
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
                 })
         }
         .alignContent(Alignment.TopEnd)
