@@ -1,59 +1,66 @@
 import router from '@ohos.router'
 
-class LogoText {
-    text: string
-    offsetX: number
-    offsetY: number
 
-    constructor(text: string, offsetX: number, offsetY: number) {
-        this.text = text
-        this.offsetX = offsetX
-        this.offsetY = offsetY
-    }
+@Extend(Text) function logoStyle() {
+    .fontSize(48)
+    .fontWeight(FontWeight.Medium)
 }
 
 
 @Entry
 @Component
 struct Index {
-    private themeColor = '#ff000000'
-    private logoName: Array<string> = ["L", "i", "s", "t", "e", "n"]
-    @State logo: Array<LogoText> = []
+    private logoName = ["L", "i", "s", "t", "e", "n"]
+    @State alphas: Array<number> = new Array()
+    private duration = 800
+    private delay = 200
+    @State pageScale: number = 1
+    @State pageAlpha: number = 1
 
     aboutToAppear() {
-        for (let i = 0;i < this.logoName.length; i++) {
-            let y = Math.random() * 100
-            let rand = ~~(Math.random() * 10) % 2 == 0
-            if (rand) {
-                y = -y
-            }
-            let item = new LogoText(this.logoName[i], 0, 0)
-            this.logo.push(item)
-        }
-
-        setTimeout(() => {
-            router.pushUrl({
-                url: "home/Home"
-            })
-        }, 2000)
+        this.logoName.forEach((_, index) => {
+            this.alphas[index] = 0
+        })
     }
 
     build() {
         Row() {
-            ForEach(this.logo, (title: LogoText, index) => {
-                Text(title.text)
-                    .fontColor(this.themeColor)
-                    .fontSize(40)
-                    .translate({ y: title.offsetY })
-                    .margin(title.offsetX)
+            ForEach(this.logoName, (name, index) => {
+                Text(name)
+                    .logoStyle()
+                    .scale({ x: this.alphas[index], y: this.alphas[index] })
+                    .opacity(this.alphas[index])
             })
         }
         .width("100%")
         .height("100%")
+        .scale({ x: this.pageScale, y: this.pageScale })
+        .opacity(this.pageAlpha)
         .justifyContent(FlexAlign.Center)
+        .onAreaChange(() => {
+            this.logoName.forEach((_, index) => {
+                animateTo(
+                    {
+                        duration: this.duration,
+                        delay: this.delay * index,
+                        curve: Curve.Friction
+                    },
+                    () => {
+                        this.alphas[index] = 1
+                    })
+            })
+            setTimeout(() => {
+                router.pushUrl({
+                    url: "home/Home"
+                })
+            }, 500 + this.duration + this.delay * this.logoName.length)
+        })
     }
 
     pageTransition() {
-        PageTransitionExit({ duration: 600 }).scale({ x: 0, y: 0 }).opacity(0)
+        PageTransitionExit({ duration: 500 }).onExit((type: RouteType, progress: number) => {
+            this.pageScale = 1 - progress
+            this.pageAlpha = 1 - progress
+        })
     }
 }
