@@ -1,36 +1,33 @@
 import { CoverView } from '../view/CoverView';
 import { ActionController } from '../view/ActionController';
-
-@Extend(Image) function playBtnStyle(size: Length, padding: Length, margin: Length, color: ResourceColor) {
-    .width(size)
-    .aspectRatio(1)
-    .padding(padding)
-    .margin({ left: margin, right: margin })
-    .border({
-        radius: size,
-        color: color,
-        width: 2
-    })
-}
+import { DEFAULT_THEME, Theme } from '../theme/Theme';
+import { LyricHelper } from '@seagazer/cclyric';
+import { toast } from '../extensions/Extensions';
 
 @Entry
 @Component
 struct Index {
-    private themeColor = '#ff000000'
+    @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State isPlaying: boolean = false
+    @State pageScale: number = 0
+    @State pageAlpha: number = 0
+    @State title: string = "可能"
+    @State artist: string = "程响"
+    @State lyricLine: string = ""
+    private lyricHelper: LyricHelper
 
-    @Styles pressedStyles() {
-        .backgroundColor("#cce2e2e2")
+    aboutToAppear() {
+        this.lyricHelper = new LyricHelper()
     }
 
-    @Styles normalStyles(){
-        .backgroundColor(null)
+    aboutToDisappear() {
+
     }
 
     @Builder
     Title() {
-        Text('可能').fontSize(56).fontColor(this.themeColor)
-        Text('程响').fontSize(18).fontColor(this.themeColor)
+        Text(this.title).fontSize(56).fontColor(this.theme.colorPrimary)
+        Text(this.artist).fontSize(18).fontColor(this.theme.colorPrimary)
             .opacity(0.5)
             .margin({ top: 8 })
     }
@@ -45,20 +42,17 @@ struct Index {
     private playPre() {
     }
 
-    aboutToAppear() {
-    }
-
     build() {
         Stack() {
             Column() {
                 // title
                 this.Title()
                 // cover image
-                CoverView({ src: $r('app.media.cover'), isPlaying: $isPlaying, themeColor: this.themeColor })
-                // lyric
+                CoverView({ src: $r('app.media.cover'), isPlaying: $isPlaying })
+                // single line lyric
                 Text('可能南方的阳光  照着北方的风')
                     .fontSize(18)
-                    .fontColor(this.themeColor)
+                    .fontColor(this.theme.colorPrimary)
                     .opacity(0.5)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -68,19 +62,18 @@ struct Index {
                 })
                     .width('100%')
                     .trackThickness(18)
-                    .trackColor(this.themeColor)
-                    .selectedColor("#cce2e2e2")
+                    .trackColor(this.theme.colorPrimary)
+                    .selectedColor(this.theme.colorSecondary)
                 // duration
                 Row() {
-                    Text('00:58').fontSize(24).fontColor(this.themeColor)
-                    Text('/').fontSize(18).fontColor(this.themeColor)
-                    Text('03:58').fontSize(18).fontColor(this.themeColor).opacity(0.5)
+                    Text('00:00').fontSize(24).fontColor(this.theme.colorPrimary)
+                    Text('/').fontSize(18).fontColor(this.theme.colorPrimary)
+                    Text('03:58').fontSize(18).fontColor(this.theme.colorPrimary).opacity(0.5)
                 }.width('100%').alignItems(VerticalAlign.Bottom)
 
                 // controller button
                 ActionController({
                     isPlaying: $isPlaying,
-                    themeColor: this.themeColor,
                     actionPlayOrPause: this.playOrPause,
                     actionPlayNext: this.playNext,
                     actionPlayPre: this.playPre
@@ -98,7 +91,7 @@ struct Index {
                 .aspectRatio(1)
                 .margin(16)
                 .padding(4)
-                .colorBlend(this.themeColor)
+                .colorBlend(this.theme.colorPrimary)
                 .border({
                     radius: 48,
                 })
@@ -106,21 +99,29 @@ struct Index {
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
+                .onClick(() => {
+                    toast("todo", 1500)
+                })
         }
         .alignContent(Alignment.TopEnd)
         .width('100%')
         .height('100%')
-        .scale({ x: this.animScale, y: this.animScale })
-        .opacity(this.animAlpha)
+        .scale({ x: this.pageScale, y: this.pageScale })
+        .opacity(this.pageAlpha)
     }
-
-    @State animScale: number = 0.5
-    @State animAlpha: number = 0.2
 
     pageTransition() {
         PageTransitionEnter({ duration: 600 }).onEnter((type: RouteType, progress: number) => {
-            this.animScale = progress
-            this.animAlpha = progress
+            this.pageScale = Math.min(1, progress + 0.5)
+            this.pageAlpha = progress
         })
+    }
+
+    @Styles pressedStyles() {
+        .backgroundColor(this.theme.colorAction)
+    }
+
+    @Styles normalStyles() {
+        .backgroundColor(null)
     }
 }

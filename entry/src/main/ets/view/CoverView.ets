@@ -1,7 +1,9 @@
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
+
 @Component
 export struct CoverView {
-    private src: Resource
-    private themeColor: ResourceColor
+    src: Resource
+    @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State angle: number = 0
     @Watch("onPlayStateChanged") @Link isPlaying: boolean
 
@@ -20,13 +22,13 @@ export struct CoverView {
             .rotate({ angle: this.angle })
             .border({
                 radius: 120,
-                color: this.themeColor,
+                color: this.theme.colorPrimary,
                 width: 6
             })
             .margin({ top: 64, bottom: 64 })
             .animation({
                 duration: 120 * 1000,
-                playMode: PlayMode.Reverse,
+                playMode: PlayMode.Normal,
                 iterations: -1,
                 curve: Curve.Linear
             })

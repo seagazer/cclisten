@@ -1,4 +1,6 @@
-@Extend(Image) function playBtnStyle(size: Length, padding: Length, margin: Length, themeColor: ResourceColor) {
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
+
+@Extend(Image) function playBtnStyle(size: Length, padding: Length, margin: Length, themeColor: string) {
     .width(size)
     .aspectRatio(1)
     .padding(padding)
@@ -13,24 +15,24 @@
 
 @Component
 export struct ActionController {
-    private themeColor: ResourceColor = "#000000"
+    @StorageLink("theme") theme: Theme = DEFAULT_THEME
     actionPlayOrPause: () => void
     actionPlayNext: () => void
     actionPlayPre: () => void
     @Link isPlaying: boolean
 
     @Styles pressedStyles() {
-        .backgroundColor("#cce2e2e2")
+        .backgroundColor(this.theme.colorAction)
     }
 
-    @Styles normalStyles(){
+    @Styles normalStyles() {
         .backgroundColor(null)
     }
 
     build() {
         Row() {
             Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
-                .playBtnStyle(72, 4, 0, this.themeColor)
+                .playBtnStyle(72, 4, 0, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -39,7 +41,7 @@ export struct ActionController {
                     this.actionPlayOrPause?.()
                 })
             Image($r('app.media.ic_pre'))
-                .playBtnStyle(48, 4, 16, this.themeColor)
+                .playBtnStyle(48, 4, 16, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -48,7 +50,7 @@ export struct ActionController {
                     this.actionPlayPre?.()
                 })
             Image($r('app.media.ic_next'))
-                .playBtnStyle(48, 4, 0, this.themeColor)
+                .playBtnStyle(48, 4, 0, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles

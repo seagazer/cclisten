@@ -1,6 +1,5 @@
 {
   "src": [
-    "home/Index",
     "home/Home",
     "home/IndexTest2",
     "splash/Splash"

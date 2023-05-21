@@ -1,23 +1,19 @@
 import router from '@ohos.router'
-
-
-@Extend(Text) function logoStyle() {
-    .fontSize(48)
-    .fontWeight(FontWeight.Medium)
-}
+import { setTheme } from '../theme/Extensions'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 
 @Entry
 @Component
 struct Index {
+    @StorageLink("theme") theme: Theme = DEFAULT_THEME
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
     private duration = 800
     private delay = 200
-    @State pageScale: number = 1
-    @State pageAlpha: number = 1
 
     aboutToAppear() {
+        setTheme(new Theme("#ff1b43b7", "#ff68d2ff"))
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })
@@ -27,15 +23,15 @@ struct Index {
         Row() {
             ForEach(this.logoName, (name, index) => {
                 Text(name)
-                    .logoStyle()
+                    .fontSize(48)
+                    .fontWeight(FontWeight.Medium)
+                    .fontColor(this.theme.colorPrimary)
                     .scale({ x: this.alphas[index], y: this.alphas[index] })
                     .opacity(this.alphas[index])
             })
         }
         .width("100%")
         .height("100%")
-        .scale({ x: this.pageScale, y: this.pageScale })
-        .opacity(this.pageAlpha)
         .justifyContent(FlexAlign.Center)
         .onAreaChange(() => {
             this.logoName.forEach((_, index) => {
@@ -58,9 +54,6 @@ struct Index {
     }
 
     pageTransition() {
-        PageTransitionExit({ duration: 500 }).onExit((type: RouteType, progress: number) => {
-            this.pageScale = 1 - progress
-            this.pageAlpha = 1 - progress
-        })
+        PageTransitionExit({ duration: 500 }).opacity(0)
     }
 }
