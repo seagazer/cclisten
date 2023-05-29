@@ -2,21 +2,29 @@ import { CoverView } from '../view/CoverView';
 import { ActionController } from '../view/ActionController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricHelper } from '@seagazer/cclyric';
-import { toast } from '../extensions/Extensions';
+import router from '@ohos.router';
+import { Logger } from '@seagazer/ccplayer/src/main/ets/player/common/Logger';
+import display from '@ohos.display';
+import window from '@ohos.window';
 
 @Entry
 @Component
-struct Index {
+struct Home {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State isPlaying: boolean = false
-    @State pageScale: number = 0
-    @State pageAlpha: number = 0
+    @State pageScale: number = 1
+    @State pageAlpha: number = 1
     @State title: string = "可能"
     @State artist: string = "程响"
     @State lyricLine: string = ""
     private lyricHelper: LyricHelper
 
     aboutToAppear() {
+        window.getLastWindow(getContext(this), (err, win) => {
+            win.setWindowLayoutFullScreen(true)
+        })
+        Logger.d("aaa", JSON.stringify(display.getDefaultDisplaySync()))
+        router.clear()
         this.lyricHelper = new LyricHelper()
     }
 
@@ -28,7 +36,6 @@ struct Index {
     Title() {
         Text(this.title).fontSize(56).fontColor(this.theme.colorPrimary)
         Text(this.artist).fontSize(18).fontColor(this.theme.colorPrimary)
-            .opacity(0.5)
             .margin({ top: 8 })
     }
 
@@ -48,12 +55,11 @@ struct Index {
                 // title
                 this.Title()
                 // cover image
-                CoverView({ src: $r('app.media.cover'), isPlaying: $isPlaying })
+                CoverView({ src: $r('app.media.baseline_clear_24'), isPlaying: $isPlaying })
                 // single line lyric
                 Text('可能南方的阳光  照着北方的风')
                     .fontSize(18)
                     .fontColor(this.theme.colorPrimary)
-                    .opacity(0.5)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                 // slider
@@ -81,27 +87,9 @@ struct Index {
             }
             .width('100%')
             .height('100%')
-            .padding({ left: 16, right: 16, top: 32, bottom: 32 })
+            .padding({ left: 32, right: 32, top: 32, bottom: 32 })
             .justifyContent(FlexAlign.Center)
             .alignItems(HorizontalAlign.Start)
-
-            // share link
-            Image($r('app.media.ic_link'))
-                .width(48)
-                .aspectRatio(1)
-                .margin(16)
-                .padding(4)
-                .colorBlend(this.theme.colorPrimary)
-                .border({
-                    radius: 48,
-                })
-                .stateStyles({
-                    pressed: this.pressedStyles,
-                    normal: this.normalStyles
-                })
-                .onClick(() => {
-                    toast("todo", 1500)
-                })
         }
         .alignContent(Alignment.TopEnd)
         .width('100%')
@@ -111,17 +99,9 @@ struct Index {
     }
 
     pageTransition() {
-        PageTransitionEnter({ duration: 600 }).onEnter((type: RouteType, progress: number) => {
+        PageTransitionEnter({ duration: 600 }).onEnter((_: RouteType, progress: number) => {
             this.pageScale = Math.min(1, progress + 0.5)
             this.pageAlpha = progress
         })
-    }
-
-    @Styles pressedStyles() {
-        .backgroundColor(this.theme.colorAction)
-    }
-
-    @Styles normalStyles() {
-        .backgroundColor(null)
     }
 }

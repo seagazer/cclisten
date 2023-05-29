@@ -1,19 +1,23 @@
 import router from '@ohos.router'
 import { setTheme } from '../theme/Extensions'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import display from '@ohos.display'
+import { printW } from '@seagazer/cclyric/src/main/ets/extensions/Extension'
 
 
 @Entry
 @Component
-struct Index {
+struct Splash {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
-    private duration = 800
+    private duration = 600
     private delay = 200
 
+    // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
+    // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
-        setTheme(new Theme("#ff1b43b7", "#ff68d2ff"))
+        setTheme(new Theme("#7D56C0", "#ff96aef8"))
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })
@@ -25,13 +29,14 @@ struct Index {
                 Text(name)
                     .fontSize(48)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor(this.theme.colorPrimary)
+                    .fontColor(Color.White)
                     .scale({ x: this.alphas[index], y: this.alphas[index] })
                     .opacity(this.alphas[index])
             })
         }
         .width("100%")
         .height("100%")
+        .backgroundColor(this.theme.colorPrimary)
         .justifyContent(FlexAlign.Center)
         .onAreaChange(() => {
             this.logoName.forEach((_, index) => {

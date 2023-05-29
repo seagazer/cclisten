@@ -3,7 +3,7 @@ export class Theme {
     colorSecondary: string
     colorAction: string
 
-    constructor(colorPrimary: string, colorSecondary: string, colorAction: string = "#ccc6c6c6") {
+    constructor(colorPrimary: string, colorSecondary: string, colorAction: string = "#cc666666") {
         this.colorPrimary = colorPrimary
         this.colorSecondary = colorSecondary
         this.colorAction = colorAction
