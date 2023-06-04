@@ -1,25 +1,25 @@
-import { PlayerMode } from './PlayerMode'
+import { LoopMode } from './LoopMode'
 
 
 export class PlayModeController {
-    private mode: PlayerMode = PlayerMode.PLAYLIST_LOOP
+    private mode: LoopMode = LoopMode.PLAYLIST_LOOP
     private index = 0
     private max = 3
 
-    change(): PlayerMode {
+    change(): LoopMode {
         this.index++
         let order = this.index % this.max
         if (order == 0) {
-            this.mode = PlayerMode.PLAYLIST_LOOP
+            this.mode = LoopMode.PLAYLIST_LOOP
         } else if (order == 1) {
-            this.mode = PlayerMode.LOOP
+            this.mode = LoopMode.LOOP
         } else {
-            this.mode = PlayerMode.SHUFFLE
+            this.mode = LoopMode.SHUFFLE
         }
         return this.mode
     }
 
-    getCurrentMode(): PlayerMode {
+    getCurrentMode(): LoopMode {
         return this.mode
     }
 }

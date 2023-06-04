@@ -1,5 +1,8 @@
 import { Song } from '../bean/Song'
 
+/**
+ * The manager to manage a playlist of user.
+ */
 export class PlaylistManager {
     private list = new Array<Song>()
     private index = 0

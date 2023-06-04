@@ -1,5 +1,5 @@
 import { PlayModeController } from '../mode/PlayModeController'
-import { PlayerMode } from '../mode/PlayerMode'
+import { LoopMode } from '../mode/LoopMode'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 @Extend(Image) function btnStyle(size: Length, padding: Length) {
@@ -16,7 +16,7 @@ export struct MediaControlBar {
     actionPlayPre: () => void
     actionPlayMode: () => void
     actionLyric: () => void
-    onModeChanged: (mode: PlayerMode) => void
+    onModeChanged: (mode: LoopMode) => void
     @Link isPlaying: boolean
     private playModeController: PlayModeController = new PlayModeController()
     @State playModeIcon: Resource = $r("app.media.baseline_repeat_24")
@@ -43,10 +43,10 @@ export struct MediaControlBar {
                     let mode = this.playModeController.change()
                     this.onModeChanged?.(mode)
                     switch (mode) {
-                        case PlayerMode.LOOP:
+                        case LoopMode.LOOP:
                             this.playModeIcon = $r("app.media.baseline_repeat_one_24")
                             break;
-                        case PlayerMode.SHUFFLE:
+                        case LoopMode.SHUFFLE:
                             this.playModeIcon = $r("app.media.baseline_shuffle_24")
                             break;
                         default:

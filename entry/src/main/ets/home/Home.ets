@@ -5,7 +5,7 @@ import router from '@ohos.router';
 import { MockData } from './MockData';
 import { duration2text as timeToString, toast } from '../extensions/Extensions';
 import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
-import { PlayerMode } from '../mode/PlayerMode';
+import { LoopMode } from '../mode/LoopMode';
 import { Logger } from '../extensions/Logger';
 import { Song } from '../bean/Song';
 import { PlaylistManager } from '../playlist/PlaylistManager';
@@ -36,7 +36,7 @@ struct Home {
     private playlist: PlaylistManager = PlaylistManager.get()
     @State currentPosition: number = 0
     @State totalDuration: number = 0
-    private playerMode: PlayerMode = PlayerMode.PLAYLIST_LOOP
+    private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
     private progressChangedListener = (duration: number) => {
         if (!this.isSeeking) {
             this.currentPosition = duration
@@ -50,14 +50,14 @@ struct Home {
     private completedListener = () => {
         this.currentPosition = this.player.getCurrentPosition()
         this.isPlaying = this.player.isPlaying()
-        switch (this.playerMode) {
-            case PlayerMode.PLAYLIST_LOOP:
+        switch (this.loopMode) {
+            case LoopMode.PLAYLIST_LOOP:
                 this.playNext()
                 break
-            case PlayerMode.LOOP:
+            case LoopMode.LOOP:
                 this.player.start()
                 break
-            case PlayerMode.SHUFFLE:
+            case LoopMode.SHUFFLE:
                 break
         }
     }
@@ -196,6 +196,7 @@ struct Home {
             .height(240)
             .objectFit(ImageFit.Cover)
             .border({ radius: 16 })
+            .shadow({ radius: 16, color: "#999c9c9c" })
     }
 
     @State alpha: number = 1
@@ -285,8 +286,8 @@ struct Home {
         this.alpha = this.isShowLyric ? 0 : 1
     }
 
-    private onModeChanged(mode: PlayerMode) {
-        this.playerMode = mode
+    private onModeChanged(mode: LoopMode) {
+        this.loopMode = mode
     }
 
     private playNext() {
