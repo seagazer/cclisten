@@ -1,8 +1,6 @@
 import router from '@ohos.router'
-import { ThemeManager } from '../theme/ThemeManager'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
-import display from '@ohos.display'
-import { printW } from '@seagazer/cclyric/src/main/ets/extensions/Extension'
+import { ThemeManager } from '../theme/ThemeManager'
 
 
 @Entry
@@ -29,14 +27,13 @@ struct Splash {
                 Text(name)
                     .fontSize(48)
                     .fontWeight(FontWeight.Medium)
-                    .fontColor(Color.White)
+                    .fontColor(this.theme.colorPrimary)
                     .scale({ x: this.alphas[index], y: this.alphas[index] })
                     .opacity(this.alphas[index])
             })
         }
         .width("100%")
         .height("100%")
-        .backgroundColor(this.theme.colorPrimary)
         .justifyContent(FlexAlign.Center)
         .onAreaChange(() => {
             this.logoName.forEach((_, index) => {

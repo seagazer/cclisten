@@ -9,10 +9,14 @@ export default class EntryAbility extends UIAbility {
     }
 
     onWindowStageCreate(windowStage: window.WindowStage) {
-        windowStage.loadContent("splash/Splash", (err, data) => {
-            if (err.code) {
-                return
-            }
+        windowStage.loadContent("splash/Splash", () => {
+        })
+        let win = windowStage.getMainWindowSync()
+        win.setWindowSystemBarProperties({
+            statusBarColor: "#ffffff",
+            navigationBarColor: "#ffffff",
+            statusBarContentColor: "#ff575757",
+            navigationBarContentColor: "#ff575757"
         })
     }
 

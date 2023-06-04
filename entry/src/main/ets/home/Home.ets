@@ -46,6 +46,9 @@ struct Home {
     }
     private prepareListener = () => {
         this.totalDuration = this.player.getDuration()
+        let lyricData = this.lyricList[this.currentPlayIndex]
+        this.lyricHelper.setLyricData(lyricData.lyricList)
+        this.lyricConfig.setLyric(lyricData)
     }
     private completedListener = () => {
         this.currentPosition = this.player.getCurrentPosition()
@@ -68,7 +71,6 @@ struct Home {
 
     aboutToAppear() {
         router.clear()
-
 
         this.player = CcPlayer.create(PlayerType.AUDIO)
         this.lyricHelper = new LyricHelper()
@@ -102,9 +104,6 @@ struct Home {
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
 
-        let lyricData = this.lyricParser.parse(MockData.lyric1)
-        this.lyricHelper.setLyricData(lyricData.lyricList)
-        this.lyricConfig.setLyric(lyricData)
     }
 
     private scanMedia() {
@@ -317,9 +316,6 @@ struct Home {
                     this.player.start()
                 })
             })
-        let lyricData = this.lyricList[this.currentPlayIndex]
-        this.lyricHelper.setLyricData(lyricData.lyricList)
-        this.lyricConfig.setLyric(lyricData)
     }
 
     pageTransition() {
