@@ -1,12 +1,14 @@
 import { MediaControlBar } from '../view/MediaControlBar';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
+import { Lyric, LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
 import router from '@ohos.router';
 import { MockData } from './MockData';
 import { duration2text as timeToString, toast } from '../extensions/Extensions';
 import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
 import { PlayerMode } from '../mode/PlayerMode';
 import { Logger } from '../extensions/Logger';
+import { Song } from '../bean/Song';
+import { PlaylistManager } from '../playlist/PlaylistManager';
 
 const TAG = "Home"
 
@@ -31,12 +33,16 @@ struct Home {
     private lyricConfig: LyricConfig = new LyricConfig()
     private lyricHelper: LyricHelper
     private player: CcPlayer = null
+    private playlist: PlaylistManager = PlaylistManager.get()
     @State currentPosition: number = 0
     @State totalDuration: number = 0
+    private playerMode: PlayerMode = PlayerMode.PLAYLIST_LOOP
     private progressChangedListener = (duration: number) => {
-        this.currentPosition = duration
-        this.lyricConfig.updatePosition(duration)
-        this.lyricLine = this.lyricHelper.getLyric(duration)
+        if (!this.isSeeking) {
+            this.currentPosition = duration
+            this.lyricConfig.updatePosition(duration)
+            this.lyricLine = this.lyricHelper.getLyric(duration)
+        }
     }
     private prepareListener = () => {
         this.totalDuration = this.player.getDuration()
@@ -44,25 +50,48 @@ struct Home {
     private completedListener = () => {
         this.currentPosition = this.player.getCurrentPosition()
         this.isPlaying = this.player.isPlaying()
+        switch (this.playerMode) {
+            case PlayerMode.PLAYLIST_LOOP:
+                this.playNext()
+                break
+            case PlayerMode.LOOP:
+                this.player.start()
+                break
+            case PlayerMode.SHUFFLE:
+                break
+        }
     }
+    private lyricList = new Array<Lyric>()
+    private lyricParser: LyricParser
+    private currentPlayIndex = 0
+    private isSeeking = false
 
     aboutToAppear() {
         router.clear()
+
+
         this.player = CcPlayer.create(PlayerType.AUDIO)
-        Logger.w(TAG, "media player = " + this.player)
-        MediaSourceFactory.createAssets(getContext(this), "../../resources/rawfile/可能.mp3", "可能")
-            .then((source) => {
-                this.player.setMediaSource(source)
-            })
+        this.lyricHelper = new LyricHelper()
+        this.lyricParser = new LyricParser()
         this.player
             .addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnCompletionListener(this.completedListener)
+            .addOnSeekChangedListener(() => {
+                this.isSeeking = false
+            })
 
-        this.lyricHelper = new LyricHelper()
-        let lyricParser = new LyricParser()
-        let lyricData = lyricParser.parse(MockData.src1)
-        this.lyricHelper.setLyricData(lyricData.lyricList)
+
+        this.scanMedia()
+
+        // todo mock data
+        let song = this.playlist.getCurrent()
+        this.title = song.title
+        this.artist = song.artist
+        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
+            .then((source) => {
+                this.player.setMediaSource(source)
+            })
 
         this.lyricConfig
             .setTextSize(24)
@@ -72,7 +101,18 @@ struct Home {
             .setLineSpace(24)
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
+
+        let lyricData = this.lyricParser.parse(MockData.lyric1)
+        this.lyricHelper.setLyricData(lyricData.lyricList)
         this.lyricConfig.setLyric(lyricData)
+    }
+
+    private scanMedia() {
+        // todo mock data
+        this.playlist.add(new Song(MockData.song1.url, MockData.song1.title, MockData.song1.artist))
+        this.playlist.add(new Song(MockData.song2.url, MockData.song2.title, MockData.song2.artist))
+        this.lyricList.push(this.lyricParser.parse(MockData.lyric1))
+        this.lyricList.push(this.lyricParser.parse(MockData.lyric2))
     }
 
     aboutToDisappear() {
@@ -103,7 +143,7 @@ struct Home {
             })
             Column() {
                 Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
-                Text(this.artist).fontSize(16).fontColor(this.theme.colorPrimary)
+                Text(this.artist).fontSize(16).fontColor(this.theme.colorSecondary)
                     .margin({ top: 8 })
             }
 
@@ -134,13 +174,14 @@ struct Home {
                 .blockColor(this.theme.colorSecondary)
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
+                        this.isSeeking = true
                         this.player.seekTo(value)
                     }
                 })
             // duration
             Row() {
-                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorPrimary)
-                Text(timeToString(this.totalDuration)).fontSize(16).fontColor(this.theme.colorPrimary)
+                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.totalDuration)).fontSize(16).fontColor(this.theme.colorSecondary)
             }.width('100%')
             .alignItems(VerticalAlign.Bottom)
             .justifyContent(FlexAlign.SpaceBetween)
@@ -170,7 +211,7 @@ struct Home {
                         // cover image
                         this.Cover()
                         // lyric
-                        Text(this.lyricLine).fontSize(16).height(20)
+                        Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
                     }
                     .width("100%")
                     .height("100%")
@@ -245,13 +286,39 @@ struct Home {
     }
 
     private onModeChanged(mode: PlayerMode) {
-        Logger.d(TAG, "-----" + mode)
+        this.playerMode = mode
     }
 
     private playNext() {
+        this.currentPlayIndex++
+        if (this.currentPlayIndex > this.playlist.size() - 1) {
+            this.currentPlayIndex = 0
+        }
+        let song = this.playlist.getSong(this.currentPlayIndex)
+        this.playSong(song)
     }
 
     private playPre() {
+        this.currentPlayIndex--
+        if (this.currentPlayIndex < 0) {
+            this.currentPlayIndex = this.playlist.size() - 1
+        }
+        let song = this.playlist.getSong(this.currentPlayIndex)
+        this.playSong(song)
+    }
+
+    private playSong(song: Song) {
+        this.title = song.title
+        this.artist = song.artist
+        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
+            .then((source) => {
+                this.player.setMediaSource(source, () => {
+                    this.player.start()
+                })
+            })
+        let lyricData = this.lyricList[this.currentPlayIndex]
+        this.lyricHelper.setLyricData(lyricData.lyricList)
+        this.lyricConfig.setLyric(lyricData)
     }
 
     pageTransition() {
