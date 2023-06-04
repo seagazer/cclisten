@@ -37,6 +37,7 @@ struct Home {
     @State currentPosition: number = 0
     @State totalDuration: number = 0
     private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
+    private isInit = true
     private progressChangedListener = (duration: number) => {
         if (!this.isSeeking) {
             this.currentPosition = duration
@@ -45,6 +46,7 @@ struct Home {
         }
     }
     private prepareListener = () => {
+        this.isInit = false
         this.totalDuration = this.player.getDuration()
         let lyricData = this.lyricList[this.currentPlayIndex]
         this.lyricHelper.setLyricData(lyricData.lyricList)
@@ -90,10 +92,6 @@ struct Home {
         let song = this.playlist.getCurrent()
         this.title = song.title
         this.artist = song.artist
-        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-            .then((source) => {
-                this.player.setMediaSource(source)
-            })
 
         this.lyricConfig
             .setTextSize(24)
@@ -110,8 +108,10 @@ struct Home {
         // todo mock data
         this.playlist.add(new Song(MockData.song1.url, MockData.song1.title, MockData.song1.artist))
         this.playlist.add(new Song(MockData.song2.url, MockData.song2.title, MockData.song2.artist))
+        this.playlist.add(new Song(MockData.song3.url, MockData.song3.title, MockData.song3.artist))
         this.lyricList.push(this.lyricParser.parse(MockData.lyric1))
         this.lyricList.push(this.lyricParser.parse(MockData.lyric2))
+        this.lyricList.push(this.lyricParser.parse(MockData.lyric3))
     }
 
     aboutToDisappear() {
@@ -275,7 +275,17 @@ struct Home {
             this.player.pause()
             this.isPlaying = false
         } else {
-            this.player.start()
+            if (this.isInit) {
+                let song = this.playlist.getSong(this.currentPlayIndex)
+                MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
+                    .then((source) => {
+                        this.player.setMediaSource(source, () => {
+                            this.player.start()
+                        })
+                    })
+            } else {
+                this.player.start()
+            }
             this.isPlaying = true
         }
     }
@@ -295,6 +305,7 @@ struct Home {
             this.currentPlayIndex = 0
         }
         let song = this.playlist.getSong(this.currentPlayIndex)
+        Logger.d(TAG, "play next=" + this.currentPlayIndex + ", " + JSON.stringify(song))
         this.playSong(song)
     }
 
@@ -304,6 +315,7 @@ struct Home {
             this.currentPlayIndex = this.playlist.size() - 1
         }
         let song = this.playlist.getSong(this.currentPlayIndex)
+        Logger.d(TAG, "play pre=" + this.currentPlayIndex + ", " + JSON.stringify(song))
         this.playSong(song)
     }
 
