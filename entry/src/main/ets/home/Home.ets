@@ -1,11 +1,14 @@
-import { CoverView } from '../view/CoverView';
 import { ActionController } from '../view/ActionController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { LyricHelper } from '@seagazer/cclyric';
+import { LyricHelper, LyricParser } from '@seagazer/cclyric';
 import router from '@ohos.router';
-import { Logger } from '@seagazer/ccplayer/src/main/ets/player/common/Logger';
 import display from '@ohos.display';
 import window from '@ohos.window';
+import { MockData } from './MockData';
+import { duration2time as timeToString } from '../extensions/Extensions';
+import { CcPlayer, MediaSourceFactory, Logger, PlayerType } from '@seagazer/CcPlayer';
+
+const TAG = "Home"
 
 @Entry
 @Component
@@ -16,37 +19,87 @@ struct Home {
     @State pageAlpha: number = 1
     @State title: string = "可能"
     @State artist: string = "程响"
-    @State lyricLine: string = ""
+    @State lyricLine: string = "暂无歌词"
     private lyricHelper: LyricHelper
+    private player: CcPlayer = null
+    @State currentPosition: number = 0
+    @State totalDuration: number = 0
+    private progressChangedListener = (duration: number) => {
+        this.currentPosition = duration
+        this.lyricLine = this.lyricHelper.getLyric(duration)
+    }
+    private prepareListener = () => {
+        this.totalDuration = this.player.getDuration()
+    }
 
     aboutToAppear() {
-        window.getLastWindow(getContext(this), (err, win) => {
-            win.setWindowLayoutFullScreen(true)
-        })
-        Logger.d("aaa", JSON.stringify(display.getDefaultDisplaySync()))
         router.clear()
+        this.player = CcPlayer.create(PlayerType.AUDIO)
+        Logger.w(TAG, "media player = " + this.player)
+        MediaSourceFactory.createAssets(getContext(this), "../../resources/rawfile/可能.mp3", "可能")
+            .then((source) => {
+                this.player.setMediaSource(source)
+            })
+        this.player
+            .addOnProgressChangedListener(this.progressChangedListener)
+            .addOnPreparedListener(this.prepareListener)
+
         this.lyricHelper = new LyricHelper()
+        let lyricParser = new LyricParser()
+        this.lyricHelper.setLyricData(lyricParser.parse(MockData.src1))
     }
 
     aboutToDisappear() {
-
+        this.player
+            .removeOnPreparedListener(this.prepareListener)
+            .removeOnProgressChangedListener(this.progressChangedListener)
     }
 
     @Builder
     Title() {
-        Text(this.title).fontSize(56).fontColor(this.theme.colorPrimary)
-        Text(this.artist).fontSize(18).fontColor(this.theme.colorPrimary)
+        Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
+        Text(this.artist).fontSize(16).fontColor(this.theme.colorPrimary)
             .margin({ top: 8 })
     }
 
-    private playOrPause() {
-        this.isPlaying = !this.isPlaying
+    @Builder
+    ProgressBar() {
+        Column() {
+            // slider
+            Slider(
+                {
+                    style: SliderStyle.OutSet,
+                    min: 0,
+                    max: this.totalDuration,
+                    value: this.currentPosition
+                })
+                .width('100%')
+                .trackColor(this.theme.colorPrimary)
+                .selectedColor(this.theme.colorSecondary)
+                .blockColor(this.theme.colorSecondary)
+                .onChange((value, mode) => {
+                    if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
+                        this.player.seekTo(value)
+                    }
+                })
+            // duration
+            Row() {
+                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorPrimary)
+                Text(timeToString(this.totalDuration)).fontSize(16).fontColor(this.theme.colorPrimary)
+            }.width('100%')
+            .alignItems(VerticalAlign.Bottom)
+            .justifyContent(FlexAlign.SpaceBetween)
+            .padding({ left: 8, right: 8 })
+        }.padding({ left: 16, right: 16 })
     }
 
-    private playNext() {
-    }
-
-    private playPre() {
+    @Builder
+    Cover() {
+        Image($r("app.media.cover"))
+            .width(240)
+            .height(240)
+            .objectFit(ImageFit.Cover)
+            .border({ radius: 16 })
     }
 
     build() {
@@ -54,48 +107,53 @@ struct Home {
             Column() {
                 // title
                 this.Title()
-                // cover image
-                CoverView({ src: $r('app.media.baseline_clear_24'), isPlaying: $isPlaying })
-                // single line lyric
-                Text('可能南方的阳光  照着北方的风')
-                    .fontSize(18)
-                    .fontColor(this.theme.colorPrimary)
-                    .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                // slider
-                Slider({
-                    style: SliderStyle.InSet
-                })
-                    .width('100%')
-                    .trackThickness(18)
-                    .trackColor(this.theme.colorPrimary)
-                    .selectedColor(this.theme.colorSecondary)
-                // duration
-                Row() {
-                    Text('00:00').fontSize(24).fontColor(this.theme.colorPrimary)
-                    Text('/').fontSize(18).fontColor(this.theme.colorPrimary)
-                    Text('03:58').fontSize(18).fontColor(this.theme.colorPrimary).opacity(0.5)
-                }.width('100%').alignItems(VerticalAlign.Bottom)
+                Column() {
+                    // cover image
+                    this.Cover()
+                    // lyric
+                    Text(this.lyricLine).fontSize(16).height(20)
+                }
+                .width("100%")
+                .layoutWeight(1)
+                .justifyContent(FlexAlign.SpaceEvenly)
 
+                // progress
+                this.ProgressBar()
                 // controller button
                 ActionController({
                     isPlaying: $isPlaying,
-                    actionPlayOrPause: this.playOrPause,
-                    actionPlayNext: this.playNext,
-                    actionPlayPre: this.playPre
+                    actionPlayOrPause: this.playOrPause.bind(this),
+                    actionPlayNext: this.playNext.bind(this),
+                    actionPlayPre: this.playPre.bind(this)
                 })
             }
             .width('100%')
             .height('100%')
-            .padding({ left: 32, right: 32, top: 32, bottom: 32 })
-            .justifyContent(FlexAlign.Center)
-            .alignItems(HorizontalAlign.Start)
+            .padding(16)
+            .alignItems(HorizontalAlign.Center)
         }
         .alignContent(Alignment.TopEnd)
         .width('100%')
         .height('100%')
         .scale({ x: this.pageScale, y: this.pageScale })
         .opacity(this.pageAlpha)
+    }
+
+    private playOrPause() {
+        Logger.d(TAG, "media player = " + this.player)
+        if (this.player.isPlaying()) {
+            this.player.pause()
+            this.isPlaying = false
+        } else {
+            this.player.start()
+            this.isPlaying = true
+        }
+    }
+
+    private playNext() {
+    }
+
+    private playPre() {
     }
 
     pageTransition() {

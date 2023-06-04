@@ -1,9 +1,9 @@
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
-@Extend(Image) function playBtnStyle(size: Length, margin: Length, themeColor: string) {
+@Extend(Image) function playBtnStyle(size: Length, padding: Length, themeColor: string) {
     .width(size)
     .height(size)
-    .margin({ left: margin, right: margin })
+    .padding(padding)
     // .colorBlend(themeColor)
 }
 
@@ -28,7 +28,7 @@ export struct ActionController {
     build() {
         Row() {
             Image($r('app.media.baseline_favorite_border_24'))
-                .playBtnStyle(36, 0, this.theme.colorPrimary)
+                .playBtnStyle(48, 12, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -36,7 +36,7 @@ export struct ActionController {
                 .onClick(() => {
                 })
             Image($r('app.media.baseline_skip_previous_24'))
-                .playBtnStyle(36, 0, this.theme.colorPrimary)
+                .playBtnStyle(48, 6, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -46,7 +46,7 @@ export struct ActionController {
                 })
 
             Image(this.isPlaying ? $r('app.media.baseline_pause_circle_24') : $r('app.media.baseline_play_circle_24'))
-                .playBtnStyle(72, 0, this.theme.colorPrimary)
+                .playBtnStyle(72, 2, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -57,7 +57,7 @@ export struct ActionController {
                 .colorBlend(this.theme.colorPrimary)
 
             Image($r('app.media.baseline_skip_next_24'))
-                .playBtnStyle(36, 0, this.theme.colorPrimary)
+                .playBtnStyle(48, 6, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -66,7 +66,7 @@ export struct ActionController {
                     this.actionPlayNext?.()
                 })
             Image($r('app.media.baseline_list_24'))
-                .playBtnStyle(36, 0, this.theme.colorPrimary)
+                .playBtnStyle(48, 12, this.theme.colorPrimary)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -76,6 +76,7 @@ export struct ActionController {
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
-        .margin({ top: 48 })
+        .margin({ top: 16 })
+        .padding({ left: 16, right: 16 })
     }
 }
