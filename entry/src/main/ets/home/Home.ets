@@ -47,14 +47,18 @@ struct Home {
     }
     private prepareListener = () => {
         this.isInit = false
+        this.isPlaying = true
+        this.currentPosition = 0
         this.totalDuration = this.player.getDuration()
         let lyricData = this.lyricList[this.currentPlayIndex]
         this.lyricHelper.setLyricData(lyricData.lyricList)
         this.lyricConfig.setLyric(lyricData)
+        Logger.d(TAG, "prepared " + this.currentPlayIndex + ", curPosition=" + this.currentPosition)
     }
     private completedListener = () => {
-        this.currentPosition = this.player.getCurrentPosition()
+        this.currentPosition = this.player.getDuration()
         this.isPlaying = this.player.isPlaying()
+        Logger.d(TAG, "completed, play mode= " + this.loopMode + ", curPosition=" + this.currentPosition)
         switch (this.loopMode) {
             case LoopMode.PLAYLIST_LOOP:
                 this.playNext()
@@ -83,6 +87,7 @@ struct Home {
             .addOnCompletionListener(this.completedListener)
             .addOnSeekChangedListener(() => {
                 this.isSeeking = false
+                Logger.d(TAG, "---seek completed")
             })
 
 
@@ -119,6 +124,7 @@ struct Home {
             .removeOnPreparedListener(this.prepareListener)
             .removeOnProgressChangedListener(this.progressChangedListener)
             .removeOnCompletionListener(this.completedListener)
+            .release()
     }
 
     @Styles pressedStyles() {
@@ -173,6 +179,7 @@ struct Home {
                 .blockColor(this.theme.colorSecondary)
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
+                        Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
                         this.isSeeking = true
                         this.player.seekTo(value)
                     }
