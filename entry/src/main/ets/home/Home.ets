@@ -1,14 +1,21 @@
-import { ActionController } from '../view/ActionController';
+import { MediaControlBar } from '../view/MediaControlBar';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { LyricHelper, LyricParser } from '@seagazer/cclyric';
+import { LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
 import router from '@ohos.router';
-import display from '@ohos.display';
-import window from '@ohos.window';
 import { MockData } from './MockData';
-import { duration2time as timeToString } from '../extensions/Extensions';
-import { CcPlayer, MediaSourceFactory, Logger, PlayerType } from '@seagazer/CcPlayer';
+import { duration2text as timeToString, toast } from '../extensions/Extensions';
+import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
+import { PlayerMode } from '../mode/PlayerMode';
+import { Logger } from '../extensions/Logger';
 
 const TAG = "Home"
+
+@Extend(Image) function btnStyle() {
+    .width(48)
+    .height(48)
+    .padding(12)
+}
+
 
 @Entry
 @Component
@@ -19,17 +26,24 @@ struct Home {
     @State pageAlpha: number = 1
     @State title: string = "可能"
     @State artist: string = "程响"
-    @State lyricLine: string = "暂无歌词"
+    @State lyricLine: string = " "
+    @State isShowLyric: boolean = false
+    private lyricConfig: LyricConfig = new LyricConfig()
     private lyricHelper: LyricHelper
     private player: CcPlayer = null
     @State currentPosition: number = 0
     @State totalDuration: number = 0
     private progressChangedListener = (duration: number) => {
         this.currentPosition = duration
+        this.lyricConfig.updatePosition(duration)
         this.lyricLine = this.lyricHelper.getLyric(duration)
     }
     private prepareListener = () => {
         this.totalDuration = this.player.getDuration()
+    }
+    private completedListener = () => {
+        this.currentPosition = this.player.getCurrentPosition()
+        this.isPlaying = this.player.isPlaying()
     }
 
     aboutToAppear() {
@@ -43,23 +57,64 @@ struct Home {
         this.player
             .addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
+            .addOnCompletionListener(this.completedListener)
 
         this.lyricHelper = new LyricHelper()
         let lyricParser = new LyricParser()
-        this.lyricHelper.setLyricData(lyricParser.parse(MockData.src1))
+        let lyricData = lyricParser.parse(MockData.src1)
+        this.lyricHelper.setLyricData(lyricData.lyricList)
+
+        this.lyricConfig
+            .setTextSize(24)
+            .setCacheSize(4)
+            .setTextColor(this.theme.colorSecondary)
+            .setHighlightColor(this.theme.colorPrimary)
+            .setLineSpace(24)
+            .setHighlightStyle(false)
+            .setEmptyHint("暂无歌词")
+        this.lyricConfig.setLyric(lyricData)
     }
 
     aboutToDisappear() {
         this.player
             .removeOnPreparedListener(this.prepareListener)
             .removeOnProgressChangedListener(this.progressChangedListener)
+            .removeOnCompletionListener(this.completedListener)
+    }
+
+    @Styles pressedStyles() {
+        .border({ radius: 200 })
+        .backgroundColor(this.theme.colorAction)
+    }
+
+    @Styles normalStyles() {
+        .border({ radius: 200 })
+        .backgroundColor(null)
     }
 
     @Builder
     Title() {
-        Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
-        Text(this.artist).fontSize(16).fontColor(this.theme.colorPrimary)
-            .margin({ top: 8 })
+        Row() {
+            Image($r("app.media.baseline_arrow_back_ios_24")).btnStyle().stateStyles({
+                pressed: this.pressedStyles,
+                normal: this.normalStyles
+            }).onClick(() => {
+                router.back()
+            })
+            Column() {
+                Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
+                Text(this.artist).fontSize(16).fontColor(this.theme.colorPrimary)
+                    .margin({ top: 8 })
+            }
+
+            Image($r("app.media.baseline_more_vert_24")).btnStyle().stateStyles({
+                pressed: this.pressedStyles,
+                normal: this.normalStyles
+            }).onClick(() => {
+                toast("TODO")
+            })
+        }.width("100%")
+        .justifyContent(FlexAlign.SpaceBetween)
     }
 
     @Builder
@@ -102,29 +157,63 @@ struct Home {
             .border({ radius: 16 })
     }
 
+    @State alpha: number = 1
+
     build() {
         Stack() {
             Column() {
                 // title
                 this.Title()
-                Column() {
-                    // cover image
-                    this.Cover()
-                    // lyric
-                    Text(this.lyricLine).fontSize(16).height(20)
+
+                Stack() {
+                    Column() {
+                        // cover image
+                        this.Cover()
+                        // lyric
+                        Text(this.lyricLine).fontSize(16).height(20)
+                    }
+                    .width("100%")
+                    .height("100%")
+                    .justifyContent(FlexAlign.SpaceEvenly)
+                    .opacity(this.alpha)
+                    .animation({
+                        duration: 300,
+                        curve: Curve.Linear,
+                        delay: 0,
+                        iterations: 1, // 设置-1表示动画无限循环
+                        playMode: PlayMode.Normal
+                    })
+
+                    Column() {
+                        LyricView({ lyricConfig: this.lyricConfig })
+                            .width("100%")
+                            .height("100%")
+                    }
+                    .width("100%")
+                    .height("100%")
+                    .padding(32)
+                    .opacity(1 - this.alpha)
+                    .animation({
+                        duration: 300,
+                        curve: Curve.Linear,
+                        delay: 0,
+                        iterations: 1, // 设置-1表示动画无限循环
+                        playMode: PlayMode.Normal
+                    })
                 }
                 .width("100%")
                 .layoutWeight(1)
-                .justifyContent(FlexAlign.SpaceEvenly)
 
                 // progress
                 this.ProgressBar()
                 // controller button
-                ActionController({
+                MediaControlBar({
                     isPlaying: $isPlaying,
                     actionPlayOrPause: this.playOrPause.bind(this),
                     actionPlayNext: this.playNext.bind(this),
-                    actionPlayPre: this.playPre.bind(this)
+                    actionPlayPre: this.playPre.bind(this),
+                    actionLyric: this.showLyric.bind(this),
+                    onModeChanged: this.onModeChanged.bind(this)
                 })
             }
             .width('100%')
@@ -148,6 +237,15 @@ struct Home {
             this.player.start()
             this.isPlaying = true
         }
+    }
+
+    private showLyric() {
+        this.isShowLyric = !this.isShowLyric
+        this.alpha = this.isShowLyric ? 0 : 1
+    }
+
+    private onModeChanged(mode: PlayerMode) {
+        Logger.d(TAG, "-----" + mode)
     }
 
     private playNext() {

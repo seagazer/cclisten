@@ -1,19 +1,25 @@
+import { PlayModeController } from '../mode/PlayModeController'
+import { PlayerMode } from '../mode/PlayerMode'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
-@Extend(Image) function playBtnStyle(size: Length, padding: Length, themeColor: string) {
+@Extend(Image) function btnStyle(size: Length, padding: Length) {
     .width(size)
     .height(size)
     .padding(padding)
-    // .colorBlend(themeColor)
 }
 
 @Component
-export struct ActionController {
+export struct MediaControlBar {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     actionPlayOrPause: () => void
     actionPlayNext: () => void
     actionPlayPre: () => void
+    actionPlayMode: () => void
+    actionLyric: () => void
+    onModeChanged: (mode: PlayerMode) => void
     @Link isPlaying: boolean
+    private playModeController: PlayModeController = new PlayModeController()
+    @State playModeIcon: Resource = $r("app.media.baseline_repeat_24")
 
     @Styles pressedStyles() {
         .border({ radius: 200 })
@@ -27,16 +33,29 @@ export struct ActionController {
 
     build() {
         Row() {
-            Image($r('app.media.baseline_favorite_border_24'))
-                .playBtnStyle(48, 12, this.theme.colorPrimary)
+            Image(this.playModeIcon)
+                .btnStyle(48, 12)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
                 .onClick(() => {
+                    let mode = this.playModeController.change()
+                    this.onModeChanged?.(mode)
+                    switch (mode) {
+                        case PlayerMode.LOOP:
+                            this.playModeIcon = $r("app.media.baseline_repeat_one_24")
+                            break;
+                        case PlayerMode.SHUFFLE:
+                            this.playModeIcon = $r("app.media.baseline_shuffle_24")
+                            break;
+                        default:
+                            this.playModeIcon = $r("app.media.baseline_repeat_24")
+                            break;
+                    }
                 })
             Image($r('app.media.baseline_skip_previous_24'))
-                .playBtnStyle(48, 6, this.theme.colorPrimary)
+                .btnStyle(48, 6)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -46,7 +65,7 @@ export struct ActionController {
                 })
 
             Image(this.isPlaying ? $r('app.media.baseline_pause_circle_24') : $r('app.media.baseline_play_circle_24'))
-                .playBtnStyle(72, 2, this.theme.colorPrimary)
+                .btnStyle(72, 2)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -54,10 +73,9 @@ export struct ActionController {
                 .onClick(() => {
                     this.actionPlayOrPause?.()
                 })
-                .colorBlend(this.theme.colorPrimary)
 
             Image($r('app.media.baseline_skip_next_24'))
-                .playBtnStyle(48, 6, this.theme.colorPrimary)
+                .btnStyle(48, 6)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -66,12 +84,13 @@ export struct ActionController {
                     this.actionPlayNext?.()
                 })
             Image($r('app.media.baseline_list_24'))
-                .playBtnStyle(48, 12, this.theme.colorPrimary)
+                .btnStyle(48, 12)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
                 .onClick(() => {
+                    this.actionLyric?.()
                 })
         }
         .justifyContent(FlexAlign.SpaceBetween)

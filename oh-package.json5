@@ -9,7 +9,7 @@
   "main": "",
   "version": "1.0.0",
   "dependencies": {
-    "@seagazer/cclyric": "file:./libs/cclyric-1.0.0.har",
+    "@seagazer/cclyric": "file:./libs/cclyric.har",
     "@seagazer/ccplayer": "file:./libs/ccplayer.har"
   }
 }
