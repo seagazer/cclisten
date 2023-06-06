@@ -1,5 +1,6 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
+import { PageRouter } from '../extensions/PageRouter';
 
 export default class EntryAbility extends UIAbility {
     onCreate(want, launchParam) {
@@ -9,7 +10,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     onWindowStageCreate(windowStage: window.WindowStage) {
-        windowStage.loadContent("splash/Splash", () => {
+        windowStage.loadContent(PageRouter.PAGE_SPLASH, () => {
         })
         let win = windowStage.getMainWindowSync()
         win.setWindowSystemBarProperties({

@@ -1,10 +1,10 @@
 import hilog from '@ohos.hilog'
 
-const domain = 0x1
+const domain = 0x101
 
 export class Logger {
     private static DEBUG = true
-    private static FILTER_NAME = "[Listen]: "
+    private static FILTER_NAME = "cclisten "
 
     static setDebugger(debug: boolean) {
         this.DEBUG = debug

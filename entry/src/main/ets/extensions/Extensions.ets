@@ -1,9 +1,21 @@
 import Prompt from '@system.prompt'
+import { PageRouter } from './PageRouter'
+import router from '@ohos.router'
+import { Logger } from './Logger'
 
 export function toast(message: string, duration: number = 2000) {
     Prompt.showToast({
         message: message,
         duration: duration
+    })
+}
+
+const TAG = "[Extensions]"
+
+export function navigationTo(pageUrl: PageRouter) {
+    Logger.d(TAG, "navigation to <" + pageUrl.toString() + ">")
+    router.pushUrl({
+        url: pageUrl.toString()
     })
 }
 

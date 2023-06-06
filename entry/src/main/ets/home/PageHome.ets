@@ -9,8 +9,9 @@ import { LoopMode } from '../mode/LoopMode';
 import { Logger } from '../extensions/Logger';
 import { Song } from '../bean/Song';
 import { PlaylistManager } from '../playlist/PlaylistManager';
+import fs from '@ohos.file.fs'
 
-const TAG = "Home"
+const TAG = "[Home]"
 
 @Extend(Image) function btnStyle() {
     .width(48)
@@ -18,10 +19,11 @@ const TAG = "Home"
     .padding(12)
 }
 
+// hdc file send C:\Users\seagazer\Desktop\画心.lrc /data/app/el2/100/base/com.seagazer.listen/haps/entry/files/
 
 @Entry
 @Component
-struct Home {
+struct PageHome {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State isPlaying: boolean = false
     @State pageScale: number = 1
@@ -76,6 +78,17 @@ struct Home {
     private isSeeking = false
 
     aboutToAppear() {
+
+
+        let filesDir = getContext(this).filesDir
+        console.log("read text= " + filesDir)
+        let lrc = fs.readTextSync(filesDir + '/画心.lrc')
+        let lrcArray = lrc.split("\n")
+        lrcArray.forEach((line) => {
+            console.debug(line)
+        })
+        // let lyric = this.lyricParser.parse("")
+
         router.clear()
 
         this.player = CcPlayer.create(PlayerType.AUDIO)

@@ -1,11 +1,13 @@
 import router from '@ohos.router'
+import { navigationTo } from '../extensions/Extensions'
+import { PageRouter } from '../extensions/PageRouter'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
 
 
 @Entry
 @Component
-struct Splash {
+struct PageSplash {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
@@ -48,9 +50,7 @@ struct Splash {
                     })
             })
             setTimeout(() => {
-                router.pushUrl({
-                    url: "home/Home"
-                })
+                navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
             }, 500 + this.duration + this.delay * this.logoName.length)
         })
     }
