@@ -26,8 +26,8 @@ const TAG = "[Home]"
 struct PageHome {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State isPlaying: boolean = false
-    @State pageScale: number = 1
-    @State pageAlpha: number = 1
+    @State pageScale: number = 0
+    @State pageAlpha: number = 0
     @State title: string = "可能"
     @State artist: string = "程响"
     @State lyricLine: string = " "
@@ -78,17 +78,6 @@ struct PageHome {
     private isSeeking = false
 
     aboutToAppear() {
-
-
-        let filesDir = getContext(this).filesDir
-        console.log("read text= " + filesDir)
-        let lrc = fs.readTextSync(filesDir + '/画心.lrc')
-        let lrcArray = lrc.split("\n")
-        lrcArray.forEach((line) => {
-            console.debug(line)
-        })
-        // let lyric = this.lyricParser.parse("")
-
         router.clear()
 
         this.player = CcPlayer.create(PlayerType.AUDIO)
@@ -210,12 +199,25 @@ struct PageHome {
 
     @Builder
     Cover() {
-        Image($r("app.media.cover"))
-            .width(240)
-            .height(240)
-            .objectFit(ImageFit.Cover)
-            .border({ radius: 16 })
-            .shadow({ radius: 16, color: "#999c9c9c" })
+        Stack() {
+            Stack() {
+                Image($r("app.media.icon"))
+                    .objectFit(ImageFit.Cover)
+                    .width(100)
+                    .height(100)
+                    .backgroundColor("#000000")
+                    .border({ radius: 50 })
+            }
+            .width(180)
+            .height(180)
+            .backgroundColor("#000000")
+            .border({ radius: 100 })
+        }
+        .width(240)
+        .height(240)
+        .border({ radius: 16 })
+        .shadow({ radius: 16, color: "#999c9c9c" })
+        .backgroundColor(this.theme.colorSecondary)
     }
 
     @State alpha: number = 1

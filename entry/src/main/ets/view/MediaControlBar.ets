@@ -70,6 +70,7 @@ export struct MediaControlBar {
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
+                .fillColor(this.theme.colorPrimary)
                 .onClick(() => {
                     this.actionPlayOrPause?.()
                 })
