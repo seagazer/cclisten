@@ -17,7 +17,7 @@ struct PageSplash {
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
-        ThemeManager.setTheme(new Theme("#7D56C0", "#ff96aef8"))
+        ThemeManager.setTheme(new Theme("#FF405C", "#ffec3cc9"))
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })

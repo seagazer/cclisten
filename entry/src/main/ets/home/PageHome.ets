@@ -49,18 +49,20 @@ struct PageHome {
     }
     private prepareListener = () => {
         this.isInit = false
+        this.isSeeking = false
         this.isPlaying = true
         this.currentPosition = 0
+        this.lyricLine = " "
         this.totalDuration = this.player.getDuration()
         let lyricData = this.lyricList[this.currentPlayIndex]
         this.lyricHelper.setLyricData(lyricData.lyricList)
         this.lyricConfig.setLyric(lyricData)
-        Logger.d(TAG, "prepared " + this.currentPlayIndex + ", curPosition=" + this.currentPosition)
+        Logger.d(TAG, "prepared index= " + this.currentPlayIndex + ", curPosition= " + this.currentPosition)
     }
     private completedListener = () => {
         this.currentPosition = this.player.getDuration()
         this.isPlaying = this.player.isPlaying()
-        Logger.d(TAG, "completed, play mode= " + this.loopMode + ", curPosition=" + this.currentPosition)
+        Logger.d(TAG, "completed, play mode= " + this.loopMode + ", curPosition= " + this.currentPosition)
         switch (this.loopMode) {
             case LoopMode.PLAYLIST_LOOP:
                 this.playNext()
@@ -246,6 +248,9 @@ struct PageHome {
                         iterations: 1, // 设置-1表示动画无限循环
                         playMode: PlayMode.Normal
                     })
+                    .onClick(() => {
+                        this.showLyric()
+                    })
 
                     Column() {
                         LyricView({ lyricConfig: this.lyricConfig })
@@ -263,6 +268,9 @@ struct PageHome {
                         iterations: 1, // 设置-1表示动画无限循环
                         playMode: PlayMode.Normal
                     })
+                    .onClick(() => {
+                        this.showLyric()
+                    })
                 }
                 .width("100%")
                 .layoutWeight(1)
@@ -275,7 +283,6 @@ struct PageHome {
                     actionPlayOrPause: this.playOrPause.bind(this),
                     actionPlayNext: this.playNext.bind(this),
                     actionPlayPre: this.playPre.bind(this),
-                    actionLyric: this.showLyric.bind(this),
                     onModeChanged: this.onModeChanged.bind(this)
                 })
             }

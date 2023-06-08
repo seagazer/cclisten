@@ -2,6 +2,8 @@ import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager';
+import router from '@ohos.router';
+import { Fab } from '../view/Fab';
 
 @Entry
 @Component
@@ -13,6 +15,12 @@ export struct PageSetup {
     private colorSecondaryList = ["#ff96aef8", "#ffeed964", "#ff4ede47",
         "#ffe38151", "#fff06198", "#ff5aa9fb"]
     @State selectIndex: number = 0
+    private themeColor: string
+
+    aboutToAppear() {
+        this.themeColor = this.theme.colorPrimary
+        router.clear()
+    }
 
     build() {
         Column() {
@@ -23,23 +31,22 @@ export struct PageSetup {
                         .fontWeight(FontWeight.Medium)
                         .fontColor(this.theme.colorPrimary)
 
-                    Button("下一步")
-                        .width(100)
-                        .height(50)
-                        .type(ButtonType.Normal)
-                        .shadow({ radius: 16, color: "#999c9c9c" })
-                        .fontSize(16)
-                        .margin({ top: 48 })
-                        .onClick(() => {
+                    Fab({
+                        text: "下一步",
+                        textSize: 18,
+                        color: this.themeColor,
+                        marginSize: { top: 32 },
+                        onAction: () => {
                             this.step++
-                        })
+                        }
+                    })
                 }
                 .width("100%")
                 .height("100%")
                 .justifyContent(FlexAlign.Center)
             } else if (this.step == 1) {
                 Column() {
-                    Text("主题色").fontSize(24).width("100%")
+                    Text("请选择主题色").fontSize(24).width("100%")
                     Grid() {
                         ForEach(this.colorPrimaryList, (color: string, index) => {
                             if (this.selectIndex == index) {
@@ -83,18 +90,17 @@ export struct PageSetup {
                     .margin({ top: 16 })
                     .height(160)
 
-                    Button("确定")
-                        .width(100)
-                        .height(50)
-                        .type(ButtonType.Normal)
-                        .shadow({ radius: 16, color: "#999c9c9c" })
-                        .fontSize(16)
-                        .margin({ top: 36 })
-                        .onClick(() => {
+                    Fab({
+                        text: "确定",
+                        textSize: 18,
+                        color: this.themeColor,
+                        marginSize: { top: 32 },
+                        onAction: () => {
                             ThemeManager.setTheme(new Theme(this.colorPrimaryList[this.selectIndex],
                                 this.colorSecondaryList[this.selectIndex]))
                             navigationTo(PageRouter.PAGE_HOME)
-                        })
+                        }
+                    })
                 }
                 .width("100%")
                 .height("100%")

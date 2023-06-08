@@ -2,52 +2,80 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import router from '@ohos.router'
 import { navigationTo } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
+import { Fab } from '../view/Fab'
 
 @Entry
 @Component
 export struct PageWelcome {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
-    @State pageScale: number = 1
-    @State pageAlpha: number = 1
+    @State translationValue: number = 1
+    @State logoAnimValue: number = 0
+    @State fabAnimValue: number = 0
+    private themeColor: string
 
     aboutToAppear() {
+        this.themeColor = this.theme.colorPrimary
         router.clear()
     }
 
     build() {
         Column() {
+            Image($r("app.media.ic_welcome"))
+                .width(100)
+                .height(100)
+                .scale({ x: this.logoAnimValue, y: this.logoAnimValue })
+                .opacity(this.logoAnimValue)
+                .animation({
+                    duration: 1200,
+                    onFinish: () => {
+                        setTimeout(() => {
+                            this.fabAnimValue = 1
+                        }, 1000)
+                    }
+                })
+
             Text("欢迎使用Listen")
                 .fontSize(48)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(this.theme.colorPrimary)
+                .margin({ top: 48 })
+                .translate({ y: (1 - this.translationValue) * 100 })
 
             Text("下面让我们开始吧")
                 .fontSize(16)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(this.theme.colorPrimary)
                 .margin({ top: 16 })
+                .translate({ y: (1 - this.translationValue) * 50 })
 
-            Button("好的")
-                .type(ButtonType.Normal)
-                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-                .shadow({ radius: 16, color: "#999c9c9c" })
-                .fontSize(16)
-                .margin({ top: 32 })
-                .onClick(() => {
+            Fab({
+                text: "好的",
+                textSize: 18,
+                color: this.themeColor,
+                marginSize: { top: 48 },
+                onAction: () => {
                     navigationTo(PageRouter.PAGE_GUIDE_SETUP)
+                }
+            }).opacity(this.fabAnimValue)
+                .animation({
+                    duration: 800,
                 })
         }
         .width("100%")
         .height("100%")
         .justifyContent(FlexAlign.Center)
-        // .scale({ x: this.pageScale, y: this.pageScale })
-        .opacity(this.pageAlpha)
+        .opacity(this.translationValue)
+        .onAreaChange(() => {
+
+        })
     }
 
     pageTransition() {
-        PageTransitionEnter({ duration: 600 }).onEnter((_: RouteType, progress: number) => {
-            // this.pageScale = Math.min(1, progress + 0.5)
-            this.pageAlpha = progress
+        PageTransitionEnter({ duration: 800 }).onEnter((_: RouteType, progress: number) => {
+            this.translationValue = progress
+            if (progress >= 1) {
+                this.logoAnimValue = 1
+            }
         }).slide(SlideEffect.Bottom)
     }
 }
