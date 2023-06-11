@@ -58,7 +58,7 @@ struct PageHome {
             Row() {
                 Text("Listen").fontSize(36).fontWeight(800)
 
-                Image($r("app.media.baseline_more_vert_24"))
+                Image($r("app.media.baseline_menu_24"))
                     .width(40).height(40)
             }.width("100%").justifyContent(FlexAlign.SpaceBetween)
             .padding(16)
