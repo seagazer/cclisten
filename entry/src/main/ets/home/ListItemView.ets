@@ -1,12 +1,13 @@
 import { Song } from '../bean/Song'
 import { DEFAULT_THEME } from '../theme/Theme'
-import { ExtImage } from './ExtImage'
+import { ExtImage } from '../view/ExtImage'
+import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 
 @Component
-export struct MusicListItem {
+export struct ListItemView {
     index: number
-    data: Song
-    onItemClick: (song: Song) => void
+    data: mediaLibrary.FileAsset
+    onItemClick: (song: mediaLibrary.FileAsset) => void
 
     @Styles pressedStyles() {
         .backgroundColor(DEFAULT_THEME.colorAction)
@@ -35,26 +36,26 @@ export struct MusicListItem {
             .justifyContent(FlexAlign.SpaceBetween)
             .alignItems(HorizontalAlign.Start)
 
-            Stack() {
-                ExtImage({
-                    src: $r("app.media.baseline_more_vert_24"),
-                    widthSize: "100%",
-                    heightSize: "100%",
-                    paddingSize: 8,
-                    borderOp: { radius: 40 }
-                })
-            }
-            .height("100%")
-            .aspectRatio(1)
+            // Stack() {
+            //     ExtImage({
+            //         src: $r("app.media.baseline_skip_previous_24"),
+            //         widthSize: "100%",
+            //         heightSize: "100%",
+            //         paddingSize: 8,
+            //         borderOp: { radius: 40 }
+            //     })
+            // }
+            // .height("100%")
+            // .aspectRatio(1)
         }
         .width("100%")
         .height(56)
-        // .stateStyles({
-        //     normal: this.normalStyles,
-        //     pressed: this.pressedStyles
-        // })
-        .onClick(() => {
-            this.onItemClick(this.data)
+        .stateStyles({
+            normal: this.normalStyles,
+            pressed: this.pressedStyles
         })
+        // .onClick(() => {
+        //     this.onItemClick?.(this.data)
+        // })
     }
 }

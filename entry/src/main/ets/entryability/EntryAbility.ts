@@ -1,16 +1,16 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import { PageRouter } from '../extensions/PageRouter';
+import aac from '@ohos.abilityAccessCtrl'
 
 export default class EntryAbility extends UIAbility {
     onCreate(want, launchParam) {
-    }
-
-    onDestroy() {
+        aac.createAtManager()
+            .requestPermissionsFromUser(this.context, ["ohos.permission.READ_MEDIA", "ohos.permission.READ_AUDIO"])
     }
 
     onWindowStageCreate(windowStage: window.WindowStage) {
-        windowStage.loadContent(PageRouter.PAGE_HOME, () => {
+        windowStage.loadContent(PageRouter.PAGE_SPLASH, () => {
         })
         let win = windowStage.getMainWindowSync()
         win.setWindowSystemBarProperties({
@@ -19,14 +19,5 @@ export default class EntryAbility extends UIAbility {
             statusBarContentColor: "#ff575757",
             navigationBarContentColor: "#ff575757"
         })
-    }
-
-    onWindowStageDestroy() {
-    }
-
-    onForeground() {
-    }
-
-    onBackground() {
     }
 }

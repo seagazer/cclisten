@@ -1,21 +1,17 @@
 import { MediaControlBar } from '../view/MediaControlBar';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { Lyric, LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
-import { MockData } from './MockData';
-import { duration2text as timeToString, toast } from '../extensions/Extensions';
+import { Lyric, LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
+import { duration2text as timeToString } from '../extensions/Extensions';
 import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
 import { LoopMode } from '../player/LoopMode';
 import { Logger } from '../extensions/Logger';
-import { Song } from '../bean/Song';
 import { PlaylistManager } from '../playlist/PlaylistManager';
+import mediaLibrary from '@ohos.multimedia.mediaLibrary';
+import { FileScanner } from '../medialibrary/FileScanner';
+import { FileParser } from '../player/FileParser';
 
-const TAG = "[Home]"
+const TAG = "[PagePlay]"
 
-@Extend(Image) function btnStyle() {
-    .width(48)
-    .height(48)
-    .padding(12)
-}
 
 // hdc file send C:\Users\seagazer\Desktop\画心.lrc /data/app/el2/100/base/com.seagazer.listen/haps/entry/files/
 
@@ -24,8 +20,9 @@ const TAG = "[Home]"
 struct PagePlay {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME
     @State isPlaying: boolean = false
-    @State title: string = "可能"
-    @State artist: string = "程响"
+    @State title: string = ""
+    @State artist: string = ""
+    @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
     private lyricConfig: LyricConfig = new LyricConfig()
@@ -51,8 +48,15 @@ struct PagePlay {
         this.lyricLine = " "
         this.totalDuration = this.player.getDuration()
         let lyricData = this.lyricList[this.currentPlayIndex]
-        this.lyricHelper.setLyricData(lyricData.lyricList)
-        this.lyricConfig.setLyric(lyricData)
+        Logger.d(TAG, "prepared lyricList size= " + this.lyricList.length)
+        this.lyricConfig.setLyric(null)
+        this.lyricHelper.setLyricData(null)
+        if (lyricData) {
+            this.lyricConfig.setLyric(lyricData)
+            if (lyricData.lyricList.length > 0) {
+                this.lyricHelper.setLyricData(lyricData.lyricList)
+            }
+        }
         Logger.d(TAG, "prepared index= " + this.currentPlayIndex + ", curPosition= " + this.currentPosition)
     }
     private completedListener = () => {
@@ -71,16 +75,36 @@ struct PagePlay {
         }
     }
     private lyricList = new Array<Lyric>()
-    private lyricParser: LyricParser
+    private lyricParser: FileParser
     private currentPlayIndex = 0
     private isSeeking = false
+    @StorageLink("currentSong") currentSong: mediaLibrary.FileAsset = null
+    @StorageLink("fileList") fileList: Array<mediaLibrary.FileAsset> = new Array()
+
+    private async prepareData() {
+        if (this.currentSong) {
+            Logger.d(TAG, "init song= " + JSON.stringify(this.currentSong.title))
+            this.totalDuration = this.currentSong.duration
+            this.title = this.currentSong.title
+            this.artist = this.currentSong.artist
+            this.playlist.add(this.currentSong)
+            let result = await  FileScanner.scanLyric(getContext(this).filesDir, this.currentSong.title)
+            Logger.d(TAG, "lyric file= " + result)
+            let lrc = this.lyricParser.parse(result)
+            Logger.d(TAG, "lrc= " + lrc.artist)
+            this.lyricList.push(lrc)
+            Logger.w(TAG, "lyric list= " + JSON.stringify(this.lyricList))
+
+        }
+    }
 
     aboutToAppear() {
-        // router.clear()
-
         this.player = CcPlayer.create(PlayerType.AUDIO)
         this.lyricHelper = new LyricHelper()
-        this.lyricParser = new LyricParser()
+        this.lyricParser = new FileParser()
+
+        this.prepareData()
+
         this.player
             .addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
@@ -89,15 +113,6 @@ struct PagePlay {
                 this.isSeeking = false
                 Logger.d(TAG, "---seek completed")
             })
-
-
-        this.scanMedia()
-
-        // todo mock data
-        let song = this.playlist.getCurrent()
-        this.title = song.title
-        this.artist = song.artist
-
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)
@@ -106,17 +121,6 @@ struct PagePlay {
             .setLineSpace(vp2px(14))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
-
-    }
-
-    private scanMedia() {
-        // todo mock data
-        this.playlist.add(new Song(MockData.song1.url, MockData.song1.title, MockData.song1.artist))
-        this.playlist.add(new Song(MockData.song2.url, MockData.song2.title, MockData.song2.artist))
-        this.playlist.add(new Song(MockData.song3.url, MockData.song3.title, MockData.song3.artist))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric1))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric2))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric3))
     }
 
     aboutToDisappear() {
@@ -195,8 +199,6 @@ struct PagePlay {
         .backgroundColor("#ffbce5e8")
     }
 
-    @State lyricChangeAnimValue: number = 1
-
     build() {
         Stack() {
             Column() {
@@ -213,7 +215,7 @@ struct PagePlay {
                     .width("100%")
                     .height("100%")
                     .justifyContent(FlexAlign.SpaceEvenly)
-                    .opacity(this.lyricChangeAnimValue)
+                    .opacity(this.animAlpha)
                     .animation({
                         duration: 300,
                         curve: Curve.Linear,
@@ -231,7 +233,7 @@ struct PagePlay {
                     .width("100%")
                     .height("100%")
                     .padding(32)
-                    .opacity(1 - this.lyricChangeAnimValue)
+                    .opacity(1 - this.animAlpha)
                     .animation({
                         duration: 300,
                         curve: Curve.Linear,
@@ -267,20 +269,19 @@ struct PagePlay {
         .height('100%')
     }
 
-    private playOrPause() {
-        Logger.d(TAG, "media player = " + this.player)
+    private async playOrPause() {
         if (this.player.isPlaying()) {
             this.player.pause()
             this.isPlaying = false
         } else {
-            if (this.isInit) {
-                let song = this.playlist.getSong(this.currentPlayIndex)
-                MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-                    .then((source) => {
-                        this.player.setMediaSource(source, () => {
-                            this.player.start()
-                        })
-                    })
+            if (this.isInit && this.currentSong) {
+                let song = this.currentSong
+                Logger.d(TAG, "init play = " + song.title)
+                let fd = await song.open("r")
+                let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
+                this.player.setMediaSource(source, () => {
+                    this.player.start()
+                })
             } else {
                 this.player.start()
             }
@@ -290,7 +291,7 @@ struct PagePlay {
 
     private showLyric() {
         this.isShowLyric = !this.isShowLyric
-        this.lyricChangeAnimValue = this.isShowLyric ? 0 : 1
+        this.animAlpha = this.isShowLyric ? 0 : 1
     }
 
     private onModeChanged(mode: LoopMode) {
@@ -317,14 +318,13 @@ struct PagePlay {
         this.playSong(song)
     }
 
-    private playSong(song: Song) {
+    private async playSong(song: mediaLibrary.FileAsset) {
         this.title = song.title
         this.artist = song.artist
-        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-            .then((source) => {
-                this.player.setMediaSource(source, () => {
-                    this.player.start()
-                })
-            })
+        let fd = await song.open("r")
+        let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
+        this.player.setMediaSource(source, () => {
+            this.player.start()
+        })
     }
 }

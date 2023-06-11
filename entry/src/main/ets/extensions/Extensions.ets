@@ -12,10 +12,11 @@ export function toast(message: string, duration: number = 2000) {
 
 const TAG = "[Extensions]"
 
-export function navigationTo(pageUrl: PageRouter) {
-    Logger.d(TAG, "navigation to <" + pageUrl.toString() + ">")
+export function navigationTo(pageUrl: PageRouter, param?: Object) {
+    Logger.d(TAG, "navigation to <" + pageUrl.toString() + ">, param= " + JSON.stringify(param))
     router.pushUrl({
-        url: pageUrl.toString()
+        url: pageUrl.toString(),
+        params: param
     })
 }
 

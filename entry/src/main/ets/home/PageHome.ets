@@ -3,68 +3,72 @@ import { PageRouter } from '../extensions/PageRouter'
 import { ExtImage } from '../view/ExtImage'
 import { Logger } from '../extensions/Logger'
 import { FileScanner } from '../medialibrary/FileScanner'
-import { Song } from '../bean/Song'
-import { MusicListItem } from '../view/MusicListItem'
+import { ListItemView } from './ListItemView'
+import mediaLibrary from '@ohos.multimedia.mediaLibrary'
+import router from '@ohos.router'
 
-const TAG = "PageHome"
+const TAG = "[PageHome]"
 
 @Entry
 @Component
 struct PageHome {
-    @State songList: Array<Song> = new Array
-    @State currentSong: Song = null
+    @State songList: Array<mediaLibrary.FileAsset> = new Array()
+    @StorageLink("fileList") fileList: Array<mediaLibrary.FileAsset> = new Array()
+    @StorageLink("currentSong") currentSong: mediaLibrary.FileAsset = null
     @State currentPosition: number = 0
     @State duration: number = 100
+    @StorageLink("aaa") aaa: string = ""
 
     @Builder
     BottomBar() {
         Row() {
-            Image($r("app.media.ic_cover_default"))
-                .height("100%")
-                .aspectRatio(1)
-                .padding(8)
-                .backgroundColor("#ffd7afaf")
+            Row() {
+                Image($r("app.media.ic_cover_default"))
+                    .height("100%")
+                    .aspectRatio(1)
+                    .padding(8)
+                    .backgroundColor("#ffd7afaf")
 
-            Column() {
-                Text(this.currentSong ? this.currentSong.title : "- -")
-                    .textAlign(TextAlign.Start)
-                    .fontSize(18)
-                    .padding({ top: 8 })
-                    .width("100%")
-                Blank()
-                Progress({
-                    value: this.currentPosition,
-                    total: this.duration
-                })
+                Column() {
+                    Text(this.currentSong ? this.currentSong.title : "- -")
+                        .textAlign(TextAlign.Start)
+                        .fontSize(18)
+                        .padding({ top: 8 })
+                        .width("100%")
+                    Blank()
+                    Progress({
+                        value: this.currentPosition,
+                        total: this.duration
+                    })
+                }
+                .padding({ left: 8 })
+                .alignItems(HorizontalAlign.Start)
+                .justifyContent(FlexAlign.SpaceEvenly)
+                .layoutWeight(1)
+                .height("100%")
             }
-            .padding({ left: 8 })
-            .alignItems(HorizontalAlign.Start)
-            .justifyContent(FlexAlign.SpaceEvenly)
             .layoutWeight(1)
             .height("100%")
+            .onClick(() => {
+                this.aaa = "xxxxxxxxxxxx"
+                navigationTo(PageRouter.PAGE_PLAY)
+            })
 
-            // ImageFab()
-            Image($r("app.media.baseline_play_circle_24"))
-                .height("100%")
-                .aspectRatio(1)
+            Image($r("app.media.baseline_play_arrow_24"))
+                .width(64)
+                .height(64)
         }
         .width("100%")
         .height(64)
         .shadow({ radius: 6, color: "#cccc" })
-        .onClick(() => {
-            navigationTo(PageRouter.PAGE_PLAY)
-        })
     }
 
     aboutToAppear() {
-        FileScanner.scan(getContext(this).filesDir).then((result) => {
-            Logger.d(TAG, "scan mp3 files= " + JSON.stringify(result))
-            result.forEach((path) => {
-                let split = path.split("/")
-                let file = split[split.length-1].split(".")
-                let title = file[0]
-                this.songList.push(new Song(path, title))
-            })
+        router.clear()
+        FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
+            Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
+            this.songList = this.songList.concat(result)
+            AppStorage.Set<Array<mediaLibrary.FileAsset>>("fileList", this.songList)
         })
     }
 
@@ -74,7 +78,7 @@ struct PageHome {
             Text("Listen").fontSize(36).fontWeight(800)
 
             ExtImage({
-                src: $r("app.media.baseline_menu_24"),
+                src: $r("app.media.baseline_more_vert_24"),
                 widthSize: 56,
                 heightSize: 56,
                 imageFit: ImageFit.Contain,
@@ -86,6 +90,40 @@ struct PageHome {
         .padding(16)
     }
 
+    @Builder
+    EmptyView() {
+        Column() {
+            Image($r("app.media.ic_empty"))
+                .width(100)
+                .height(100)
+            Text("暂无歌曲").fontSize(16).margin({ top: 8 })
+        }
+        .width("100%")
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+        .backgroundColor("#ffffff")
+    }
+
+    @Builder
+    MusicList() {
+        List() {
+            ForEach(this.songList, (song: mediaLibrary.FileAsset, index) => {
+                ListItem() {
+                    ListItemView({ data: song, index: index + 1 })
+                }.onClick(() => {
+                    Logger.d(TAG, "param = " + song.title)
+                    this.currentSong = song
+                    AppStorage.Set<mediaLibrary.FileAsset>("currentSong", this.currentSong)
+                    navigationTo(PageRouter.PAGE_PLAY)
+                })
+            })
+        }
+        .width("100%")
+        .layoutWeight(1)
+        .margin({ top: 16 })
+        .padding({ left: 16, right: 16, bottom: 16 })
+    }
+
     build() {
         Column() {
             this.TitleBar()
@@ -94,40 +132,14 @@ struct PageHome {
                 .width("100%")
 
             if (this.songList.length > 0) {
-                Column() {
-                    List() {
-                        ForEach(this.songList, (song: Song, index) => {
-                            ListItem() {
-                                MusicListItem({ data: song, index: index + 1,
-                                    onItemClick: (song) => {
-                                        this.currentSong = song
-                                        // todo play song
-                                    }
-                                })
-                            }
-                        })
-                    }
-                    .layoutWeight(1)
-                    .margin({ top: 16 })
-                    .padding({ left: 16, right: 16, bottom: 16 })
-                }
-                .width("100%")
-                .layoutWeight(1)
+                this.MusicList()
             } else {
-                Column() {
-                    Image($r("app.media.ic_empty"))
-                        .width(100)
-                        .height(100)
-                    Text("暂无歌曲").fontSize(16).margin({ top: 8 })
-                }
-                .width("100%")
-                .layoutWeight(1)
-                .justifyContent(FlexAlign.Center)
-                .backgroundColor("#ffffff")
+                this.EmptyView()
             }
 
-            this.BottomBar()
+            // this.BottomBar()
         }
+
         .width("100%")
         .height("100%")
         .alignItems(HorizontalAlign.Start)
