@@ -15,12 +15,12 @@ export struct Fab {
         this.dimColor = dimColor(this.color, 0.95)
     }
 
-    @Styles normal(){
+    @Styles normalStyles(){
         .backgroundColor(this.color)
         .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 4 })
     }
 
-    @Styles press(){
+    @Styles pressedStyles(){
         .backgroundColor(this.dimColor)
         .shadow({ radius: 6, color: "#ff3a3a3a", offsetY: 4 })
     }
@@ -33,8 +33,8 @@ export struct Fab {
             .margin(this.marginSize)
             .border({ radius: 4 })
             .stateStyles({
-                normal: this.normal,
-                pressed: this.press
+                normal: this.normalStyles,
+                pressed: this.pressedStyles
             })
             .onClick((event) => {
                 this.onAction?.(event)

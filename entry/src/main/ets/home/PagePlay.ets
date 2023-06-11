@@ -1,15 +1,13 @@
 import { MediaControlBar } from '../view/MediaControlBar';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { Lyric, LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
-import router from '@ohos.router';
 import { MockData } from './MockData';
 import { duration2text as timeToString, toast } from '../extensions/Extensions';
 import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
-import { LoopMode } from '../mode/LoopMode';
+import { LoopMode } from '../player/LoopMode';
 import { Logger } from '../extensions/Logger';
 import { Song } from '../bean/Song';
 import { PlaylistManager } from '../playlist/PlaylistManager';
-import fs from '@ohos.file.fs'
 
 const TAG = "[Home]"
 
@@ -229,8 +227,6 @@ struct PagePlay {
 
                     Column() {
                         LyricView({ lyricConfig: this.lyricConfig })
-                            .width("100%")
-                            .height("100%")
                     }
                     .width("100%")
                     .height("100%")

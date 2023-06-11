@@ -3,7 +3,7 @@
  */
 import { CcPlayer, PlayerType } from '@seagazer/ccplayer'
 import { Logger } from '../extensions/Logger'
-import { LoopMode } from '../mode/LoopMode'
+import { LoopMode } from './LoopMode'
 
 const TAG = "MediaCenter"
 

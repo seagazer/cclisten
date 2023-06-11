@@ -1,10 +1,21 @@
 import { navigationTo } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
-import { ImageFab } from '../view/ImageFab'
+import { ExtImage } from '../view/ExtImage'
+import { Logger } from '../extensions/Logger'
+import { FileScanner } from '../medialibrary/FileScanner'
+import { Song } from '../bean/Song'
+import { MusicListItem } from '../view/MusicListItem'
+
+const TAG = "PageHome"
 
 @Entry
 @Component
 struct PageHome {
+    @State songList: Array<Song> = new Array
+    @State currentSong: Song = null
+    @State currentPosition: number = 0
+    @State duration: number = 100
+
     @Builder
     BottomBar() {
         Row() {
@@ -15,15 +26,15 @@ struct PageHome {
                 .backgroundColor("#ffd7afaf")
 
             Column() {
-                Text("可能")
+                Text(this.currentSong ? this.currentSong.title : "- -")
                     .textAlign(TextAlign.Start)
                     .fontSize(18)
                     .padding({ top: 8 })
                     .width("100%")
                 Blank()
                 Progress({
-                    value: 100,
-                    total: 100
+                    value: this.currentPosition,
+                    total: this.duration
                 })
             }
             .padding({ left: 8 })
@@ -45,82 +56,80 @@ struct PageHome {
         })
     }
 
-    @State mockData: Array<number> = []
-
     aboutToAppear() {
-        for (let i = 0;i < 20; i++) {
-            this.mockData.push(i)
-        }
+        FileScanner.scan(getContext(this).filesDir).then((result) => {
+            Logger.d(TAG, "scan mp3 files= " + JSON.stringify(result))
+            result.forEach((path) => {
+                let split = path.split("/")
+                let file = split[split.length-1].split(".")
+                let title = file[0]
+                this.songList.push(new Song(path, title))
+            })
+        })
+    }
+
+    @Builder
+    TitleBar() {
+        Row() {
+            Text("Listen").fontSize(36).fontWeight(800)
+
+            ExtImage({
+                src: $r("app.media.baseline_menu_24"),
+                widthSize: 56,
+                heightSize: 56,
+                imageFit: ImageFit.Contain,
+                paddingSize: 8,
+                borderOp: { radius: 40 }
+            })
+
+        }.width("100%").justifyContent(FlexAlign.SpaceBetween)
+        .padding(16)
     }
 
     build() {
         Column() {
-            Row() {
-                Text("Listen").fontSize(36).fontWeight(800)
+            this.TitleBar()
 
-                Image($r("app.media.baseline_menu_24"))
-                    .width(40).height(40)
-            }.width("100%").justifyContent(FlexAlign.SpaceBetween)
-            .padding(16)
+            Text("本地音乐").padding({ left: 16 })
+                .width("100%")
 
-            Stack() {
+            if (this.songList.length > 0) {
                 Column() {
-
                     List() {
-                        ForEach(this.mockData, (data, index) => {
+                        ForEach(this.songList, (song: Song, index) => {
                             ListItem() {
-                                Row() {
-                                    Image($r("app.media.icon"))
-                                        .width(40)
-                                        .height(40)
-
-                                    Text("" + index)
-
-                                    Column() {
-                                        Text("可能").fontSize(18)
-                                        Text("程响").fontSize(14).fontColor("#cccccc")
+                                MusicListItem({ data: song, index: index + 1,
+                                    onItemClick: (song) => {
+                                        this.currentSong = song
+                                        // todo play song
                                     }
-                                    .padding({ left: 16 })
-                                    .layoutWeight(1)
-                                    .justifyContent(FlexAlign.SpaceBetween)
-                                    .alignItems(HorizontalAlign.Start)
-
-                                    Image($r("app.media.baseline_more_vert_24"))
-                                        .width(40)
-                                        .height(40)
-                                        .colorBlend("#cccc")
-                                }
-                                .width("100%")
-                                .height(56)
+                                })
                             }
                         })
                     }
                     .layoutWeight(1)
                     .margin({ top: 16 })
-                    .padding({ left: 16, right: 16 })
+                    .padding({ left: 16, right: 16, bottom: 16 })
                 }
                 .width("100%")
-                .height("100%")
-
-                // Column() {
-                //     Image($r("app.media.ic_empty"))
-                //         .width(100)
-                //         .height(100)
-                //     Text("暂无歌曲").fontSize(16).margin({ top: 8 })
-                // }
-                // .width("100%").height("100%")
-                // .justifyContent(FlexAlign.Center)
-                // .backgroundColor("#ffffff")
+                .layoutWeight(1)
+            } else {
+                Column() {
+                    Image($r("app.media.ic_empty"))
+                        .width(100)
+                        .height(100)
+                    Text("暂无歌曲").fontSize(16).margin({ top: 8 })
+                }
+                .width("100%")
+                .layoutWeight(1)
+                .justifyContent(FlexAlign.Center)
+                .backgroundColor("#ffffff")
             }
-            .width("100%")
-            .layoutWeight(1)
-
 
             this.BottomBar()
         }
         .width("100%")
         .height("100%")
-        .justifyContent(FlexAlign.SpaceBetween)
         .alignItems(HorizontalAlign.Start)
     }
 }

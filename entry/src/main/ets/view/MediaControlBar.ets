@@ -1,5 +1,5 @@
-import { PlayModeController } from '../mode/PlayModeController'
-import { LoopMode } from '../mode/LoopMode'
+import { PlayModeController } from '../player/PlayModeController'
+import { LoopMode } from '../player/LoopMode'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 @Extend(Image) function btnStyle(size: Length, padding: Length) {
