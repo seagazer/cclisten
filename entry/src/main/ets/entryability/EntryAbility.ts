@@ -10,7 +10,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     onWindowStageCreate(windowStage: window.WindowStage) {
-        windowStage.loadContent(PageRouter.PAGE_SPLASH, () => {
+        windowStage.loadContent(PageRouter.PAGE_HOME, () => {
         })
         let win = windowStage.getMainWindowSync()
         win.setWindowSystemBarProperties({

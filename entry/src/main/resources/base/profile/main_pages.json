@@ -1,9 +1,9 @@
 {
   "src": [
-    "home/PageHome",
-    "home/IndexTest2",
     "splash/PageSplash",
     "guide/PageWelcome",
-    "guide/PageSetup"
+    "guide/PageSetup",
+    "home/PageHome",
+    "home/PagePlay"
   ]
 }

@@ -8,6 +8,7 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme'
     .padding(padding)
 }
 
+@Preview
 @Component
 export struct MediaControlBar {
     @StorageLink("theme") theme: Theme = DEFAULT_THEME

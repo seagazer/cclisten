@@ -10,4 +10,4 @@ export class Theme {
     }
 }
 
-export const DEFAULT_THEME = new Theme("#ff000000", "#ff9b9b9b")
+export const DEFAULT_THEME = new Theme("#ff000000", "#e69a9a9a")

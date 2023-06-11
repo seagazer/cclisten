@@ -1,15 +1,10 @@
 import { dimColor } from '../extensions/Extensions'
 
-@Preview
 @Component
-export struct Fab {
-    text: ResourceStr
-    textSize: number
-    textColor: ResourceColor = "#ffffff"
-    color: number | string = "#ffc5c5c5"
-    onAction: (event: ClickEvent) => void
-    marginSize: Padding | Length
+export struct ImageFab {
+    color: number | string = "#ffe2e2e2"
     dimColor: number
+    onAction: (event: ClickEvent) => void
 
     aboutToAppear() {
         this.dimColor = dimColor(this.color, 0.95)
@@ -17,21 +12,21 @@ export struct Fab {
 
     @Styles normal(){
         .backgroundColor(this.color)
+        .border({ radius: 200 })
         .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 4 })
     }
 
     @Styles press(){
         .backgroundColor(this.dimColor)
-        .shadow({ radius: 6, color: "#ff3a3a3a", offsetY: 4 })
+        .border({ radius: 200 })
+        .shadow({ radius: 8, color: "#ff3a3a3a", offsetY: 4 })
     }
 
     build() {
-        Text(this.text)
-            .fontSize(this.textSize)
-            .fontColor(this.textColor)
-            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-            .margin(this.marginSize)
-            .border({ radius: 4 })
+        Image($r("app.media.baseline_play_arrow_24"))
+            .width(48)
+            .padding(8)
+            .aspectRatio(1)
             .stateStyles({
                 normal: this.normal,
                 pressed: this.press

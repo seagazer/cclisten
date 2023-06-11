@@ -1,368 +1,126 @@
-import { MediaControlBar } from '../view/MediaControlBar';
-import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { Lyric, LyricConfig, LyricHelper, LyricParser, LyricView } from '@seagazer/cclyric';
-import router from '@ohos.router';
-import { MockData } from './MockData';
-import { duration2text as timeToString, toast } from '../extensions/Extensions';
-import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
-import { LoopMode } from '../mode/LoopMode';
-import { Logger } from '../extensions/Logger';
-import { Song } from '../bean/Song';
-import { PlaylistManager } from '../playlist/PlaylistManager';
-import fs from '@ohos.file.fs'
-
-const TAG = "[Home]"
-
-@Extend(Image) function btnStyle() {
-    .width(48)
-    .height(48)
-    .padding(12)
-}
-
-// hdc file send C:\Users\seagazer\Desktop\画心.lrc /data/app/el2/100/base/com.seagazer.listen/haps/entry/files/
+import { navigationTo } from '../extensions/Extensions'
+import { PageRouter } from '../extensions/PageRouter'
+import { ImageFab } from '../view/ImageFab'
 
 @Entry
 @Component
 struct PageHome {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
-    @State isPlaying: boolean = false
-    @State pageScale: number = 0
-    @State pageAlpha: number = 0
-    @State title: string = "可能"
-    @State artist: string = "程响"
-    @State lyricLine: string = " "
-    @State isShowLyric: boolean = false
-    private lyricConfig: LyricConfig = new LyricConfig()
-    private lyricHelper: LyricHelper
-    private player: CcPlayer = null
-    private playlist: PlaylistManager = PlaylistManager.get()
-    @State currentPosition: number = 0
-    @State totalDuration: number = 0
-    private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
-    private isInit = true
-    private progressChangedListener = (duration: number) => {
-        if (!this.isSeeking) {
-            this.currentPosition = duration
-            this.lyricConfig.updatePosition(duration)
-            this.lyricLine = this.lyricHelper.getLyric(duration)
+    @Builder
+    BottomBar() {
+        Row() {
+            Image($r("app.media.ic_cover_default"))
+                .height("100%")
+                .aspectRatio(1)
+                .padding(8)
+                .backgroundColor("#ffd7afaf")
+
+            Column() {
+                Text("可能")
+                    .textAlign(TextAlign.Start)
+                    .fontSize(18)
+                    .padding({ top: 8 })
+                    .width("100%")
+                Blank()
+                Progress({
+                    value: 100,
+                    total: 100
+                })
+            }
+            .padding({ left: 8 })
+            .alignItems(HorizontalAlign.Start)
+            .justifyContent(FlexAlign.SpaceEvenly)
+            .layoutWeight(1)
+            .height("100%")
+
+            // ImageFab()
+            Image($r("app.media.baseline_play_circle_24"))
+                .height("100%")
+                .aspectRatio(1)
         }
+        .width("100%")
+        .height(64)
+        .shadow({ radius: 6, color: "#cccc" })
+        .onClick(() => {
+            navigationTo(PageRouter.PAGE_PLAY)
+        })
     }
-    private prepareListener = () => {
-        this.isInit = false
-        this.isSeeking = false
-        this.isPlaying = true
-        this.currentPosition = 0
-        this.lyricLine = " "
-        this.totalDuration = this.player.getDuration()
-        let lyricData = this.lyricList[this.currentPlayIndex]
-        this.lyricHelper.setLyricData(lyricData.lyricList)
-        this.lyricConfig.setLyric(lyricData)
-        Logger.d(TAG, "prepared index= " + this.currentPlayIndex + ", curPosition= " + this.currentPosition)
-    }
-    private completedListener = () => {
-        this.currentPosition = this.player.getDuration()
-        this.isPlaying = this.player.isPlaying()
-        Logger.d(TAG, "completed, play mode= " + this.loopMode + ", curPosition= " + this.currentPosition)
-        switch (this.loopMode) {
-            case LoopMode.PLAYLIST_LOOP:
-                this.playNext()
-                break
-            case LoopMode.LOOP:
-                this.player.start()
-                break
-            case LoopMode.SHUFFLE:
-                break
-        }
-    }
-    private lyricList = new Array<Lyric>()
-    private lyricParser: LyricParser
-    private currentPlayIndex = 0
-    private isSeeking = false
+
+    @State mockData: Array<number> = []
 
     aboutToAppear() {
-        router.clear()
-
-        this.player = CcPlayer.create(PlayerType.AUDIO)
-        this.lyricHelper = new LyricHelper()
-        this.lyricParser = new LyricParser()
-        this.player
-            .addOnProgressChangedListener(this.progressChangedListener)
-            .addOnPreparedListener(this.prepareListener)
-            .addOnCompletionListener(this.completedListener)
-            .addOnSeekChangedListener(() => {
-                this.isSeeking = false
-                Logger.d(TAG, "---seek completed")
-            })
-
-
-        this.scanMedia()
-
-        // todo mock data
-        let song = this.playlist.getCurrent()
-        this.title = song.title
-        this.artist = song.artist
-
-        this.lyricConfig
-            .setTextSize(24)
-            .setCacheSize(4)
-            .setTextColor(this.theme.colorSecondary)
-            .setHighlightColor(this.theme.colorPrimary)
-            .setLineSpace(24)
-            .setHighlightStyle(false)
-            .setEmptyHint("暂无歌词")
-
-    }
-
-    private scanMedia() {
-        // todo mock data
-        this.playlist.add(new Song(MockData.song1.url, MockData.song1.title, MockData.song1.artist))
-        this.playlist.add(new Song(MockData.song2.url, MockData.song2.title, MockData.song2.artist))
-        this.playlist.add(new Song(MockData.song3.url, MockData.song3.title, MockData.song3.artist))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric1))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric2))
-        this.lyricList.push(this.lyricParser.parse(MockData.lyric3))
-    }
-
-    aboutToDisappear() {
-        this.player
-            .removeOnPreparedListener(this.prepareListener)
-            .removeOnProgressChangedListener(this.progressChangedListener)
-            .removeOnCompletionListener(this.completedListener)
-            .release()
-    }
-
-    @Styles pressedStyles() {
-        .border({ radius: 200 })
-        .backgroundColor(this.theme.colorAction)
-    }
-
-    @Styles normalStyles() {
-        .border({ radius: 200 })
-        .backgroundColor(null)
-    }
-
-    @Builder
-    Title() {
-        Row() {
-            Image($r("app.media.baseline_arrow_back_ios_24")).btnStyle().stateStyles({
-                pressed: this.pressedStyles,
-                normal: this.normalStyles
-            }).onClick(() => {
-                router.back()
-            })
-            Column() {
-                Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
-                Text(this.artist).fontSize(16).fontColor(this.theme.colorSecondary)
-                    .margin({ top: 8 })
-            }
-
-            Image($r("app.media.baseline_more_vert_24")).btnStyle().stateStyles({
-                pressed: this.pressedStyles,
-                normal: this.normalStyles
-            }).onClick(() => {
-                toast("TODO")
-            })
-        }.width("100%")
-        .justifyContent(FlexAlign.SpaceBetween)
-    }
-
-    @Builder
-    ProgressBar() {
-        Column() {
-            // slider
-            Slider(
-                {
-                    style: SliderStyle.OutSet,
-                    min: 0,
-                    max: this.totalDuration,
-                    value: this.currentPosition
-                })
-                .width('100%')
-                .trackColor(this.theme.colorPrimary)
-                .selectedColor(this.theme.colorSecondary)
-                .blockColor(this.theme.colorSecondary)
-                .onChange((value, mode) => {
-                    if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
-                        Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
-                        this.isSeeking = true
-                        this.player.seekTo(value)
-                    }
-                })
-            // duration
-            Row() {
-                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.totalDuration)).fontSize(16).fontColor(this.theme.colorSecondary)
-            }.width('100%')
-            .alignItems(VerticalAlign.Bottom)
-            .justifyContent(FlexAlign.SpaceBetween)
-            .padding({ left: 8, right: 8 })
-        }.padding({ left: 16, right: 16 })
-    }
-
-    @Builder
-    Cover() {
-        Stack() {
-            Stack() {
-                Image($r("app.media.icon"))
-                    .objectFit(ImageFit.Cover)
-                    .width(100)
-                    .height(100)
-                    .backgroundColor("#000000")
-                    .border({ radius: 50 })
-            }
-            .width(180)
-            .height(180)
-            .backgroundColor("#000000")
-            .border({ radius: 100 })
+        for (let i = 0;i < 20; i++) {
+            this.mockData.push(i)
         }
-        .width(240)
-        .height(240)
-        .border({ radius: 16 })
-        .shadow({ radius: 16, color: "#999c9c9c" })
-        .backgroundColor(this.theme.colorSecondary)
     }
-
-    @State alpha: number = 1
 
     build() {
-        Stack() {
-            Column() {
-                // title
-                this.Title()
+        Column() {
+            Row() {
+                Text("Listen").fontSize(36).fontWeight(800)
 
-                Stack() {
-                    Column() {
-                        // cover image
-                        this.Cover()
-                        // lyric
-                        Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
-                    }
-                    .width("100%")
-                    .height("100%")
-                    .justifyContent(FlexAlign.SpaceEvenly)
-                    .opacity(this.alpha)
-                    .animation({
-                        duration: 300,
-                        curve: Curve.Linear,
-                        delay: 0,
-                        iterations: 1, // 设置-1表示动画无限循环
-                        playMode: PlayMode.Normal
-                    })
-                    .onClick(() => {
-                        this.showLyric()
-                    })
+                Image($r("app.media.baseline_more_vert_24"))
+                    .width(40).height(40)
+            }.width("100%").justifyContent(FlexAlign.SpaceBetween)
+            .padding(16)
 
-                    Column() {
-                        LyricView({ lyricConfig: this.lyricConfig })
-                            .width("100%")
-                            .height("100%")
+            Stack() {
+                Column() {
+
+                    List() {
+                        ForEach(this.mockData, (data, index) => {
+                            ListItem() {
+                                Row() {
+                                    Image($r("app.media.icon"))
+                                        .width(40)
+                                        .height(40)
+
+                                    Text("" + index)
+
+                                    Column() {
+                                        Text("可能").fontSize(18)
+                                        Text("程响").fontSize(14).fontColor("#cccccc")
+                                    }
+                                    .padding({ left: 16 })
+                                    .layoutWeight(1)
+                                    .justifyContent(FlexAlign.SpaceBetween)
+                                    .alignItems(HorizontalAlign.Start)
+
+                                    Image($r("app.media.baseline_more_vert_24"))
+                                        .width(40)
+                                        .height(40)
+                                        .colorBlend("#cccc")
+                                }
+                                .width("100%")
+                                .height(56)
+                            }
+                        })
                     }
-                    .width("100%")
-                    .height("100%")
-                    .padding(32)
-                    .opacity(1 - this.alpha)
-                    .animation({
-                        duration: 300,
-                        curve: Curve.Linear,
-                        delay: 0,
-                        iterations: 1, // 设置-1表示动画无限循环
-                        playMode: PlayMode.Normal
-                    })
-                    .onClick(() => {
-                        this.showLyric()
-                    })
+                    .layoutWeight(1)
+                    .margin({ top: 16 })
+                    .padding({ left: 16, right: 16 })
                 }
                 .width("100%")
-                .layoutWeight(1)
+                .height("100%")
 
-                // progress
-                this.ProgressBar()
-                // controller button
-                MediaControlBar({
-                    isPlaying: $isPlaying,
-                    actionPlayOrPause: this.playOrPause.bind(this),
-                    actionPlayNext: this.playNext.bind(this),
-                    actionPlayPre: this.playPre.bind(this),
-                    onModeChanged: this.onModeChanged.bind(this)
-                })
+                // Column() {
+                //     Image($r("app.media.ic_empty"))
+                //         .width(100)
+                //         .height(100)
+                //     Text("暂无歌曲").fontSize(16).margin({ top: 8 })
+                // }
+                // .width("100%").height("100%")
+                // .justifyContent(FlexAlign.Center)
+                // .backgroundColor("#ffffff")
             }
-            .width('100%')
-            .height('100%')
-            .padding(16)
-            .alignItems(HorizontalAlign.Center)
+            .width("100%")
+            .layoutWeight(1)
+
+
+            this.BottomBar()
         }
-        .alignContent(Alignment.TopEnd)
-        .width('100%')
-        .height('100%')
-        .scale({ x: this.pageScale, y: this.pageScale })
-        .opacity(this.pageAlpha)
-    }
-
-    private playOrPause() {
-        Logger.d(TAG, "media player = " + this.player)
-        if (this.player.isPlaying()) {
-            this.player.pause()
-            this.isPlaying = false
-        } else {
-            if (this.isInit) {
-                let song = this.playlist.getSong(this.currentPlayIndex)
-                MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-                    .then((source) => {
-                        this.player.setMediaSource(source, () => {
-                            this.player.start()
-                        })
-                    })
-            } else {
-                this.player.start()
-            }
-            this.isPlaying = true
-        }
-    }
-
-    private showLyric() {
-        this.isShowLyric = !this.isShowLyric
-        this.alpha = this.isShowLyric ? 0 : 1
-    }
-
-    private onModeChanged(mode: LoopMode) {
-        this.loopMode = mode
-    }
-
-    private playNext() {
-        this.currentPlayIndex++
-        if (this.currentPlayIndex > this.playlist.size() - 1) {
-            this.currentPlayIndex = 0
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play next=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
-    }
-
-    private playPre() {
-        this.currentPlayIndex--
-        if (this.currentPlayIndex < 0) {
-            this.currentPlayIndex = this.playlist.size() - 1
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play pre=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
-    }
-
-    private playSong(song: Song) {
-        this.title = song.title
-        this.artist = song.artist
-        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-            .then((source) => {
-                this.player.setMediaSource(source, () => {
-                    this.player.start()
-                })
-            })
-    }
-
-    pageTransition() {
-        PageTransitionEnter({ duration: 600 }).onEnter((_: RouteType, progress: number) => {
-            this.pageScale = Math.min(1, progress + 0.5)
-            this.pageAlpha = progress
-        })
+        .width("100%")
+        .height("100%")
+        .justifyContent(FlexAlign.SpaceBetween)
+        .alignItems(HorizontalAlign.Start)
     }
 }

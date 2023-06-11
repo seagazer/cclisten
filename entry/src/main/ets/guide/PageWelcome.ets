@@ -15,7 +15,7 @@ export struct PageWelcome {
 
     aboutToAppear() {
         this.themeColor = this.theme.colorPrimary
-        router.clear()
+        // router.clear()
     }
 
     build() {
@@ -26,7 +26,7 @@ export struct PageWelcome {
                 .scale({ x: this.logoAnimValue, y: this.logoAnimValue })
                 .opacity(this.logoAnimValue)
                 .animation({
-                    duration: 1200,
+                    duration: 800,
                     onFinish: () => {
                         setTimeout(() => {
                             this.fabAnimValue = 1
@@ -35,7 +35,7 @@ export struct PageWelcome {
                 })
 
             Text("欢迎使用Listen")
-                .fontSize(48)
+                .fontSize(36)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(this.theme.colorPrimary)
                 .margin({ top: 48 })
@@ -52,7 +52,7 @@ export struct PageWelcome {
                 text: "好的",
                 textSize: 18,
                 color: this.themeColor,
-                marginSize: { top: 48 },
+                marginSize: { top: 56 },
                 onAction: () => {
                     navigationTo(PageRouter.PAGE_GUIDE_SETUP)
                 }
