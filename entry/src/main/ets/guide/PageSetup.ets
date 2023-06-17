@@ -1,14 +1,14 @@
 import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager';
-import router from '@ohos.router';
 import { Fab } from '../view/Fab';
+import router from '@ohos.router';
 
 @Entry
 @Component
 export struct PageSetup {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     private colorPrimaryList = ["#ff7D56C0", "#ffbba41e", "#ff29b523",
         "#ffba5d30", "#ffFF405C", "#ff007DFE"]
     private colorSecondaryList = ["#ff96aef8", "#ffeed964", "#ff4ede47",
@@ -18,7 +18,7 @@ export struct PageSetup {
 
     aboutToAppear() {
         this.themeColor = this.theme.colorPrimary
-        // router.clear()
+        router.clear()
     }
 
     @Builder
@@ -81,7 +81,7 @@ export struct PageSetup {
                 color: this.themeColor,
                 marginSize: { top: 56 },
                 onAction: () => {
-                    ThemeManager.setTheme(new Theme(this.colorPrimaryList[this.selectIndex],
+                    ThemeManager.updateTheme(new Theme(this.colorPrimaryList[this.selectIndex],
                         this.colorSecondaryList[this.selectIndex]))
                     navigationTo(PageRouter.PAGE_HOME)
                 }

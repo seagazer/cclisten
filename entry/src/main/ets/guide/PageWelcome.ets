@@ -1,13 +1,13 @@
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
-import router from '@ohos.router'
+import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
 import { navigationTo } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
 import { Fab } from '../view/Fab'
+import router from '@ohos.router'
 
 @Entry
 @Component
 export struct PageWelcome {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @State translationValue: number = 1
     @State logoAnimValue: number = 0
     @State fabAnimValue: number = 0
@@ -15,7 +15,7 @@ export struct PageWelcome {
 
     aboutToAppear() {
         this.themeColor = this.theme.colorPrimary
-        // router.clear()
+        router.clear()
     }
 
     build() {

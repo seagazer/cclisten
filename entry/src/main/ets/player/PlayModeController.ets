@@ -6,6 +6,7 @@ import { LoopMode } from './LoopMode'
  */
 export class PlayModeController {
     private mode: LoopMode = LoopMode.PLAYLIST_LOOP
+    private playModeIcon: Resource = $r("app.media.baseline_repeat_24")
     private index = 0
     private max = 3
 
@@ -20,6 +21,21 @@ export class PlayModeController {
             this.mode = LoopMode.SHUFFLE
         }
         return this.mode
+    }
+
+    getIcon(): Resource {
+        switch (this.mode) {
+            case LoopMode.LOOP:
+                this.playModeIcon = $r("app.media.baseline_repeat_one_24")
+                break;
+            case LoopMode.SHUFFLE:
+                this.playModeIcon = $r("app.media.baseline_shuffle_24")
+                break;
+            default:
+                this.playModeIcon = $r("app.media.baseline_repeat_24")
+                break;
+        }
+        return this.playModeIcon
     }
 
     getCurrentMode(): LoopMode {

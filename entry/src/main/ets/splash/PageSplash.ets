@@ -1,14 +1,12 @@
-import router from '@ohos.router'
 import { navigationTo } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
-
 
 @Entry
 @Component
 struct PageSplash {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
     private duration = 600
@@ -17,7 +15,7 @@ struct PageSplash {
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
-        ThemeManager.setTheme(new Theme("#FF405C", "#ffec3cc9"))
+        ThemeManager.updateTheme(new Theme("#FF405C", "#ffec3cc9"))
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })

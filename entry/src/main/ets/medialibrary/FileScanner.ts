@@ -1,6 +1,7 @@
 import fs from '@ohos.file.fs'
 import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 import common from '@ohos.app.ability.common'
+import { Song } from '../bean/Song'
 
 /**
  * Author: seagazer
@@ -48,6 +49,11 @@ export class FileScanner {
         }
         let fileResult = await mediaLib.getFileAssets(fetchOp)
         let audioList = await fileResult.getAllObject()
-        return audioList
+        let songList = new Array<Song>()
+        audioList.forEach((fileAssets) => {
+            let song = new Song(fileAssets.uri, fileAssets.title, fileAssets.artist, fileAssets.duration)
+            songList.push(song)
+        })
+        return songList
     }
 }

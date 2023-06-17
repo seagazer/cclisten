@@ -3,72 +3,27 @@ import { PageRouter } from '../extensions/PageRouter'
 import { ExtImage } from '../view/ExtImage'
 import { Logger } from '../extensions/Logger'
 import { FileScanner } from '../medialibrary/FileScanner'
-import { ListItemView } from './ListItemView'
-import mediaLibrary from '@ohos.multimedia.mediaLibrary'
+import { ListItemView } from '../view/ListItemView'
 import router from '@ohos.router'
+import { Song } from '../bean/Song'
+import { syncLiveData } from '../extensions/LiveData'
+import { MediaSession, MEDIA_SESSION_CURRENT_SONG, MEDIA_SESSION_FILE_LIST } from '../player/MediaSession'
 
 const TAG = "[PageHome]"
 
 @Entry
 @Component
 struct PageHome {
-    @State songList: Array<mediaLibrary.FileAsset> = new Array()
-    @StorageLink("fileList") fileList: Array<mediaLibrary.FileAsset> = new Array()
-    @StorageLink("currentSong") currentSong: mediaLibrary.FileAsset = null
+    @State songList: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State duration: number = 100
-    @StorageLink("aaa") aaa: string = ""
-
-    @Builder
-    BottomBar() {
-        Row() {
-            Row() {
-                Image($r("app.media.ic_cover_default"))
-                    .height("100%")
-                    .aspectRatio(1)
-                    .padding(8)
-                    .backgroundColor("#ffd7afaf")
-
-                Column() {
-                    Text(this.currentSong ? this.currentSong.title : "- -")
-                        .textAlign(TextAlign.Start)
-                        .fontSize(18)
-                        .padding({ top: 8 })
-                        .width("100%")
-                    Blank()
-                    Progress({
-                        value: this.currentPosition,
-                        total: this.duration
-                    })
-                }
-                .padding({ left: 8 })
-                .alignItems(HorizontalAlign.Start)
-                .justifyContent(FlexAlign.SpaceEvenly)
-                .layoutWeight(1)
-                .height("100%")
-            }
-            .layoutWeight(1)
-            .height("100%")
-            .onClick(() => {
-                this.aaa = "xxxxxxxxxxxx"
-                navigationTo(PageRouter.PAGE_PLAY)
-            })
-
-            Image($r("app.media.baseline_play_arrow_24"))
-                .width(64)
-                .height(64)
-        }
-        .width("100%")
-        .height(64)
-        .shadow({ radius: 6, color: "#cccc" })
-    }
 
     aboutToAppear() {
         router.clear()
         FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
             Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
-            this.songList = this.songList.concat(result)
-            AppStorage.Set<Array<mediaLibrary.FileAsset>>("fileList", this.songList)
+            this.songList = result
+            syncLiveData(MEDIA_SESSION_FILE_LIST, this.songList)
         })
     }
 
@@ -107,13 +62,12 @@ struct PageHome {
     @Builder
     MusicList() {
         List() {
-            ForEach(this.songList, (song: mediaLibrary.FileAsset, index) => {
+            ForEach(this.songList, (song: Song, index) => {
                 ListItem() {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
-                    Logger.d(TAG, "param = " + song.title)
-                    this.currentSong = song
-                    AppStorage.Set<mediaLibrary.FileAsset>("currentSong", this.currentSong)
+                    AppStorage.Set<Song>(MEDIA_SESSION_CURRENT_SONG, song)
+                    MediaSession.get().playSong(song)
                     navigationTo(PageRouter.PAGE_PLAY)
                 })
             })
@@ -136,10 +90,7 @@ struct PageHome {
             } else {
                 this.EmptyView()
             }
-
-            // this.BottomBar()
         }
-
         .width("100%")
         .height("100%")
         .alignItems(HorizontalAlign.Start)

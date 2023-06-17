@@ -2,6 +2,9 @@ import Prompt from '@system.prompt'
 import { PageRouter } from './PageRouter'
 import router from '@ohos.router'
 import { Logger } from './Logger'
+import fs from '@ohos.file.fs'
+
+const TAG = "[Extensions]"
 
 export function toast(message: string, duration: number = 2000) {
     Prompt.showToast({
@@ -10,7 +13,15 @@ export function toast(message: string, duration: number = 2000) {
     })
 }
 
-const TAG = "[Extensions]"
+/**
+ * Parse the uri to fd.
+ * @param uri The uri of media file.
+ * @returns The fd of media file.
+ */
+export async function parseUri(uri: string) {
+    let file = await fs.open(uri)
+    return file.fd
+}
 
 export function navigationTo(pageUrl: PageRouter, param?: Object) {
     Logger.d(TAG, "navigation to <" + pageUrl.toString() + ">, param= " + JSON.stringify(param))

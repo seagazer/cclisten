@@ -1,6 +1,7 @@
 import { PlayModeController } from '../player/PlayModeController'
 import { LoopMode } from '../player/LoopMode'
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
+import { MEDIA_SESSION_PLAYING_STATE } from '../player/MediaSession'
 
 @Extend(Image) function btnStyle(size: Length, padding: Length) {
     .width(size)
@@ -10,17 +11,17 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 @Preview
 @Component
-export struct MediaControlBar {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
+export struct MediaController {
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
+    @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
+    private playModeController: PlayModeController = new PlayModeController()
+    @State playModeIcon: Resource = this.playModeController.getIcon()
     actionPlayOrPause: () => void
     actionPlayNext: () => void
     actionPlayPre: () => void
     actionPlayMode: () => void
     actionLyric: () => void
     onModeChanged: (mode: LoopMode) => void
-    @Link isPlaying: boolean
-    private playModeController: PlayModeController = new PlayModeController()
-    @State playModeIcon: Resource = $r("app.media.baseline_repeat_24")
 
     @Styles pressedStyles() {
         .border({ radius: 200 })
@@ -42,18 +43,8 @@ export struct MediaControlBar {
                 })
                 .onClick(() => {
                     let mode = this.playModeController.change()
+                    this.playModeIcon = this.playModeController.getIcon()
                     this.onModeChanged?.(mode)
-                    switch (mode) {
-                        case LoopMode.LOOP:
-                            this.playModeIcon = $r("app.media.baseline_repeat_one_24")
-                            break;
-                        case LoopMode.SHUFFLE:
-                            this.playModeIcon = $r("app.media.baseline_shuffle_24")
-                            break;
-                        default:
-                            this.playModeIcon = $r("app.media.baseline_repeat_24")
-                            break;
-                    }
                 })
             Image($r('app.media.baseline_skip_previous_24'))
                 .btnStyle(48, 6)

@@ -1,14 +1,21 @@
-import { MediaControlBar } from '../view/MediaControlBar';
-import { DEFAULT_THEME, Theme } from '../theme/Theme';
+import { MediaController } from '../view/MediaController';
+import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme';
 import { Lyric, LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
-import { CcPlayer, MediaSourceFactory, PlayerType } from '@seagazer/ccplayer';
-import { LoopMode } from '../player/LoopMode';
 import { Logger } from '../extensions/Logger';
 import { PlaylistManager } from '../playlist/PlaylistManager';
-import mediaLibrary from '@ohos.multimedia.mediaLibrary';
 import { FileScanner } from '../medialibrary/FileScanner';
 import { FileParser } from '../player/FileParser';
+import {
+    MediaSession,
+    MEDIA_SESSION_ARTIST,
+    MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_DURATION,
+    MEDIA_SESSION_FILE_LIST,
+    MEDIA_SESSION_POSITION,
+    MEDIA_SESSION_TITLE
+} from '../player/MediaSession';
+import { Song } from '../bean/Song';
 
 const TAG = "[PagePlay]"
 
@@ -18,101 +25,42 @@ const TAG = "[PagePlay]"
 @Entry
 @Component
 struct PagePlay {
-    @StorageLink("theme") theme: Theme = DEFAULT_THEME
-    @State isPlaying: boolean = false
-    @State title: string = ""
-    @State artist: string = ""
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
+    @StorageLink(MEDIA_SESSION_TITLE) title: string = ""
+    @StorageLink(MEDIA_SESSION_ARTIST) artist: string = ""
+    @StorageLink(MEDIA_SESSION_POSITION) currentPosition: number = 0
+    @StorageLink(MEDIA_SESSION_DURATION) totalDuration: number = 0
+    @StorageLink(MEDIA_SESSION_CURRENT_SONG) currentSong: Song = null
+    @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = new Array()
     @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
+    private mediaSession: MediaSession = MediaSession.get()
     private lyricConfig: LyricConfig = new LyricConfig()
-    private lyricHelper: LyricHelper
-    private player: CcPlayer = null
-    private playlist: PlaylistManager = PlaylistManager.get()
-    @State currentPosition: number = 0
-    @State totalDuration: number = 0
-    private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
-    private isInit = true
-    private progressChangedListener = (duration: number) => {
-        if (!this.isSeeking) {
-            this.currentPosition = duration
-            this.lyricConfig.updatePosition(duration)
-            this.lyricLine = this.lyricHelper.getLyric(duration)
-        }
+    private lyricHelper: LyricHelper = new LyricHelper()
+    private lyricParser: FileParser = new FileParser()
+    private lyricList = new Array<Lyric>()
+    private onProgressChanged = (position: number) => {
+        this.lyricConfig.updatePosition(position)
+        this.lyricLine = this.lyricHelper.getLyric(position)
     }
-    private prepareListener = () => {
-        this.isInit = false
-        this.isSeeking = false
-        this.isPlaying = true
+    private onPrepared = async () => {
         this.currentPosition = 0
         this.lyricLine = " "
-        this.totalDuration = this.player.getDuration()
-        let lyricData = this.lyricList[this.currentPlayIndex]
+        let result = await  FileScanner.scanLyric(getContext(this).filesDir, this.title)
+        let lrc = this.lyricParser.parse(result)
         Logger.d(TAG, "prepared lyricList size= " + this.lyricList.length)
         this.lyricConfig.setLyric(null)
         this.lyricHelper.setLyricData(null)
-        if (lyricData) {
-            this.lyricConfig.setLyric(lyricData)
-            if (lyricData.lyricList.length > 0) {
-                this.lyricHelper.setLyricData(lyricData.lyricList)
+        if (lrc) {
+            this.lyricConfig.setLyric(lrc)
+            if (lrc.lyricList.length > 0) {
+                this.lyricHelper.setLyricData(lrc.lyricList)
             }
-        }
-        Logger.d(TAG, "prepared index= " + this.currentPlayIndex + ", curPosition= " + this.currentPosition)
-    }
-    private completedListener = () => {
-        this.currentPosition = this.player.getDuration()
-        this.isPlaying = this.player.isPlaying()
-        Logger.d(TAG, "completed, play mode= " + this.loopMode + ", curPosition= " + this.currentPosition)
-        switch (this.loopMode) {
-            case LoopMode.PLAYLIST_LOOP:
-                this.playNext()
-                break
-            case LoopMode.LOOP:
-                this.player.start()
-                break
-            case LoopMode.SHUFFLE:
-                break
-        }
-    }
-    private lyricList = new Array<Lyric>()
-    private lyricParser: FileParser
-    private currentPlayIndex = 0
-    private isSeeking = false
-    @StorageLink("currentSong") currentSong: mediaLibrary.FileAsset = null
-    @StorageLink("fileList") fileList: Array<mediaLibrary.FileAsset> = new Array()
-
-    private async prepareData() {
-        if (this.currentSong) {
-            Logger.d(TAG, "init song= " + JSON.stringify(this.currentSong.title))
-            this.totalDuration = this.currentSong.duration
-            this.title = this.currentSong.title
-            this.artist = this.currentSong.artist
-            this.playlist.add(this.currentSong)
-            let result = await  FileScanner.scanLyric(getContext(this).filesDir, this.currentSong.title)
-            Logger.d(TAG, "lyric file= " + result)
-            let lrc = this.lyricParser.parse(result)
-            Logger.d(TAG, "lrc= " + lrc.artist)
-            this.lyricList.push(lrc)
-            Logger.w(TAG, "lyric list= " + JSON.stringify(this.lyricList))
-
         }
     }
 
     aboutToAppear() {
-        this.player = CcPlayer.create(PlayerType.AUDIO)
-        this.lyricHelper = new LyricHelper()
-        this.lyricParser = new FileParser()
-
-        this.prepareData()
-
-        this.player
-            .addOnProgressChangedListener(this.progressChangedListener)
-            .addOnPreparedListener(this.prepareListener)
-            .addOnCompletionListener(this.completedListener)
-            .addOnSeekChangedListener(() => {
-                this.isSeeking = false
-                Logger.d(TAG, "---seek completed")
-            })
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)
@@ -121,14 +69,8 @@ struct PagePlay {
             .setLineSpace(vp2px(14))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
-    }
-
-    aboutToDisappear() {
-        this.player
-            .removeOnPreparedListener(this.prepareListener)
-            .removeOnProgressChangedListener(this.progressChangedListener)
-            .removeOnCompletionListener(this.completedListener)
-            .release()
+        this.mediaSession.onProgress(this.onProgressChanged)
+        this.mediaSession.onPrepare(this.onPrepared)
     }
 
     @Styles pressedStyles() {
@@ -168,8 +110,7 @@ struct PagePlay {
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
                         Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
-                        this.isSeeking = true
-                        this.player.seekTo(value)
+                        this.mediaSession.seekTo(value)
                     }
                 })
             // duration
@@ -251,12 +192,17 @@ struct PagePlay {
                 // progress
                 this.ProgressBar()
                 // controller button
-                MediaControlBar({
-                    isPlaying: $isPlaying,
+                MediaController({
                     actionPlayOrPause: this.playOrPause.bind(this),
-                    actionPlayNext: this.playNext.bind(this),
-                    actionPlayPre: this.playPre.bind(this),
-                    onModeChanged: this.onModeChanged.bind(this)
+                    actionPlayNext: () => {
+                        this.mediaSession.playNext()
+                    },
+                    actionPlayPre: () => {
+                        this.mediaSession.playPre()
+                    },
+                    onModeChanged: (mode) => {
+                        this.mediaSession.setPlayMode(mode)
+                    }
                 })
             }
             .width('100%')
@@ -270,61 +216,15 @@ struct PagePlay {
     }
 
     private async playOrPause() {
-        if (this.player.isPlaying()) {
-            this.player.pause()
-            this.isPlaying = false
+        if (this.mediaSession.isPlaying()) {
+            this.mediaSession.pause()
         } else {
-            if (this.isInit && this.currentSong) {
-                let song = this.currentSong
-                Logger.d(TAG, "init play = " + song.title)
-                let fd = await song.open("r")
-                let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
-                this.player.setMediaSource(source, () => {
-                    this.player.start()
-                })
-            } else {
-                this.player.start()
-            }
-            this.isPlaying = true
+            this.mediaSession.start()
         }
     }
 
     private showLyric() {
         this.isShowLyric = !this.isShowLyric
         this.animAlpha = this.isShowLyric ? 0 : 1
-    }
-
-    private onModeChanged(mode: LoopMode) {
-        this.loopMode = mode
-    }
-
-    private playNext() {
-        this.currentPlayIndex++
-        if (this.currentPlayIndex > this.playlist.size() - 1) {
-            this.currentPlayIndex = 0
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play next=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
-    }
-
-    private playPre() {
-        this.currentPlayIndex--
-        if (this.currentPlayIndex < 0) {
-            this.currentPlayIndex = this.playlist.size() - 1
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play pre=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
-    }
-
-    private async playSong(song: mediaLibrary.FileAsset) {
-        this.title = song.title
-        this.artist = song.artist
-        let fd = await song.open("r")
-        let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
-        this.player.setMediaSource(source, () => {
-            this.player.start()
-        })
     }
 }
