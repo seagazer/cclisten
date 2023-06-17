@@ -1,3 +1,7 @@
+/**
+ * Author: seagazer
+ * Date: 2023/4/9
+ */
 export class Theme {
     colorPrimary: string
     colorSecondary: string

@@ -186,7 +186,7 @@ struct PagePlay {
     @Builder
     Cover() {
         Stack() {
-            Image($r("app.media.ic_cover_default"))
+            Image($r("app.media.ic_cover"))
                 .objectFit(ImageFit.Cover)
                 .width("100%")
                 .aspectRatio(1)

@@ -1,8 +1,10 @@
-import { Song } from '../bean/Song'
 import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 
 /**
  * The manager to manage a playlist of user.
+ *
+ * Author: seagazer
+ * Date: 2023/6/4
  */
 export class PlaylistManager {
     private list = new Array<mediaLibrary.FileAsset>()

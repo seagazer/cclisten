@@ -4,6 +4,10 @@ import { Logger } from '../extensions/Logger';
 
 const TAG = "FileParser"
 
+/**
+ * Author: seagazer
+ * Date: 2023/6/11
+ */
 export class FileParser implements IParser {
     private parser = new LyricParser()
 

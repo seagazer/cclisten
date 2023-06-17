@@ -1,6 +1,9 @@
 import { LoopMode } from './LoopMode'
 
-
+/**
+ * Author: seagazer
+ * Date: 2023/6/4
+ */
 export class PlayModeController {
     private mode: LoopMode = LoopMode.PLAYLIST_LOOP
     private index = 0

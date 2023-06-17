@@ -2,6 +2,10 @@ import hilog from '@ohos.hilog'
 
 const domain = 0x101
 
+/**
+ * Author: seagazer
+ * Date: 2023/4/18
+ */
 export class Logger {
     private static DEBUG = true
     private static FILTER_NAME = "cclisten "

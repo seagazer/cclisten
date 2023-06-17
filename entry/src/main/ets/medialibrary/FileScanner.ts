@@ -2,6 +2,10 @@ import fs from '@ohos.file.fs'
 import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 import common from '@ohos.app.ability.common'
 
+/**
+ * Author: seagazer
+ * Date: 2023/6/11
+ */
 export class FileScanner {
     static async scan(root: string, format: Array<string> = [".mp3"]) {
         let files = await fs.listFile(root, {

@@ -1,20 +1,20 @@
-/**
- * The media center is a core module to manager all the play action of media player.
- */
 import { CcPlayer, PlayerType } from '@seagazer/ccplayer'
 import { Logger } from '../extensions/Logger'
 import { LoopMode } from './LoopMode'
 
-const TAG = "MediaCenter"
+const TAG = "MediaSession"
 
-export class MediaCenter {
+/**
+ * Author: seagazer
+ * Date: 2023/6/17
+ */
+export class MediaSession {
+    private static sInstance: MediaSession = null
     private player: CcPlayer = null
-    private curIndex = 0
     private isSeeking = false
     private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
-    private currentPlayIndex = 0
 
-    constructor() {
+    private constructor() {
         this.player = CcPlayer.create(PlayerType.AUDIO)
         this.player
             .addOnProgressChangedListener(this.progressChangedListener)
@@ -24,7 +24,13 @@ export class MediaCenter {
                 this.isSeeking = false
                 Logger.d(TAG, "---seek completed")
             })
+    }
 
+    public static get(): MediaSession {
+        if (this.sInstance == null) {
+            this.sInstance = new MediaSession()
+        }
+        return this.sInstance
     }
 
     private progressChangedListener = (duration: number) => {
@@ -35,15 +41,13 @@ export class MediaCenter {
         this.isSeeking = false
     }
     private completedListener = () => {
+        // todo
         switch (this.loopMode) {
             case LoopMode.PLAYLIST_LOOP:
-                this.playNext()
                 break
             case LoopMode.LOOP:
-                this.player.start()
                 break
             case LoopMode.SHUFFLE:
-                // todo
                 break
         }
     }
@@ -52,38 +56,19 @@ export class MediaCenter {
         this.loopMode = mode
     }
 
-    private playNext() {
-        this.currentPlayIndex++
-        if (this.currentPlayIndex > this.playlist.size() - 1) {
-            this.currentPlayIndex = 0
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play next=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
+    isPlaying(): boolean {
+        return this.player.isPlaying()
     }
 
-    private playPre() {
-        this.currentPlayIndex--
-        if (this.currentPlayIndex < 0) {
-            this.currentPlayIndex = this.playlist.size() - 1
-        }
-        let song = this.playlist.getSong(this.currentPlayIndex)
-        Logger.d(TAG, "play pre=" + this.currentPlayIndex + ", " + JSON.stringify(song))
-        this.playSong(song)
+    start() {
+        this.player.start()
     }
 
-    private playSong(song: Song) {
-        this.title = song.title
-        this.artist = song.artist
-        MediaSourceFactory.createAssets(getContext(this), song.url, song.title)
-            .then((source) => {
-                this.player.setMediaSource(source, () => {
-                    this.player.start()
-                })
-            })
+    pause() {
+        this.player.pause()
     }
 
-    seekTo(value:number){
+    seekTo(value: number) {
         this.isSeeking = true
         this.player.seekTo(value)
     }
