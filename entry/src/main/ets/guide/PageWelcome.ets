@@ -1,8 +1,9 @@
-import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { navigationTo } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
 import { Fab } from '../view/Fab'
 import router from '@ohos.router'
+import { APP_THEME } from '../extensions/LiveData'
 
 @Entry
 @Component

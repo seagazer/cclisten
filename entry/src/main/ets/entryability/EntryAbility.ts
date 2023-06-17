@@ -18,7 +18,7 @@ export default class EntryAbility extends UIAbility {
     }
 
     onWindowStageCreate(windowStage: window.WindowStage) {
-        windowStage.loadContent(PageRouter.PAGE_HOME)
+        windowStage.loadContent(PageRouter.PAGE_SPLASH)
         let win = windowStage.getMainWindowSync()
         win.setWindowSystemBarProperties({
             statusBarColor: "#ffffff",

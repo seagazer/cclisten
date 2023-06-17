@@ -1,21 +1,22 @@
 import { MediaController } from '../view/MediaController';
-import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme';
+import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { Lyric, LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
-import { PlaylistManager } from '../playlist/PlaylistManager';
 import { FileScanner } from '../medialibrary/FileScanner';
 import { FileParser } from '../player/FileParser';
+import { Song } from '../bean/Song';
 import {
-    MediaSession,
+    APP_THEME,
     MEDIA_SESSION_ARTIST,
     MEDIA_SESSION_CURRENT_SONG,
     MEDIA_SESSION_DURATION,
     MEDIA_SESSION_FILE_LIST,
     MEDIA_SESSION_POSITION,
     MEDIA_SESSION_TITLE
-} from '../player/MediaSession';
-import { Song } from '../bean/Song';
+} from '../extensions/LiveData';
+import { MediaSession } from '../player/MediaSession';
+import common from '@ohos.app.ability.common';
 
 const TAG = "[PagePlay]"
 
@@ -30,11 +31,11 @@ struct PagePlay {
     @StorageLink(MEDIA_SESSION_ARTIST) artist: string = ""
     @StorageLink(MEDIA_SESSION_POSITION) currentPosition: number = 0
     @StorageLink(MEDIA_SESSION_DURATION) totalDuration: number = 0
-    @StorageLink(MEDIA_SESSION_CURRENT_SONG) currentSong: Song = null
     @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = new Array()
     @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
+    private context: common.Context
     private mediaSession: MediaSession = MediaSession.get()
     private lyricConfig: LyricConfig = new LyricConfig()
     private lyricHelper: LyricHelper = new LyricHelper()
@@ -47,11 +48,11 @@ struct PagePlay {
     private onPrepared = async () => {
         this.currentPosition = 0
         this.lyricLine = " "
-        let result = await  FileScanner.scanLyric(getContext(this).filesDir, this.title)
-        let lrc = this.lyricParser.parse(result)
-        Logger.d(TAG, "prepared lyricList size= " + this.lyricList.length)
         this.lyricConfig.setLyric(null)
         this.lyricHelper.setLyricData(null)
+        let filePath = await FileScanner.scanLyric(this.context.filesDir, this.title)
+        let lrc = this.lyricParser.parse(filePath)
+        Logger.d(TAG, "prepared lyricList size= " + this.lyricList.length)
         if (lrc) {
             this.lyricConfig.setLyric(lrc)
             if (lrc.lyricList.length > 0) {
@@ -61,6 +62,7 @@ struct PagePlay {
     }
 
     aboutToAppear() {
+        this.context = getContext(this)
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)

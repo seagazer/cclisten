@@ -2,6 +2,10 @@ import fs from '@ohos.file.fs'
 import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 import common from '@ohos.app.ability.common'
 import { Song } from '../bean/Song'
+import { Logger } from '../extensions/Logger'
+
+
+const TAG = "FileScanner"
 
 /**
  * Author: seagazer
@@ -23,7 +27,8 @@ export class FileScanner {
         })
     }
 
-    static async scanLyric(root: string, key: string) {
+    static async  scanLyric(root: string, key: string) {
+        Logger.d(TAG, "scan " + key + " from " + root)
         let files = await fs.listFile(root, {
             filter: {
                 suffix: [".lrc"]

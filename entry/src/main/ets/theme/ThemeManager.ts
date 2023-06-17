@@ -1,5 +1,5 @@
-import { syncLiveData } from '../extensions/LiveData'
-import { APP_THEME, Theme } from './Theme'
+import { APP_THEME, LiveData } from '../extensions/LiveData'
+import { Theme } from './Theme'
 
 /**
  * Author: seagazer
@@ -7,6 +7,6 @@ import { APP_THEME, Theme } from './Theme'
  */
 export class ThemeManager {
     static updateTheme(theme: Theme) {
-        syncLiveData(APP_THEME, theme)
+        LiveData.syncLiveData(APP_THEME, theme)
     }
 }

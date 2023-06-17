@@ -1,12 +1,33 @@
+import { Song } from '../bean/Song'
 import { navigationTo } from '../extensions/Extensions'
+import {
+    APP_THEME,
+    MEDIA_SESSION_ARTIST,
+    MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_DURATION,
+    MEDIA_SESSION_FILE_LIST,
+    MEDIA_SESSION_PLAYING_STATE,
+    MEDIA_SESSION_POSITION,
+    MEDIA_SESSION_TITLE
+} from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
-import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
 
 @Entry
 @Component
 struct PageSplash {
+    // init all the livedata >>
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
+    @StorageLink(MEDIA_SESSION_CURRENT_SONG) currentSong: Song = null
+    @StorageLink(MEDIA_SESSION_TITLE) title: string = ""
+    @StorageLink(MEDIA_SESSION_ARTIST) artist: string = ""
+    @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
+    @StorageLink(MEDIA_SESSION_POSITION) currentPosition: number = 0
+    @StorageLink(MEDIA_SESSION_DURATION) totalDuration: number = 0
+    @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = null
+    // init all the livedata <<
+
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
     private duration = 600

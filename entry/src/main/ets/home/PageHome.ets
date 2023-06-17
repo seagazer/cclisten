@@ -6,14 +6,21 @@ import { FileScanner } from '../medialibrary/FileScanner'
 import { ListItemView } from '../view/ListItemView'
 import router from '@ohos.router'
 import { Song } from '../bean/Song'
-import { syncLiveData } from '../extensions/LiveData'
-import { MediaSession, MEDIA_SESSION_CURRENT_SONG, MEDIA_SESSION_FILE_LIST } from '../player/MediaSession'
+import {
+    APP_THEME,
+    LiveData,
+    MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_FILE_LIST,
+} from '../extensions/LiveData'
+import { MediaSession } from '../player/MediaSession'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 const TAG = "[PageHome]"
 
 @Entry
 @Component
 struct PageHome {
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @State songList: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State duration: number = 100
@@ -23,23 +30,26 @@ struct PageHome {
         FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
             Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
             this.songList = result
-            syncLiveData(MEDIA_SESSION_FILE_LIST, this.songList)
+            LiveData.syncLiveData(MEDIA_SESSION_FILE_LIST, this.songList)
         })
     }
 
     @Builder
     TitleBar() {
         Row() {
-            Text("Listen").fontSize(36).fontWeight(800)
+            Text("Listen")
+                .fontColor(this.theme.colorPrimary)
+                .fontSize(36)
+                .fontWeight(800)
 
-            ExtImage({
-                src: $r("app.media.baseline_more_vert_24"),
-                widthSize: 56,
-                heightSize: 56,
-                imageFit: ImageFit.Contain,
-                paddingSize: 8,
-                borderOp: { radius: 40 }
-            })
+            // ExtImage({
+            //     src: $r("app.media.baseline_more_vert_24"),
+            //     widthSize: 56,
+            //     heightSize: 56,
+            //     imageFit: ImageFit.Contain,
+            //     paddingSize: 8,
+            //     borderOp: { radius: 40 }
+            // })
 
         }.width("100%").justifyContent(FlexAlign.SpaceBetween)
         .padding(16)
@@ -66,7 +76,7 @@ struct PageHome {
                 ListItem() {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
-                    AppStorage.Set<Song>(MEDIA_SESSION_CURRENT_SONG, song)
+                    LiveData.syncLiveData(MEDIA_SESSION_CURRENT_SONG, song)
                     MediaSession.get().playSong(song)
                     navigationTo(PageRouter.PAGE_PLAY)
                 })

@@ -1,26 +1,18 @@
 import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer/ccplayer'
 import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
-import { syncLiveData } from '../extensions/LiveData'
-import { Logger } from '../extensions/Logger'
+import {
+    LiveData,
+    MEDIA_SESSION_ARTIST,
+    MEDIA_SESSION_DURATION,
+    MEDIA_SESSION_PLAYING_STATE,
+    MEDIA_SESSION_POSITION,
+    MEDIA_SESSION_TITLE
+} from '../extensions/LiveData'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
 
 const TAG = "MediaSession"
-
-export const MEDIA_SESSION_PLAYING_STATE = "IS_PLAYING"
-
-export const MEDIA_SESSION_POSITION = "CUR_POSITION"
-
-export const MEDIA_SESSION_DURATION = "TOTAL_DURATION"
-
-export const MEDIA_SESSION_TITLE = "TITLE"
-
-export const MEDIA_SESSION_ARTIST = "ARTIST"
-
-export const MEDIA_SESSION_CURRENT_SONG = "CURRENT_SONG"
-
-export const MEDIA_SESSION_FILE_LIST = "FILE_LIST"
 
 /**
  * Author: seagazer
@@ -37,7 +29,7 @@ export class MediaSession {
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
-            syncLiveData(MEDIA_SESSION_POSITION, position)
+            LiveData.syncLiveData(MEDIA_SESSION_POSITION, position)
             this.onProgressList.forEach((callback) => {
                 callback(position)
             })
@@ -65,9 +57,9 @@ export class MediaSession {
     }
     private stateChangedListener = (newState: PlayerState) => {
         if (newState == PlayerState.STATE_STARTED) {
-            syncLiveData(MEDIA_SESSION_PLAYING_STATE, true)
+            LiveData.syncLiveData(MEDIA_SESSION_PLAYING_STATE, true)
         } else {
-            syncLiveData(MEDIA_SESSION_PLAYING_STATE, false)
+            LiveData.syncLiveData(MEDIA_SESSION_PLAYING_STATE, false)
         }
     }
 
@@ -136,9 +128,9 @@ export class MediaSession {
     }
 
     async playSong(song: Song) {
-        syncLiveData(MEDIA_SESSION_TITLE, song.title)
-        syncLiveData(MEDIA_SESSION_ARTIST, song.artist)
-        syncLiveData(MEDIA_SESSION_DURATION, song.duration)
+        LiveData.syncLiveData(MEDIA_SESSION_TITLE, song.title)
+        LiveData.syncLiveData(MEDIA_SESSION_ARTIST, song.artist)
+        LiveData.syncLiveData(MEDIA_SESSION_DURATION, song.duration)
         let fd = await parseUri(song.url)
         let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
         this.player.setMediaSource(source, () => {

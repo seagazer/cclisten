@@ -1,7 +1,7 @@
 import { PlayModeController } from '../player/PlayModeController'
 import { LoopMode } from '../player/LoopMode'
-import { APP_THEME, DEFAULT_THEME, Theme } from '../theme/Theme'
-import { MEDIA_SESSION_PLAYING_STATE } from '../player/MediaSession'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { APP_THEME, MEDIA_SESSION_PLAYING_STATE } from '../extensions/LiveData'
 
 @Extend(Image) function btnStyle(size: Length, padding: Length) {
     .width(size)
