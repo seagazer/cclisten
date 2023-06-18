@@ -146,7 +146,7 @@ struct PagePlay {
             .width(300)
             .aspectRatio(1)
             .border({ radius: 4 })
-            .shadow({ radius: 12, color: "#ff848484" })
+            // .shadow({ radius: 12, color: "#ff848484" })
             .backgroundColor("#ffbce5e8")
             // lyric line
             Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
@@ -264,7 +264,7 @@ struct PagePlay {
             Stack()
                 .width("100%")
                 .height("100%")
-                .backgroundColor("#f2f7f7f7")
+                .backgroundColor("#faf7f7f7")
                 .blur(8)
                 .border({ radius: 12 })
             List({ scroller: this.playlistScroller }) {
@@ -284,6 +284,7 @@ struct PagePlay {
             .width("100%")
             .height("100%")
             .padding({ left: 16, right: 16, top: 32, bottom: 16 })
+            .scrollBar(BarState.Auto)
             .onAppear(() => {
                 for (let i = 0;i < this.fileList.length; i++) {
                     let song = this.fileList[i]

@@ -27,7 +27,7 @@ export struct PageWelcome {
                 .scale({ x: this.logoAnimValue, y: this.logoAnimValue })
                 .opacity(this.logoAnimValue)
                 .animation({
-                    duration: 800,
+                    duration: 600,
                     onFinish: () => {
                         setTimeout(() => {
                             this.fabAnimValue = 1

@@ -20,6 +20,7 @@ struct PageHome {
     @State songList: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State duration: number = 100
+    @State isLoading: boolean = true
 
     aboutToAppear() {
         router.clear()
@@ -82,6 +83,7 @@ struct PageHome {
         .layoutWeight(1)
         .margin({ top: 16 })
         .padding({ left: 16, right: 16, bottom: 16 })
+        .scrollBar(BarState.Auto)
     }
 
     build() {
@@ -91,10 +93,28 @@ struct PageHome {
             Text("本地音乐").padding({ left: 16 })
                 .width("100%")
 
-            if (this.songList.length > 0) {
-                this.MusicList()
+            if (this.isLoading) {
+                Column() {
+                    LoadingProgress()
+                        .width(48).height(48).color(this.theme.colorPrimary)
+
+                    Text("正在扫描").fontSize(18).fontColor(this.theme.colorPrimary)
+                        .margin({ top: 16 })
+                }
+                .width("100%")
+                .layoutWeight(1)
+                .justifyContent(FlexAlign.Center)
+                .onAppear(() => {
+                    setTimeout(() => {
+                        this.isLoading = false
+                    }, 3000)
+                })
             } else {
-                this.EmptyView()
+                if (this.songList.length > 0) {
+                    this.MusicList()
+                } else {
+                    this.EmptyView()
+                }
             }
         }
         .width("100%")

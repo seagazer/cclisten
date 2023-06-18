@@ -30,7 +30,8 @@ export struct PageSetup {
                 .height("100%")
                 .layoutWeight(1)
                 .backgroundColor(color2)
-        }.width("100%").height("100%")
+        }
+        .width("100%").height("100%")
     }
 
     build() {
@@ -53,7 +54,7 @@ export struct PageSetup {
                         }
                         .width(100)
                         .height(50)
-                        .border({ radius: 8, color: "#ffffb265", width: 4 })
+                        .border({ color: this.theme.colorPrimary, width: 2 })
                         .onClick(() => {
                             this.selectIndex = index
                         })
@@ -63,18 +64,18 @@ export struct PageSetup {
                         }
                         .width(100)
                         .height(50)
-                        .border({ radius: 8, color: "#ffffff", width: 2 })
                         .onClick(() => {
                             this.selectIndex = index
                         })
                     }
                 })
             }
+            .align(Alignment.Center)
             .columnsTemplate("1fr 1fr 1fr")
             .rowsGap(16)
             .columnsGap(16)
             .margin({ top: 48 })
-            .height(116)
+            .height(126)
 
             Fab({
                 text: "确定",
