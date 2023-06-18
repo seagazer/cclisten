@@ -6,12 +6,7 @@ import { FileScanner } from '../medialibrary/FileScanner'
 import { ListItemView } from '../view/ListItemView'
 import router from '@ohos.router'
 import { Song } from '../bean/Song'
-import {
-    APP_THEME,
-    LiveData,
-    MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_FILE_LIST,
-} from '../extensions/LiveData'
+import { APP_THEME, LiveData, MEDIA_SESSION_FILE_LIST, } from '../extensions/LiveData'
 import { MediaSession } from '../player/MediaSession'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { PlaylistManager } from '../playlist/PlaylistManager'
@@ -78,7 +73,6 @@ struct PageHome {
                 ListItem() {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
-                    LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
                     MediaSession.get().playSong(song)
                     navigationTo(PageRouter.PAGE_PLAY)
                 })

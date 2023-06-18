@@ -4,6 +4,7 @@ import { parseUri } from '../extensions/Extensions'
 import {
     LiveData,
     MEDIA_SESSION_ARTIST,
+    MEDIA_SESSION_CURRENT_SONG,
     MEDIA_SESSION_DURATION,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
@@ -117,6 +118,7 @@ export class MediaSession {
 
     async playSong(song: Song) {
         Logger.d(TAG, "start play= " + JSON.stringify(song))
+        LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
         LiveData.setValue(MEDIA_SESSION_TITLE, song.title)
         LiveData.setValue(MEDIA_SESSION_ARTIST, song.artist)
         LiveData.setValue(MEDIA_SESSION_DURATION, song.duration)

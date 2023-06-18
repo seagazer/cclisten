@@ -1,6 +1,6 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { Lyric, LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
+import { LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../medialibrary/FileScanner';
@@ -9,7 +9,6 @@ import { Song } from '../bean/Song';
 import {
     APP_THEME,
     MEDIA_SESSION_ARTIST,
-    MEDIA_SESSION_CURRENT_SONG,
     MEDIA_SESSION_DURATION,
     MEDIA_SESSION_FILE_LIST,
     MEDIA_SESSION_POSITION,
@@ -17,6 +16,8 @@ import {
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import common from '@ohos.app.ability.common';
+import { ListItemView } from '../view/ListItemView';
+import router from '@ohos.router';
 
 const TAG = "[PagePlay]"
 
@@ -35,12 +36,12 @@ struct PagePlay {
     @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
+    @State isShowPlaylist: boolean = false
     private context: common.Context
     private mediaSession: MediaSession = MediaSession.get()
     private lyricConfig: LyricConfig = new LyricConfig()
     private lyricHelper: LyricHelper = new LyricHelper()
     private lyricParser: FileParser = new FileParser()
-    private lyricList = new Array<Lyric>()
     // todo
     private onProgressChanged = (position: number) => {
         this.lyricConfig.updatePosition(position)
@@ -62,6 +63,7 @@ struct PagePlay {
     }
 
     aboutToAppear() {
+        router.clear()
         this.context = getContext(this)
         // this.preLyric()
         this.lyricConfig
@@ -130,19 +132,74 @@ struct PagePlay {
     }
 
     @Builder
-    Cover() {
-        Stack() {
-            Image($r("app.media.ic_cover"))
-                .objectFit(ImageFit.Cover)
-                .width("100%")
-                .aspectRatio(1)
-                .margin(32)
+    CoverView() {
+        Column() {
+            // cover image
+            Stack() {
+                Image($r("app.media.ic_cover"))
+                    .objectFit(ImageFit.Cover)
+                    .width("100%")
+                    .aspectRatio(1)
+                    .margin(32)
+            }
+            .width(300)
+            .aspectRatio(1)
+            .border({ radius: 4 })
+            .shadow({ radius: 12, color: "#ff848484" })
+            .backgroundColor("#ffbce5e8")
+            // lyric line
+            Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
         }
-        .width(300)
-        .aspectRatio(1)
-        .border({ radius: 4 })
-        .shadow({ radius: 12, color: "#ff848484" })
-        .backgroundColor("#ffbce5e8")
+        .width("100%")
+        .height("100%")
+        .justifyContent(FlexAlign.SpaceEvenly)
+        .opacity(this.animAlpha)
+        .animation({
+            duration: 300,
+            curve: Curve.Linear,
+            delay: 0,
+            iterations: 1, // 设置-1表示动画无限循环
+            playMode: PlayMode.Normal
+        })
+        .onClick(() => {
+            if (this.isShowPlaylist) {
+                this.hidePlaylist()
+                return
+            }
+            this.showHideLyric()
+        })
+    }
+
+    @Builder
+    LyricContainer() {
+        Column() {
+            LyricView({ lyricConfig: this.lyricConfig })
+        }
+        .width("100%")
+        .height("100%")
+        .padding(32)
+        .opacity(1 - this.animAlpha)
+        .animation({
+            duration: 300,
+            curve: Curve.Linear,
+            delay: 0,
+            iterations: 1, // 设置-1表示动画无限循环
+            playMode: PlayMode.Normal
+        })
+        .onClick(() => {
+            if (this.isShowPlaylist) {
+                this.hidePlaylist()
+                return
+            }
+            this.showHideLyric()
+        })
+    }
+
+    onBackPress() {
+        if (this.isShowPlaylist) {
+            this.hidePlaylist()
+            return true
+        }
     }
 
     build() {
@@ -152,48 +209,13 @@ struct PagePlay {
                 this.Title()
 
                 Stack() {
-                    Column() {
-                        // cover image
-                        this.Cover()
-                        // lyric
-                        Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorSecondary)
-                    }
-                    .width("100%")
-                    .height("100%")
-                    .justifyContent(FlexAlign.SpaceEvenly)
-                    .opacity(this.animAlpha)
-                    .animation({
-                        duration: 300,
-                        curve: Curve.Linear,
-                        delay: 0,
-                        iterations: 1, // 设置-1表示动画无限循环
-                        playMode: PlayMode.Normal
-                    })
-                    .onClick(() => {
-                        this.showLyric()
-                    })
-
-                    Column() {
-                        LyricView({ lyricConfig: this.lyricConfig })
-                    }
-                    .width("100%")
-                    .height("100%")
-                    .padding(32)
-                    .opacity(1 - this.animAlpha)
-                    .animation({
-                        duration: 300,
-                        curve: Curve.Linear,
-                        delay: 0,
-                        iterations: 1, // 设置-1表示动画无限循环
-                        playMode: PlayMode.Normal
-                    })
-                    .onClick(() => {
-                        this.showLyric()
-                    })
+                    // cover
+                    this.CoverView()
+                    // lyricView
+                    this.LyricContainer()
                 }
                 .width("100%")
                 .layoutWeight(1)
-
                 // progress
                 this.ProgressBar()
                 // controller button
@@ -209,7 +231,9 @@ struct PagePlay {
                         this.mediaSession.setLoopMode(mode)
                     },
                     actionPlaylist: () => {
-
+                        animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
+                            this.isShowPlaylist = true
+                        })
                     }
                 })
             }
@@ -217,10 +241,55 @@ struct PagePlay {
             .height('100%')
             .padding(16)
             .alignItems(HorizontalAlign.Center)
+            .onClick(() => {
+                if (this.isShowPlaylist) {
+                    this.hidePlaylist()
+                }
+            })
+
+            // playlist
+            if (this.isShowPlaylist) {
+                this.Playlist()
+            }
         }
-        .alignContent(Alignment.TopEnd)
+        .alignContent(Alignment.Bottom)
         .width('100%')
         .height('100%')
+    }
+
+    @Builder
+    Playlist() {
+        Stack() {
+            Stack()
+                .width("100%")
+                .height("100%")
+                .backgroundColor("#f2f7f7f7")
+                .blur(8)
+                .border({ radius: 12 })
+            List() {
+                ForEach(this.fileList, (song: Song, index) => {
+                    ListItem() {
+                        if (song.title == this.title) {
+                            ListItemView({ data: song, index: index + 1, isHighLight: true })
+                        } else {
+                            ListItemView({ data: song, index: index + 1, isHighLight: false })
+                        }
+                    }.onClick(() => {
+                        this.mediaSession.playSong(song)
+                        this.hidePlaylist()
+                    })
+                })
+            }
+            .width("100%")
+            .height("100%")
+            .padding({ left: 16, right: 16, top: 32, bottom: 16 })
+        }
+        .width("90%")
+        .height("60%")
+        .margin({ bottom: 16 })
+        .border({ radius: 12 })
+        .transition({ type: TransitionType.Insert, translate: { x: 0, y: "100%" } })
+        .transition({ type: TransitionType.Delete, translate: { x: 0, y: "100%" } })
     }
 
     private async playOrPause() {
@@ -231,8 +300,17 @@ struct PagePlay {
         }
     }
 
-    private showLyric() {
+    private showHideLyric() {
+        if (this.isShowPlaylist) {
+            return
+        }
         this.isShowLyric = !this.isShowLyric
         this.animAlpha = this.isShowLyric ? 0 : 1
+    }
+
+    private hidePlaylist() {
+        animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
+            this.isShowPlaylist = false
+        })
     }
 }

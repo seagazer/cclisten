@@ -4,22 +4,22 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager';
 import { Fab } from '../view/Fab';
 import router from '@ohos.router';
-import { LiveData, APP_THEME } from '../extensions/LiveData';
+import { APP_THEME } from '../extensions/LiveData';
 
 @Entry
 @Component
 export struct PageSetup {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    private colorPrimaryList = ["#ff7D56C0", "#ffbba41e", "#ff29b523",
-        "#ffba5d30", "#ffFF405C", "#ff007DFE"]
-    private colorSecondaryList = ["#ff96aef8", "#ffeed964", "#ff4ede47",
-        "#ffe38151", "#ffec3cc9", "#ff5aa9fb"]
+    private colorPrimaryList = ["#ffFF405C", "#ff9456ff", "#ffd7c12d", "#ff22c25a",
+        "#ffff8244", "#ff2a82df"]
+    private colorSecondaryList = ["#cccb2039", "#cc5c26ba", "#cc988613", "#cc0c8f3a",
+        "#ccae4e1d", "#cc1258a3"]
     @State selectIndex: number = 0
     private themeColor: string
 
     aboutToAppear() {
-        this.themeColor = this.theme.colorPrimary
         router.clear()
+        this.themeColor = this.theme.colorPrimary
     }
 
     @Builder
@@ -38,7 +38,7 @@ export struct PageSetup {
             Row() {
                 Image($r("app.media.ic_theme")).width(56).height(56)
                 Text("请选择您喜欢的主题色")
-                    .fontSize(16)
+                    .fontSize(18)
                     .width("100%")
                     .textAlign(TextAlign.Start)
                     .padding({ left: 16 })
@@ -53,7 +53,7 @@ export struct PageSetup {
                         }
                         .width(100)
                         .height(50)
-                        .border({ radius: 8, color: "#ffd6386f", width: 2 })
+                        .border({ radius: 8, color: "#ffffb265", width: 4 })
                         .onClick(() => {
                             this.selectIndex = index
                         })
