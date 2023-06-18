@@ -20,7 +20,7 @@ export struct MediaController {
     actionPlayNext: () => void
     actionPlayPre: () => void
     actionPlayMode: () => void
-    actionLyric: () => void
+    actionPlaylist: () => void
     onModeChanged: (mode: LoopMode) => void
 
     @Styles pressedStyles() {
@@ -86,7 +86,7 @@ export struct MediaController {
                     normal: this.normalStyles
                 })
                 .onClick(() => {
-                    this.actionLyric?.()
+                    this.actionPlaylist?.()
                 })
         }
         .justifyContent(FlexAlign.SpaceBetween)

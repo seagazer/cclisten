@@ -2,7 +2,7 @@ import { IParser, Lyric, LyricParser } from '@seagazer/cclyric';
 import fs from '@ohos.file.fs'
 import { Logger } from '../extensions/Logger';
 
-const TAG = "FileParser"
+const TAG = "[FileParser]"
 
 /**
  * Author: seagazer

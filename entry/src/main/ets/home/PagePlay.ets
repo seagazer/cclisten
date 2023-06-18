@@ -51,8 +51,8 @@ struct PagePlay {
         this.lyricConfig.setLyric(null)
         this.lyricHelper.setLyricData(null)
         let filePath = await FileScanner.scanLyric(this.context.filesDir, this.title)
+        Logger.d(TAG, "update lyric= " + filePath)
         let lrc = this.lyricParser.parse(filePath)
-        Logger.d(TAG, "prepared lyricList size= " + this.lyricList.length)
         if (lrc) {
             this.lyricConfig.setLyric(lrc)
             if (lrc.lyricList.length > 0) {
@@ -72,6 +72,8 @@ struct PagePlay {
             .setLineSpace(vp2px(14))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
+            .setLyric(null)
+            .setAlignMode("center")
         this.mediaSession.onProgress(this.onProgressChanged)
         this.mediaSession.onSongChanged(this.onSongChanged)
     }
@@ -205,6 +207,9 @@ struct PagePlay {
                     },
                     onModeChanged: (mode) => {
                         this.mediaSession.setLoopMode(mode)
+                    },
+                    actionPlaylist: () => {
+
                     }
                 })
             }

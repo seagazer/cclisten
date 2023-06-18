@@ -5,7 +5,7 @@ import aac from '@ohos.abilityAccessCtrl'
 import { MediaSession } from '../player/MediaSession';
 import { Logger } from '../extensions/Logger';
 
-const TAG = "MainAbility"
+const TAG = "[MainAbility]"
 
 export default class EntryAbility extends UIAbility {
     private mediaSession: MediaSession = null

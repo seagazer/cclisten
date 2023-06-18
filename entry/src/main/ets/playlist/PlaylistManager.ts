@@ -3,7 +3,7 @@ import { Logger } from '../extensions/Logger'
 import { LoopMode } from '../player/LoopMode'
 
 
-const TAG = "PlaylistManager"
+const TAG = "[PlaylistManager]"
 
 
 /**
@@ -27,37 +27,36 @@ export class PlaylistManager {
         return this.sInstance
     }
 
-    getIndex(song: Song): number {
-        let index = this.list.indexOf(song)
-        Logger.d(TAG, "song index= " + index)
-        return index
-    }
-
-    setCurrentIndex(index: number) {
-        this.currentIndex = index
-    }
-
     updateCurrentSong(song: Song) {
         let index = this.list.indexOf(song)
         this.currentIndex = index
     }
 
     add(song: Song) {
+        // todo update list index
         this.list.push(song)
     }
 
     addList(songs: Array<Song>) {
+        // todo update list index
         this.list = this.list.concat(songs)
     }
 
     remove() {
+        // todo update list index
     }
 
-    getByIndex(index: number): Song {
+    getSong(index: number): Song {
         if (index < 0 || index > this.list.length - 1) {
             throw new Error("[Overflow] the index is out of range, this playlist size is " + this.list.length + ", index is " + index)
         }
         return this.list[index]
+    }
+
+    getIndex(song: Song): number {
+        let index = this.list.indexOf(song)
+        Logger.d(TAG, "song index= " + index)
+        return index
     }
 
     getPlayingIndex(): number {
@@ -87,7 +86,7 @@ export class PlaylistManager {
         return this.list.length
     }
 
-    getCurrent(): Song {
+    current(): Song {
         return this.list[this.currentIndex]
     }
 }

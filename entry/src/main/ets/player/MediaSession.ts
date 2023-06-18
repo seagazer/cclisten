@@ -13,7 +13,7 @@ import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
 
-const TAG = "MediaSession"
+const TAG = "[MediaSession]"
 
 /**
  * Author: seagazer

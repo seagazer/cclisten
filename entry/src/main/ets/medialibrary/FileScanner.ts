@@ -5,7 +5,7 @@ import { Song } from '../bean/Song'
 import { Logger } from '../extensions/Logger'
 
 
-const TAG = "FileScanner"
+const TAG = "[FileScanner]"
 
 /**
  * Author: seagazer
