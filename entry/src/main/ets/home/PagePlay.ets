@@ -42,6 +42,7 @@ struct PagePlay {
     private lyricConfig: LyricConfig = new LyricConfig()
     private lyricHelper: LyricHelper = new LyricHelper()
     private lyricParser: FileParser = new FileParser()
+    private playlistScroller = new Scroller()
     // todo
     private onProgressChanged = (position: number) => {
         this.lyricConfig.updatePosition(position)
@@ -266,7 +267,7 @@ struct PagePlay {
                 .backgroundColor("#f2f7f7f7")
                 .blur(8)
                 .border({ radius: 12 })
-            List() {
+            List({ scroller: this.playlistScroller }) {
                 ForEach(this.fileList, (song: Song, index) => {
                     ListItem() {
                         if (song.title == this.title) {
@@ -283,6 +284,15 @@ struct PagePlay {
             .width("100%")
             .height("100%")
             .padding({ left: 16, right: 16, top: 32, bottom: 16 })
+            .onAppear(() => {
+                for (let i = 0;i < this.fileList.length; i++) {
+                    let song = this.fileList[i]
+                    if (song.title == this.title) {
+                        this.playlistScroller.scrollToIndex(i)
+                        break
+                    }
+                }
+            })
         }
         .width("90%")
         .height("60%")
