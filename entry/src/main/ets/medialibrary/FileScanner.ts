@@ -27,7 +27,7 @@ export class FileScanner {
         })
     }
 
-    static async  scanLyric(root: string, key: string) {
+    static async scanLyric(root: string, key: string) {
         Logger.d(TAG, "scan " + key + " from " + root)
         let files = await fs.listFile(root, {
             filter: {

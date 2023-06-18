@@ -41,11 +41,16 @@ struct PagePlay {
     private lyricHelper: LyricHelper = new LyricHelper()
     private lyricParser: FileParser = new FileParser()
     private lyricList = new Array<Lyric>()
+    // todo
     private onProgressChanged = (position: number) => {
         this.lyricConfig.updatePosition(position)
         this.lyricLine = this.lyricHelper.getLyric(position)
     }
     private onPrepared = async () => {
+        this.preLyric()
+    }
+
+    async preLyric(){
         this.currentPosition = 0
         this.lyricLine = " "
         this.lyricConfig.setLyric(null)
@@ -63,6 +68,7 @@ struct PagePlay {
 
     aboutToAppear() {
         this.context = getContext(this)
+        this.preLyric()
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)
@@ -72,7 +78,7 @@ struct PagePlay {
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
         this.mediaSession.onProgress(this.onProgressChanged)
-        this.mediaSession.onPrepare(this.onPrepared)
+        // this.mediaSession.onPrepare(this.onPrepared)
     }
 
     @Styles pressedStyles() {
