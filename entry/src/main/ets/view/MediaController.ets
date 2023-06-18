@@ -35,6 +35,7 @@ export struct MediaController {
 
     build() {
         Row() {
+            // loop mode
             Image(this.playModeIcon)
                 .btnStyle(48, 12)
                 .stateStyles({
@@ -46,6 +47,7 @@ export struct MediaController {
                     this.playModeIcon = this.playModeController.getIcon()
                     this.onModeChanged?.(mode)
                 })
+            // play pre
             Image($r('app.media.baseline_skip_previous_24'))
                 .btnStyle(48, 6)
                 .stateStyles({
@@ -55,7 +57,7 @@ export struct MediaController {
                 .onClick(() => {
                     this.actionPlayPre?.()
                 })
-
+            // play pause
             Image(this.isPlaying ? $r('app.media.baseline_pause_circle_24') : $r('app.media.baseline_play_circle_24'))
                 .btnStyle(72, 2)
                 .stateStyles({
@@ -66,7 +68,7 @@ export struct MediaController {
                 .onClick(() => {
                     this.actionPlayOrPause?.()
                 })
-
+            // play next
             Image($r('app.media.baseline_skip_next_24'))
                 .btnStyle(48, 6)
                 .stateStyles({
@@ -76,6 +78,7 @@ export struct MediaController {
                 .onClick(() => {
                     this.actionPlayNext?.()
                 })
+            // play list
             Image($r('app.media.baseline_list_24'))
                 .btnStyle(48, 12)
                 .stateStyles({

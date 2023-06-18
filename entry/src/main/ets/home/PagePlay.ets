@@ -46,12 +46,7 @@ struct PagePlay {
         this.lyricConfig.updatePosition(position)
         this.lyricLine = this.lyricHelper.getLyric(position)
     }
-    private onPrepared = async () => {
-        this.preLyric()
-    }
-
-    async preLyric(){
-        this.currentPosition = 0
+    private onSongChanged = async () => {
         this.lyricLine = " "
         this.lyricConfig.setLyric(null)
         this.lyricHelper.setLyricData(null)
@@ -68,7 +63,7 @@ struct PagePlay {
 
     aboutToAppear() {
         this.context = getContext(this)
-        this.preLyric()
+        // this.preLyric()
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)
@@ -78,7 +73,7 @@ struct PagePlay {
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
         this.mediaSession.onProgress(this.onProgressChanged)
-        // this.mediaSession.onPrepare(this.onPrepared)
+        this.mediaSession.onSongChanged(this.onSongChanged)
     }
 
     @Styles pressedStyles() {
@@ -209,7 +204,7 @@ struct PagePlay {
                         this.mediaSession.playPre()
                     },
                     onModeChanged: (mode) => {
-                        this.mediaSession.setPlayMode(mode)
+                        this.mediaSession.setLoopMode(mode)
                     }
                 })
             }

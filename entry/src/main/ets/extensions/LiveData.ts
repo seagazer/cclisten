@@ -1,5 +1,5 @@
 export class LiveData {
-    static syncLiveData<T>(key: string, value: T) {
+    static setValue<T>(key: string, value: T) {
         AppStorage.Set<T>(key, value)
     }
 }

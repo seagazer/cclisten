@@ -1,4 +1,10 @@
 import { Song } from '../bean/Song'
+import { Logger } from '../extensions/Logger'
+import { LoopMode } from '../player/LoopMode'
+
+
+const TAG = "PlaylistManager"
+
 
 /**
  * The manager to manage a playlist of user.
@@ -19,6 +25,21 @@ export class PlaylistManager {
             this.sInstance = new PlaylistManager()
         }
         return this.sInstance
+    }
+
+    getIndex(song: Song): number {
+        let index = this.list.indexOf(song)
+        Logger.d(TAG, "song index= " + index)
+        return index
+    }
+
+    setCurrentIndex(index: number) {
+        this.currentIndex = index
+    }
+
+    updateCurrentSong(song: Song) {
+        let index = this.list.indexOf(song)
+        this.currentIndex = index
     }
 
     add(song: Song) {
@@ -43,13 +64,23 @@ export class PlaylistManager {
         return this.currentIndex
     }
 
-    getNext(): Song {
-        return null
+    getNext(mode: LoopMode): Song {
+        let nextIndex = ++this.currentIndex
+        if (nextIndex > this.list.length - 1) {
+            nextIndex = 0
+        }
+        Logger.d(TAG, "get next index= " + nextIndex)
+        return this.list[nextIndex]
     }
 
 
-    getPre(): Song {
-        return null
+    getPre(mode: LoopMode): Song {
+        let preIndex = --this.currentIndex
+        if (preIndex < 0) {
+            preIndex = this.list.length - 1
+        }
+        Logger.d(TAG, "get pre index= " + preIndex)
+        return this.list[preIndex]
     }
 
     size(): number {

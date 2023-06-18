@@ -7,6 +7,6 @@ import { Theme } from './Theme'
  */
 export class ThemeManager {
     static updateTheme(theme: Theme) {
-        LiveData.syncLiveData(APP_THEME, theme)
+        LiveData.setValue(APP_THEME, theme)
     }
 }

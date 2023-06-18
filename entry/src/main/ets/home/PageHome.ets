@@ -14,6 +14,7 @@ import {
 } from '../extensions/LiveData'
 import { MediaSession } from '../player/MediaSession'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { PlaylistManager } from '../playlist/PlaylistManager'
 
 const TAG = "[PageHome]"
 
@@ -30,7 +31,8 @@ struct PageHome {
         FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
             Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
             this.songList = result
-            LiveData.syncLiveData(MEDIA_SESSION_FILE_LIST, this.songList)
+            LiveData.setValue(MEDIA_SESSION_FILE_LIST, this.songList)
+            PlaylistManager.get().addList(this.songList)
         })
     }
 
@@ -76,7 +78,7 @@ struct PageHome {
                 ListItem() {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
-                    LiveData.syncLiveData(MEDIA_SESSION_CURRENT_SONG, song)
+                    LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
                     MediaSession.get().playSong(song)
                     navigationTo(PageRouter.PAGE_PLAY)
                 })

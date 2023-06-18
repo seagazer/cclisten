@@ -9,6 +9,7 @@ import {
     MEDIA_SESSION_POSITION,
     MEDIA_SESSION_TITLE
 } from '../extensions/LiveData'
+import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
 
@@ -23,13 +24,13 @@ export class MediaSession {
     private player: CcPlayer = null
     private isSeeking = false
     private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
-    private playlist: PlaylistManager = null
+    private playlist: PlaylistManager = PlaylistManager.get()
     private onProgressList: Array<(position: number) => void> = new Array()
-    private onPrepareList: Array<() => void> = new Array()
+    private onDataChangedList: Array<() => void> = new Array()
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
-            LiveData.syncLiveData(MEDIA_SESSION_POSITION, position)
+            LiveData.setValue(MEDIA_SESSION_POSITION, position)
             this.onProgressList.forEach((callback) => {
                 callback(position)
             })
@@ -37,29 +38,18 @@ export class MediaSession {
     }
     private prepareListener = () => {
         this.isSeeking = false
-        this.onPrepareList.forEach((callback) => {
-            callback()
-        })
     }
     private completedListener = () => {
-        // todo
-        switch (this.loopMode) {
-            case LoopMode.PLAYLIST_LOOP:
-                break
-            case LoopMode.LOOP:
-                break
-            case LoopMode.SHUFFLE:
-                break
-        }
+        this.playNext()
     }
     private seekChangedListener = () => {
         this.isSeeking = false
     }
     private stateChangedListener = (newState: PlayerState) => {
         if (newState == PlayerState.STATE_STARTED) {
-            LiveData.syncLiveData(MEDIA_SESSION_PLAYING_STATE, true)
+            LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, true)
         } else {
-            LiveData.syncLiveData(MEDIA_SESSION_PLAYING_STATE, false)
+            LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, false)
         }
     }
 
@@ -84,15 +74,11 @@ export class MediaSession {
         this.onProgressList.push(callback)
     }
 
-    onPrepare(callback: () => void) {
-        this.onPrepareList.push(callback)
+    onSongChanged(callback: () => void) {
+        this.onDataChangedList.push(callback)
     }
 
-    setPlaylistManager(playlist: PlaylistManager) {
-        this.playlist = playlist
-    }
-
-    setPlayMode(mode: LoopMode) {
+    setLoopMode(mode: LoopMode) {
         this.loopMode = mode
     }
 
@@ -118,23 +104,30 @@ export class MediaSession {
     }
 
     playNext() {
-        let next = this.playlist.getNext()
+        let next = this.playlist.getNext(this.loopMode)
+        Logger.d(TAG, "play next= " + JSON.stringify(next))
         this.playSong(next)
     }
 
     playPre() {
-        let pre = this.playlist.getNext()
+        let pre = this.playlist.getPre(this.loopMode)
+        Logger.d(TAG, "play pre= " + JSON.stringify(pre))
         this.playSong(pre)
     }
 
     async playSong(song: Song) {
-        LiveData.syncLiveData(MEDIA_SESSION_TITLE, song.title)
-        LiveData.syncLiveData(MEDIA_SESSION_ARTIST, song.artist)
-        LiveData.syncLiveData(MEDIA_SESSION_DURATION, song.duration)
+        Logger.d(TAG, "start play= " + JSON.stringify(song))
+        LiveData.setValue(MEDIA_SESSION_TITLE, song.title)
+        LiveData.setValue(MEDIA_SESSION_ARTIST, song.artist)
+        LiveData.setValue(MEDIA_SESSION_DURATION, song.duration)
+        this.playlist.updateCurrentSong(song)
         let fd = await parseUri(song.url)
         let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
         this.player.setMediaSource(source, () => {
             this.start()
+        })
+        this.onDataChangedList.forEach((callback) => {
+            callback()
         })
     }
 
