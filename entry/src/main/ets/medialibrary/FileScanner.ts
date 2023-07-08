@@ -42,7 +42,12 @@ export class FileScanner {
                 break
             }
         }
-        return root + "/" + lyricPath
+        if (lyricPath) {
+            return root + "/" + lyricPath
+        } else {
+            return null
+        }
+
     }
 
     static async scanMediaLibrary(context: common.Context) {

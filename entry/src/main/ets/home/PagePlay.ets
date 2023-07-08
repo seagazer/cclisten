@@ -8,11 +8,9 @@ import { FileParser } from '../player/FileParser';
 import { Song } from '../bean/Song';
 import {
     APP_THEME,
-    MEDIA_SESSION_ARTIST,
-    MEDIA_SESSION_DURATION,
+    MEDIA_SESSION_CURRENT_SONG,
     MEDIA_SESSION_FILE_LIST,
     MEDIA_SESSION_POSITION,
-    MEDIA_SESSION_TITLE
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import common from '@ohos.app.ability.common';
@@ -28,11 +26,9 @@ const TAG = "[PagePlay]"
 @Component
 struct PagePlay {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    @StorageLink(MEDIA_SESSION_TITLE) title: string = ""
-    @StorageLink(MEDIA_SESSION_ARTIST) artist: string = ""
-    @StorageLink(MEDIA_SESSION_POSITION) currentPosition: number = 0
-    @StorageLink(MEDIA_SESSION_DURATION) totalDuration: number = 0
+    @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
     @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = new Array()
+    @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = null
     @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
@@ -43,30 +39,10 @@ struct PagePlay {
     private lyricHelper: LyricHelper = new LyricHelper()
     private lyricParser: FileParser = new FileParser()
     private playlistScroller = new Scroller()
-    // todo
-    private onProgressChanged = (position: number) => {
-        this.lyricConfig.updatePosition(position)
-        this.lyricLine = this.lyricHelper.getLyric(position)
-    }
-    private onSongChanged = async () => {
-        this.lyricLine = " "
-        this.lyricConfig.setLyric(null)
-        this.lyricHelper.setLyricData(null)
-        let filePath = await FileScanner.scanLyric(this.context.filesDir, this.title)
-        Logger.d(TAG, "update lyric= " + filePath)
-        let lrc = this.lyricParser.parse(filePath)
-        if (lrc) {
-            this.lyricConfig.setLyric(lrc)
-            if (lrc.lyricList.length > 0) {
-                this.lyricHelper.setLyricData(lrc.lyricList)
-            }
-        }
-    }
 
     aboutToAppear() {
         router.clear()
         this.context = getContext(this)
-        // this.preLyric()
         this.lyricConfig
             .setTextSize(vp2px(16))
             .setCacheSize(4)
@@ -77,8 +53,6 @@ struct PagePlay {
             .setEmptyHint("暂无歌词")
             .setLyric(null)
             .setAlignMode("center")
-        this.mediaSession.onProgress(this.onProgressChanged)
-        this.mediaSession.onSongChanged(this.onSongChanged)
     }
 
     @Styles pressedStyles() {
@@ -94,8 +68,8 @@ struct PagePlay {
     @Builder
     Title() {
         Column() {
-            Text(this.title).fontSize(24).fontColor(this.theme.colorPrimary)
-            Text(this.artist).fontSize(14).fontColor(this.theme.colorSecondary)
+            Text(this.currentSong.title).fontSize(24).fontColor(this.theme.colorPrimary)
+            Text(this.currentSong.artist).fontSize(14).fontColor(this.theme.colorSecondary)
                 .margin({ top: 8 })
         }
     }
@@ -108,7 +82,7 @@ struct PagePlay {
                 {
                     style: SliderStyle.OutSet,
                     min: 0,
-                    max: this.totalDuration,
+                    max: this.currentSong.duration,
                     value: this.currentPosition
                 })
                 .width('100%')
@@ -124,7 +98,7 @@ struct PagePlay {
             // duration
             Row() {
                 Text(timeToString(this.currentPosition)).fontSize(14).fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.totalDuration)).fontSize(14).fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.currentSong.duration)).fontSize(14).fontColor(this.theme.colorSecondary)
             }.width('100%')
             .alignItems(VerticalAlign.Bottom)
             .justifyContent(FlexAlign.SpaceBetween)
@@ -270,7 +244,7 @@ struct PagePlay {
             List({ scroller: this.playlistScroller }) {
                 ForEach(this.fileList, (song: Song, index) => {
                     ListItem() {
-                        if (song.title == this.title) {
+                        if (song.title == this.currentSong.title) {
                             ListItemView({ data: song, index: index + 1, isHighLight: true })
                         } else {
                             ListItemView({ data: song, index: index + 1, isHighLight: false })
@@ -288,7 +262,7 @@ struct PagePlay {
             .onAppear(() => {
                 for (let i = 0;i < this.fileList.length; i++) {
                     let song = this.fileList[i]
-                    if (song.title == this.title) {
+                    if (song.title == this.currentSong.title) {
                         this.playlistScroller.scrollToIndex(i)
                         break
                     }
@@ -301,6 +275,28 @@ struct PagePlay {
         .border({ radius: 12 })
         .transition({ type: TransitionType.Insert, translate: { x: 0, y: "100%" } })
         .transition({ type: TransitionType.Delete, translate: { x: 0, y: "100%" } })
+    }
+
+    private onProgressChanged() {
+        this.lyricConfig.updatePosition(this.currentPosition)
+        this.lyricLine = this.lyricHelper.getLyric(this.currentPosition)
+        Logger.d(TAG, "onProgressChanged= " + this.currentPosition + ", " + this.lyricHelper.getLyric(this.currentPosition))
+    }
+
+    private async onSongChanged() {
+        Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
+        this.lyricLine = " "
+        this.lyricConfig.setLyric(null)
+        this.lyricHelper.setLyricData(null)
+        let filePath = await FileScanner.scanLyric(this.context.filesDir, this.currentSong.title)
+        Logger.d(TAG, "update lyric= " + filePath)
+        let lrc = this.lyricParser.parse(filePath)
+        if (lrc) {
+            this.lyricConfig.setLyric(lrc)
+            if (lrc.lyricList.length > 0) {
+                this.lyricHelper.setLyricData(lrc.lyricList)
+            }
+        }
     }
 
     private async playOrPause() {

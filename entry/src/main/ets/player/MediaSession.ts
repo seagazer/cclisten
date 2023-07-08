@@ -3,12 +3,9 @@ import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
 import {
     LiveData,
-    MEDIA_SESSION_ARTIST,
     MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_DURATION,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
-    MEDIA_SESSION_TITLE
 } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
@@ -26,15 +23,11 @@ export class MediaSession {
     private isSeeking = false
     private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
     private playlist: PlaylistManager = PlaylistManager.get()
-    private onProgressList: Array<(position: number) => void> = new Array()
-    private onDataChangedList: Array<() => void> = new Array()
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
+            Logger.d(TAG, "update position= " + position)
             LiveData.setValue(MEDIA_SESSION_POSITION, position)
-            this.onProgressList.forEach((callback) => {
-                callback(position)
-            })
         }
     }
     private prepareListener = () => {
@@ -69,14 +62,6 @@ export class MediaSession {
             this.sInstance = new MediaSession()
         }
         return this.sInstance
-    }
-
-    onProgress(callback: (position: number) => void) {
-        this.onProgressList.push(callback)
-    }
-
-    onSongChanged(callback: () => void) {
-        this.onDataChangedList.push(callback)
     }
 
     setLoopMode(mode: LoopMode) {
@@ -119,17 +104,11 @@ export class MediaSession {
     async playSong(song: Song) {
         Logger.d(TAG, "start play= " + JSON.stringify(song))
         LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
-        LiveData.setValue(MEDIA_SESSION_TITLE, song.title)
-        LiveData.setValue(MEDIA_SESSION_ARTIST, song.artist)
-        LiveData.setValue(MEDIA_SESSION_DURATION, song.duration)
         this.playlist.updateCurrentSong(song)
         let fd = await parseUri(song.url)
         let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
         this.player.setMediaSource(source, () => {
             this.start()
-        })
-        this.onDataChangedList.forEach((callback) => {
-            callback()
         })
     }
 
