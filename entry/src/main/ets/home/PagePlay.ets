@@ -53,6 +53,12 @@ struct PagePlay {
             .setEmptyHint("暂无歌词")
             .setLyric(null)
             .setAlignMode("center")
+        // @ts-ignore
+        let song = router.getParams().data
+        if (song) {
+            Logger.d(TAG, "play from router= " + JSON.stringify(song))
+            this.mediaSession.playSong(song as Song)
+        }
     }
 
     @Styles pressedStyles() {
@@ -120,7 +126,7 @@ struct PagePlay {
             .width(300)
             .aspectRatio(1)
             .border({ radius: 4 })
-            // .shadow({ radius: 12, color: "#ff848484" })
+            .shadow({ radius: 12, color: "#b3868686" })
             .backgroundColor("#ffbce5e8")
             // lyric line
             Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
@@ -280,22 +286,25 @@ struct PagePlay {
     private onProgressChanged() {
         this.lyricConfig.updatePosition(this.currentPosition)
         this.lyricLine = this.lyricHelper.getLyric(this.currentPosition)
-        Logger.d(TAG, "onProgressChanged= " + this.currentPosition + ", " + this.lyricHelper.getLyric(this.currentPosition))
     }
 
-    private async onSongChanged() {
+    private onSongChanged() {
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
         this.lyricLine = " "
         this.lyricConfig.setLyric(null)
         this.lyricHelper.setLyricData(null)
-        let filePath = await FileScanner.scanLyric(this.context.filesDir, this.currentSong.title)
+        let filePath = FileScanner.scanLyricSync(this.context.filesDir, this.currentSong.title)
         Logger.d(TAG, "update lyric= " + filePath)
-        let lrc = this.lyricParser.parse(filePath)
-        if (lrc) {
-            this.lyricConfig.setLyric(lrc)
-            if (lrc.lyricList.length > 0) {
-                this.lyricHelper.setLyricData(lrc.lyricList)
+        if (filePath) {
+            let lrc = this.lyricParser.parse(filePath)
+            if (lrc) {
+                this.lyricConfig.setLyric(lrc)
+                if (lrc.lyricList.length > 0) {
+                    this.lyricHelper.setLyricData(lrc.lyricList)
+                }
             }
+        } else {
+            Logger.e(TAG, "get lyric error!")
         }
     }
 

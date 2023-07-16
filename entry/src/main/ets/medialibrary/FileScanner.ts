@@ -27,6 +27,28 @@ export class FileScanner {
         })
     }
 
+    static scanLyricSync(root: string, key: string) {
+        Logger.d(TAG, "scan " + key + " from " + root)
+        let files = fs.listFileSync(root, {
+            filter: {
+                suffix: [".lrc"]
+            }
+        })
+        let lyricPath: string = null
+        for (let i = 0;i < files.length; i++) {
+            let f = files[i]
+            if (f.indexOf(key) >= 0) {
+                lyricPath = f
+                break
+            }
+        }
+        if (lyricPath) {
+            return root + "/" + lyricPath
+        } else {
+            return null
+        }
+    }
+
     static async scanLyric(root: string, key: string) {
         Logger.d(TAG, "scan " + key + " from " + root)
         let files = await fs.listFile(root, {
@@ -47,7 +69,6 @@ export class FileScanner {
         } else {
             return null
         }
-
     }
 
     static async scanMediaLibrary(context: common.Context) {

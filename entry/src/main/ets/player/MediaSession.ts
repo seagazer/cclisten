@@ -26,7 +26,6 @@ export class MediaSession {
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
-            Logger.d(TAG, "update position= " + position)
             LiveData.setValue(MEDIA_SESSION_POSITION, position)
         }
     }

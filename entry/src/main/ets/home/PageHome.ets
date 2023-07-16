@@ -24,12 +24,6 @@ struct PageHome {
 
     aboutToAppear() {
         router.clear()
-        FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
-            Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
-            this.songList = result
-            LiveData.setValue(MEDIA_SESSION_FILE_LIST, this.songList)
-            PlaylistManager.get().addList(this.songList)
-        })
     }
 
     @Builder
@@ -39,16 +33,6 @@ struct PageHome {
                 .fontColor(this.theme.colorPrimary)
                 .fontSize(36)
                 .fontWeight(800)
-
-            // ExtImage({
-            //     src: $r("app.media.baseline_more_vert_24"),
-            //     widthSize: 56,
-            //     heightSize: 56,
-            //     imageFit: ImageFit.Contain,
-            //     paddingSize: 8,
-            //     borderOp: { radius: 40 }
-            // })
-
         }.width("100%").justifyContent(FlexAlign.SpaceBetween)
         .padding(16)
     }
@@ -74,8 +58,10 @@ struct PageHome {
                 ListItem() {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
-                    MediaSession.get().playSong(song)
-                    navigationTo(PageRouter.PAGE_PLAY)
+                    // MediaSession.get().playSong(song)
+                    navigationTo(PageRouter.PAGE_PLAY, {
+                        data: song
+                    })
                 })
             })
         }
@@ -105,9 +91,15 @@ struct PageHome {
                 .layoutWeight(1)
                 .justifyContent(FlexAlign.Center)
                 .onAppear(() => {
-                    setTimeout(() => {
-                        this.isLoading = false
-                    }, 3000)
+                    FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
+                        Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
+                        this.songList = result
+                        LiveData.setValue(MEDIA_SESSION_FILE_LIST, this.songList)
+                        PlaylistManager.get().addList(this.songList)
+                        setTimeout(() => {
+                            this.isLoading = false
+                        }, 1500)
+                    })
                 })
             } else {
                 if (this.songList.length > 0) {
