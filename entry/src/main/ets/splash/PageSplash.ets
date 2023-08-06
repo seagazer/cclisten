@@ -1,3 +1,4 @@
+import { Logger } from '@seagazer/ccplayer'
 import { Song } from '../bean/Song'
 import { navigationTo } from '../extensions/Extensions'
 import {
@@ -10,6 +11,10 @@ import {
 import { PageRouter } from '../extensions/PageRouter'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
+
+PersistentStorage.PersistProp<string>("themeString", JSON.stringify(DEFAULT_THEME))
+PersistentStorage.PersistProp<string>("isAppInit", "0")
+const TAG = "PageSplash"
 
 @Entry
 @Component
@@ -26,11 +31,19 @@ struct PageSplash {
     @State alphas: Array<number> = new Array()
     private duration = 600
     private delay = 200
+    @StorageLink("isAppInit") isAppInit: string = "0"
+    @StorageLink("themeString") themeString: string = JSON.stringify(DEFAULT_THEME)
 
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
-        ThemeManager.updateTheme(new Theme("#FF405C", "#ffea223f"))
+        Logger.d(TAG, "isAppInit = " + this.isAppInit)
+        if (this.isAppInit === "1") {
+            let theme = JSON.parse(this.themeString)
+            ThemeManager.updateTheme(theme)
+        } else {
+            ThemeManager.updateTheme(new Theme("#FF405C", "#ffea223f"))
+        }
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })
@@ -63,7 +76,11 @@ struct PageSplash {
                     })
             })
             setTimeout(() => {
-                navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
+                if (this.isAppInit === "0") {
+                    navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
+                } else {
+                    navigationTo(PageRouter.PAGE_HOME)
+                }
             }, 500 + this.duration + this.delay * this.logoName.length)
         })
     }

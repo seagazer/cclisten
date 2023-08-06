@@ -83,8 +83,11 @@ export struct PageSetup {
                 color: this.themeColor,
                 marginSize: { top: 56 },
                 onAction: () => {
-                    ThemeManager.updateTheme(new Theme(this.colorPrimaryList[this.selectIndex],
-                        this.colorSecondaryList[this.selectIndex]))
+                    let theme = new Theme(this.colorPrimaryList[this.selectIndex],
+                        this.colorSecondaryList[this.selectIndex])
+                    ThemeManager.updateTheme(theme)
+                    AppStorage.Set<string>("isAppInit", "1")
+                    AppStorage.Set<string>("themeString", JSON.stringify(theme))
                     navigationTo(PageRouter.PAGE_HOME)
                 }
             })

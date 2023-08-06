@@ -96,9 +96,7 @@ struct PageHome {
                         this.songList = result
                         LiveData.setValue(MEDIA_SESSION_FILE_LIST, this.songList)
                         PlaylistManager.get().addList(this.songList)
-                        setTimeout(() => {
-                            this.isLoading = false
-                        }, 1500)
+                        this.isLoading = false
                     })
                 })
             } else {

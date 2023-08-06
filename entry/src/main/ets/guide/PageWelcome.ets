@@ -42,15 +42,8 @@ export struct PageWelcome {
                 .margin({ top: 48 })
                 .translate({ y: (1 - this.translationValue) * 100 })
 
-            Text("下面让我们开始吧")
-                .fontSize(16)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(this.theme.colorPrimary)
-                .margin({ top: 16 })
-                .translate({ y: (1 - this.translationValue) * 50 })
-
             Fab({
-                text: "好的",
+                text: "开始",
                 textSize: 18,
                 color: this.themeColor,
                 marginSize: { top: 56 },
