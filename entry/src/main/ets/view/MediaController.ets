@@ -57,9 +57,9 @@ export struct MediaController {
                 .onClick(() => {
                     this.actionPlayPre?.()
                 })
-            // play pause
+            // play & pause
             Image(this.isPlaying ? $r('app.media.baseline_pause_circle_24') : $r('app.media.baseline_play_circle_24'))
-                .btnStyle(72, 2)
+                .btnStyle(76, 2)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles

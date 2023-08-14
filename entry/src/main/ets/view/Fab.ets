@@ -12,15 +12,17 @@ export struct Fab {
     dimColor: number
 
     aboutToAppear() {
-        this.dimColor = dimColor(this.color, 0.95)
+        this.dimColor = dimColor(this.color, 0.8)
     }
 
-    @Styles normalStyles(){
+    @Styles
+    normalStyles(){
         .backgroundColor(this.color)
         .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 4 })
     }
 
-    @Styles pressedStyles(){
+    @Styles
+    pressedStyles(){
         .backgroundColor(this.dimColor)
         .shadow({ radius: 6, color: "#ff3a3a3a", offsetY: 4 })
     }

@@ -72,22 +72,34 @@ export class PlaylistManager {
     }
 
     getNext(mode: LoopMode): Song {
-        let nextIndex = ++this.currentIndex
-        if (nextIndex > this.songList.length - 1) {
-            nextIndex = 0
+        switch (mode) {
+            case LoopMode.LOOP:
+                return this.songList[this.currentIndex]
+            case LoopMode.SHUFFLE:
+            case LoopMode.PLAYLIST_LOOP:
+                let nextIndex = ++this.currentIndex
+                if (nextIndex > this.songList.length - 1) {
+                    nextIndex = 0
+                }
+                Logger.d(TAG, "get next index= " + nextIndex)
+                return this.songList[nextIndex]
         }
-        Logger.d(TAG, "get next index= " + nextIndex)
-        return this.songList[nextIndex]
     }
 
 
     getPre(mode: LoopMode): Song {
-        let preIndex = --this.currentIndex
-        if (preIndex < 0) {
-            preIndex = this.songList.length - 1
+        switch (mode) {
+            case LoopMode.LOOP:
+                return this.songList[this.currentIndex]
+            case LoopMode.SHUFFLE:
+            case LoopMode.PLAYLIST_LOOP:
+                let preIndex = --this.currentIndex
+                if (preIndex < 0) {
+                    preIndex = this.songList.length - 1
+                }
+                Logger.d(TAG, "get pre index= " + preIndex)
+                return this.songList[preIndex]
         }
-        Logger.d(TAG, "get pre index= " + preIndex)
-        return this.songList[preIndex]
     }
 
     size(): number {

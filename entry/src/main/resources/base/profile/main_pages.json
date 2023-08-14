@@ -3,7 +3,7 @@
     "splash/PageSplash",
     "guide/PageWelcome",
     "guide/PageSetup",
-    "home/PageHome",
-    "home/PagePlay"
+    "guide/PageFileList",
+    "home/PageHome"
   ]
 }
