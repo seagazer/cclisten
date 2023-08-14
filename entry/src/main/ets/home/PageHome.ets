@@ -1,7 +1,7 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
-import { duration2text as timeToString } from '../extensions/Extensions';
+import { duration2text as timeToString, navigationTo, toast } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../medialibrary/FileScanner';
 import { FileParser } from '../player/FileParser';
@@ -16,6 +16,7 @@ import { MediaSession } from '../player/MediaSession';
 import common from '@ohos.app.ability.common';
 import { ListItemView } from '../view/ListItemView';
 import router from '@ohos.router';
+import { PageRouter } from '../extensions/PageRouter';
 
 const TAG = "[PageHome]"
 
@@ -74,12 +75,60 @@ struct PageHome {
     }
 
     @Builder
-    Title() {
-        Column() {
-            Text(this.currentSong.title).fontSize(24).fontColor(this.theme.colorPrimary)
-            Text(this.currentSong.artist).fontSize(14).fontColor(this.theme.colorSecondary)
-                .margin({ top: 8 })
+    Menu() {
+        Menu() {
+            MenuItem({ startIcon: $r("app.media.baseline_storage_24"), content: "扫描" })
+                .onChange(() => {
+                    // todo:扫描
+                    toast("todo:扫描")
+                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+                })
+            MenuItem({ startIcon: $r("app.media.baseline_favorite_24"), content: "收藏" })
+                .onChange(() => {
+                    // todo:收藏
+                    toast("todo:收藏")
+                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+                })
+            MenuItem({ startIcon: $r("app.media.baseline_settings_24"), content: "设置" })
+                .onChange(() => {
+                    // todo:设置
+                    toast("todo:设置")
+                    navigationTo(PageRouter.PAGE_SETTINGS)
+                })
         }
+    }
+
+    @Builder
+    Title() {
+        Row() {
+            Stack()
+                .width(48)
+                .height(48)
+
+            Column() {
+                Text(this.currentSong.title)
+                    .fontSize(24)
+                    .fontColor(this.theme.colorPrimary)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                Text(this.currentSong.artist)
+                    .fontSize(14)
+                    .fontColor(this.theme.colorSecondary)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .margin({ top: 8 })
+            }.layoutWeight(1)
+
+            Image($r("app.media.baseline_more_vert_24"))
+                .width(48)
+                .height(48)
+                .padding(12)
+                .stateStyles({
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
+                })
+                .bindMenu(this.Menu)
+        }.width("100%")
     }
 
     @Builder

@@ -79,7 +79,7 @@ struct PageSplash {
                 if (this.isAppInit === "0") {
                     navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
                 } else {
-                    navigationTo(PageRouter.PAGE_HOME)
+                    navigationTo(PageRouter.PAGE_GUIDE_BROWSE)
                 }
             }, 500 + this.duration + this.delay * this.logoName.length)
         })

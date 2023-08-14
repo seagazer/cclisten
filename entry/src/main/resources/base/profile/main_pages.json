@@ -4,6 +4,8 @@
     "guide/PageWelcome",
     "guide/PageSetup",
     "guide/PageFileList",
-    "home/PageHome"
+    "home/PageHome",
+    "settings/PageSettings",
+    "medialibrary/PageMediaLibrary"
   ]
 }

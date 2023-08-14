@@ -88,7 +88,7 @@ export struct PageSetup {
                     ThemeManager.updateTheme(theme)
                     AppStorage.Set<string>("isAppInit", "1")
                     AppStorage.Set<string>("themeString", JSON.stringify(theme))
-                    navigationTo(PageRouter.PAGE_HOME)
+                    navigationTo(PageRouter.PAGE_GUIDE_BROWSE)
                 }
             })
         }
