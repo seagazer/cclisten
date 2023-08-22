@@ -3,7 +3,8 @@ import { LoopMode } from '../player/LoopMode'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { APP_THEME, MEDIA_SESSION_PLAYING_STATE } from '../extensions/LiveData'
 
-@Extend(Image) function btnStyle(size: Length, padding: Length) {
+@Extend(Image)
+function btnStyle(size: Length, padding: Length) {
     .width(size)
     .height(size)
     .padding(padding)
@@ -23,12 +24,14 @@ export struct MediaController {
     actionPlaylist: () => void
     onModeChanged: (mode: LoopMode) => void
 
-    @Styles pressedStyles() {
+    @Styles
+    pressedStyles() {
         .border({ radius: 200 })
         .backgroundColor(this.theme.colorAction)
     }
 
-    @Styles normalStyles() {
+    @Styles
+    normalStyles() {
         .border({ radius: 200 })
         .backgroundColor(null)
     }
@@ -92,6 +95,5 @@ export struct MediaController {
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .margin({ top: 16 })
-        .padding({ left: 16, right: 16 })
     }
 }

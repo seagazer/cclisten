@@ -1,7 +1,7 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
-import { duration2text as timeToString } from '../extensions/Extensions';
+import { duration2text as timeToString, navigationTo, toast } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../medialibrary/FileScanner';
 import { FileParser } from '../player/FileParser';
@@ -16,6 +16,7 @@ import { MediaSession } from '../player/MediaSession';
 import common from '@ohos.app.ability.common';
 import { ListItemView } from '../view/ListItemView';
 import router from '@ohos.router';
+import { PageRouter } from '../extensions/PageRouter';
 
 const TAG = "[PageHome]"
 
@@ -48,7 +49,7 @@ struct PageHome {
             .setCacheSize(4)
             .setTextColor(this.theme.colorSecondary)
             .setHighlightColor(this.theme.colorPrimary)
-            .setLineSpace(vp2px(16))
+            .setLineSpace(vp2px(14))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
             .setLyric(null)
@@ -74,6 +75,63 @@ struct PageHome {
     }
 
     @Builder
+    Menu() {
+        Menu() {
+            MenuItem({ startIcon: $r("app.media.baseline_storage_24"), content: "扫描" })
+                .onChange(() => {
+                    // todo:扫描
+                    toast("todo:扫描")
+                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+                })
+            MenuItem({ startIcon: $r("app.media.baseline_favorite_24"), content: "收藏" })
+                .onChange(() => {
+                    // todo:收藏
+                    toast("todo:收藏")
+                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+                })
+            MenuItem({ startIcon: $r("app.media.baseline_settings_24"), content: "设置" })
+                .onChange(() => {
+                    // todo:设置
+                    toast("todo:设置")
+                    navigationTo(PageRouter.PAGE_SETTINGS)
+                })
+        }
+    }
+
+    @Builder
+    Title() {
+        Row() {
+            Stack()
+                .width(48)
+                .height(48)
+
+            Column() {
+                Text(this.currentSong.title)
+                    .fontSize(24)
+                    .fontColor(this.theme.colorPrimary)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                Text(this.currentSong.artist)
+                    .fontSize(14)
+                    .fontColor(this.theme.colorSecondary)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .margin({ top: 8 })
+            }.layoutWeight(1)
+
+            Image($r("app.media.baseline_more_vert_24"))
+                .width(48)
+                .height(48)
+                .padding(12)
+                .stateStyles({
+                    pressed: this.pressedStyles,
+                    normal: this.normalStyles
+                })
+                .bindMenu(this.Menu)
+        }.width("100%")
+    }
+
+    @Builder
     ProgressBar() {
         Column() {
             // slider
@@ -96,49 +154,46 @@ struct PageHome {
                 })
             // duration
             Row() {
-                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.currentSong.duration)).fontSize(16).fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.currentPosition)).fontSize(14).fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.currentSong.duration)).fontSize(14).fontColor(this.theme.colorSecondary)
             }.width('100%')
             .alignItems(VerticalAlign.Bottom)
             .justifyContent(FlexAlign.SpaceBetween)
             .padding({ left: 8, right: 8 })
-        }
+        }.padding({ left: 16, right: 16 })
     }
 
     @Builder
     CoverView() {
         Column() {
             // cover image
-            Image($r("app.media.ic_cover"))
-                .objectFit(ImageFit.Cover)
-                .width(320)
-                .height(320)
-                .padding(32)
-                .backgroundColor("#ffbfbff1")
-                .border({ radius: 8 })
-                .shadow({ radius: 12, offsetY: 16, color: "#b3dddddd" })
+            Stack() {
+                Image($r("app.media.ic_cover"))
+                    .objectFit(ImageFit.Cover)
+                    .width("100%")
+                    .aspectRatio(1)
+                    .margin(32)
+            }
+            .width(260)
+            .aspectRatio(1)
+            .border({ radius: 4 })
+            .shadow({ radius: 12, color: "#b3868686" })
+            .backgroundColor("#ffbce5e8")
 
-            // media title
-            Column() {
-                Text(this.currentSong.title)
-                    .fontSize(24)
-                    .fontColor(this.theme.colorPrimary)
-                    .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(this.currentSong.artist)
-                    .fontSize(16)
-                    .fontColor(this.theme.colorSecondary)
-                    .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .margin({ top: 8 })
-            }.margin({ top: 16 })
+            // lyric line
+            Text(this.lyricLine).fontSize(16).height(20).fontColor(this.theme.colorPrimary)
+                .margin({ top: 36 })
         }
         .width("100%")
         .height("100%")
-        .justifyContent(FlexAlign.SpaceAround)
+        .justifyContent(FlexAlign.Center)
         .opacity(this.animAlpha)
         .animation({
-            duration: 300
+            duration: 300,
+            curve: Curve.Linear,
+            delay: 0,
+            iterations: 1, // 设置-1表示动画无限循环
+            playMode: PlayMode.Normal
         })
         .onClick(() => {
             if (this.isShowPlaylist) {
@@ -181,27 +236,12 @@ struct PageHome {
         }
     }
 
-    private tabController = new TabsController()
-
-    @Builder
-    TabMore() {
-        Column() {
-            Row() {
-                Image($r("app.media.baseline_arrow_back_ios_24")).width(32).height(32)
-                Text("关于").fontSize(16).margin({ left: 16 })
-            }
-
-            Row() {
-                Image($r("app.media.baseline_arrow_back_ios_24")).width(32).height(32)
-                Text("关于").fontSize(16).margin({ left: 16 })
-            }.margin({ top: 4 })
-        }
-    }
-
-    @Builder
-    TabPlayer() {
+    build() {
         Stack() {
             Column() {
+                // title
+                this.Title()
+
                 Stack() {
                     // cover
                     this.CoverView()
@@ -234,7 +274,7 @@ struct PageHome {
             }
             .width('100%')
             .height('100%')
-            .padding({ left: 32, right: 32, top: 16, bottom: 16 })
+            .padding(16)
             .alignItems(HorizontalAlign.Center)
             .onClick(() => {
                 if (this.isShowPlaylist) {
@@ -246,82 +286,55 @@ struct PageHome {
             if (this.isShowPlaylist) {
                 this.Playlist()
             }
-        }.alignContent(Alignment.Bottom)
-    }
-
-    @State currentId: number = 0
-
-    @Builder
-    Tab(id: number, title: string) {
-        Text(title)
-            .fontColor(this.currentId === id ? "#ff0000" : "#000000")
-            .fontSize(16)
-            .scale({ x: this.currentId === id ? 1.2 : 1, y: this.currentId === id ? 1.2 : 1 })
-            .animation({
-                duration: 250
-            })
-    }
-
-    build() {
-        Column() {
-            Tabs({ controller: this.tabController }) {
-                TabContent() {
-                    Text("媒体库")
-                }.tabBar(this.Tab(0, "媒体库"))
-
-                TabContent() {
-                    this.TabPlayer()
-                }
-                .tabBar(this.Tab(1, "首页"))
-
-                TabContent() {
-                    this.TabMore()
-                }.tabBar(this.Tab(2, "更多"))
-            }
-            .barWidth(300)
-            .barMode(BarMode.Fixed)
-            .animationDuration(250)
-            .onChange((index: number) => {
-                this.currentId = index
-            })
         }
+        .alignContent(Alignment.Bottom)
         .width('100%')
         .height('100%')
     }
 
     @Builder
     Playlist() {
-        List({ scroller: this.playlistScroller }) {
-            ForEach(this.fileList, (song: Song, index) => {
-                ListItem() {
-                    if (song.title == this.currentSong.title) {
-                        ListItemView({ data: song, index: index + 1, isHighLight: true })
-                    } else {
-                        ListItemView({ data: song, index: index + 1, isHighLight: false })
-                    }
-                }.onClick(() => {
-                    this.mediaSession.playSong(song)
-                    this.hidePlaylist()
+        Stack() {
+            Stack()
+                .width("100%")
+                .height("100%")
+                .backgroundColor("#faf7f7f7")
+                .blur(8)
+                .border({ radius: 12 })
+            List({ scroller: this.playlistScroller }) {
+                ForEach(this.fileList, (song: Song, index) => {
+                    ListItem() {
+                        if (song.title == this.currentSong.title) {
+                            ListItemView({ data: song, index: index + 1, isHighLight: true })
+                        } else {
+                            ListItemView({ data: song, index: index + 1, isHighLight: false })
+                        }
+                    }.onClick(() => {
+                        this.mediaSession.playSong(song)
+                        this.hidePlaylist()
+                    })
                 })
+            }
+            .width("100%")
+            .height("100%")
+            .padding({ left: 16, right: 16, top: 32, bottom: 16 })
+            .scrollBar(BarState.Auto)
+            .onAppear(() => {
+                for (let i = 0;i < this.fileList.length; i++) {
+                    let song = this.fileList[i]
+                    if (song.title == this.currentSong.title) {
+                        this.playlistScroller.scrollToIndex(i)
+                        break
+                    }
+                }
             })
         }
-        .padding({ left: 16, right: 16, top: 32, bottom: 16 })
-        .scrollBar(BarState.Auto)
-        .onAppear(() => {
-            for (let i = 0;i < this.fileList.length; i++) {
-                let song = this.fileList[i]
-                if (song.title == this.currentSong.title) {
-                    this.playlistScroller.scrollToIndex(i)
-                    break
-                }
-            }
-        })
         .width("90%")
         .height("60%")
         .margin({ bottom: 16 })
         .border({ radius: 12 })
-        .backgroundColor("#faf7f7f7")
-        .transition({ type: TransitionType.All, translate: { x: 0, y: "120%" } })
+        .transition({ type: TransitionType.Insert, translate: { x: 0, y: "100%" } })
+        .transition({ type: TransitionType.Delete, translate: { x: 0, y: "100%" } })
     }
 
     private onProgressChanged() {

@@ -33,7 +33,7 @@ export struct ListItemView {
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Text(this.data.artist ? this.data.artist : "未知")
-                    .fontColor(this.isHighLight ? this.theme.colorSecondary : "#cccccc")
+                    .fontColor(this.isHighLight ? this.theme.colorSecondary : "#ffa4a4a4")
                     .fontSize(12)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
