@@ -1,6 +1,6 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { LyricConfig, LyricHelper, LyricView } from '@seagazer/cclyric';
+import { LyricController, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../medialibrary/FileScanner';
@@ -35,15 +35,14 @@ struct PageHome {
     @State isShowPlaylist: boolean = false
     private context: common.Context
     private mediaSession: MediaSession = MediaSession.get()
-    private lyricConfig: LyricConfig = new LyricConfig()
-    private lyricHelper: LyricHelper = new LyricHelper()
+    private lyricController: LyricController = new LyricController()
     private lyricParser: FileParser = new FileParser()
     private playlistScroller = new Scroller()
 
     aboutToAppear() {
         router.clear()
         this.context = getContext(this)
-        this.lyricConfig
+        this.lyricController
             .setTextSize(vp2px(16))
             .setCacheSize(4)
             .setTextColor(this.theme.colorSecondary)
@@ -152,7 +151,7 @@ struct PageHome {
     @Builder
     LyricContainer() {
         Column() {
-            LyricView({ lyricConfig: this.lyricConfig })
+            LyricView({ lyricController: this.lyricController })
         }
         .width("100%")
         .height("100%")
@@ -325,24 +324,23 @@ struct PageHome {
     }
 
     private onProgressChanged() {
-        this.lyricConfig.updatePosition(this.currentPosition)
-        this.lyricLine = this.lyricHelper.getLyric(this.currentPosition)
+        Logger.d(TAG, "changed position ------------- ")
+        this.lyricController.updatePosition(this.currentPosition)
     }
 
     private onSongChanged() {
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
         this.lyricLine = " "
-        this.lyricConfig.setLyric(null)
-        this.lyricHelper.setLyricData(null)
+        this.lyricController.setLyric(null)
         let filePath = FileScanner.scanLyricSync(this.context.filesDir, this.currentSong.title)
         Logger.d(TAG, "update lyric= " + filePath)
         if (filePath) {
             let lrc = this.lyricParser.parse(filePath)
+            lrc.lyricList.forEach((line) => {
+                Logger.w(TAG, line.text)
+            })
             if (lrc) {
-                this.lyricConfig.setLyric(lrc)
-                if (lrc.lyricList.length > 0) {
-                    this.lyricHelper.setLyricData(lrc.lyricList)
-                }
+                this.lyricController.setLyric(lrc)
             }
         } else {
             Logger.e(TAG, "get lyric error!")
