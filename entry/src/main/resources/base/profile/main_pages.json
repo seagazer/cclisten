@@ -5,7 +5,6 @@
     "guide/PageSetup",
     "guide/PageFileList",
     "home/PageHome",
-    "settings/PageSettings",
-    "medialibrary/PageMediaLibrary"
+    "settings/PageSettings"
   ]
 }

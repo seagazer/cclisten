@@ -76,6 +76,9 @@ export class PlaylistManager {
             case LoopMode.LOOP:
                 return this.songList[this.currentIndex]
             case LoopMode.SHUFFLE:
+            // todo get the shuffle next
+                let random = Math.round(Math.random() * this.songList.length)
+                return this.songList[random]
             case LoopMode.PLAYLIST_LOOP:
                 let nextIndex = ++this.currentIndex
                 if (nextIndex > this.songList.length - 1) {
@@ -92,6 +95,9 @@ export class PlaylistManager {
             case LoopMode.LOOP:
                 return this.songList[this.currentIndex]
             case LoopMode.SHUFFLE:
+            // todo get the shuffle pre
+                let random = Math.round(Math.random() * this.songList.length)
+                return this.songList[random]
             case LoopMode.PLAYLIST_LOOP:
                 let preIndex = --this.currentIndex
                 if (preIndex < 0) {
