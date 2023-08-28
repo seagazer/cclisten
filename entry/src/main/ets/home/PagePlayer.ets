@@ -10,6 +10,7 @@ import {
     APP_THEME,
     MEDIA_SESSION_CURRENT_SONG,
     MEDIA_SESSION_FILE_LIST,
+    MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
@@ -27,6 +28,7 @@ export struct PagePlayer {
     @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
     @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = null
+    @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
     @State animAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
@@ -113,9 +115,17 @@ export struct PagePlayer {
                 .width(320)
                 .height(320)
                 .padding(32)
-                .backgroundColor("#ffbfbff1")
+                .backgroundColor(this.isPlaying ? "#ffbfbff1" : "#ffb7b7db")
                 .border({ radius: 8 })
-                .shadow({ radius: 12, offsetY: 12, color: "#b3dddddd" })
+                .shadow({
+                    radius: this.isPlaying ? 12 : 6,
+                    offsetY: 12,
+                    color: this.isPlaying ? "#b3dddddd" : "#b3989898"
+                })
+                .scale({ x: this.isPlaying ? 1 : 0.9, y: this.isPlaying ? 1 : 0.9 })
+                .animation({
+                    duration: 300
+                })
 
             // media title
             Column() {

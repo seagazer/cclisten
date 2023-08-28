@@ -13,13 +13,13 @@ export struct ImageFab {
     @Styles normal(){
         .backgroundColor(this.color)
         .border({ radius: 200 })
-        .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 4 })
+        .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 12 })
     }
 
     @Styles press(){
         .backgroundColor(this.dimColor)
         .border({ radius: 200 })
-        .shadow({ radius: 8, color: "#ff3a3a3a", offsetY: 4 })
+        .shadow({ radius: 8, color: "#ff3a3a3a", offsetY: 12 })
     }
 
     build() {

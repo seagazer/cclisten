@@ -47,7 +47,7 @@ struct PageHome {
             .fontColor(this.currentTabId === id ? this.theme.colorPrimary : "#000000")
             .scale({ x: this.currentTabId === id ? 1.15 : 1, y: this.currentTabId === id ? 1.15 : 1 })
             .animation({
-                duration: 250
+                duration: 300
             })
     }
 
@@ -71,7 +71,7 @@ struct PageHome {
             }
             .barWidth(300)
             .barMode(BarMode.Fixed)
-            .animationDuration(200)
+            .animationDuration(300)
             .onChange((index: number) => {
                 this.currentTabId = index
             })

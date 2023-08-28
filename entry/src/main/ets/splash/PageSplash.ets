@@ -29,7 +29,7 @@ struct PageSplash {
 
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
-    private duration = 600
+    private duration = 500
     private delay = 200
     @StorageLink("isAppInit") isAppInit: string = "0"
     @StorageLink("themeString") themeString: string = JSON.stringify(DEFAULT_THEME)

@@ -20,13 +20,13 @@ export struct Fab {
     @Styles
     normalStyles(){
         .backgroundColor(this.color)
-        .shadow({ radius: 12, color: "#ccb8b8b8", offsetY: 8 })
+        .shadow({ radius: 12, color: "#ccb8b8b8", offsetY: 12 })
     }
 
     @Styles
     pressedStyles(){
         .backgroundColor(this.dimColor)
-        .shadow({ radius: 6, color: "#ccb8b8b8", offsetY: 8 })
+        .shadow({ radius: 6, color: "#ccb8b8b8", offsetY: 12 })
     }
 
     build() {
