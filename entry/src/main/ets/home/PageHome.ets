@@ -7,6 +7,7 @@ import { APP_THEME } from '../extensions/LiveData';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { MethodInvoker } from '../extensions/MethodInvoker';
 import { PageMediaLibrary } from './PageMediaLibrary';
+import { PageMore } from './PageMore';
 
 const TAG = "[PageHome]"
 
@@ -19,6 +20,7 @@ struct PageHome {
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
     @State currentTabId: number = 0
+    private tabController = new TabsController()
     private mediaSession: MediaSession = MediaSession.get()
     private pagePlayerInvoker = MethodInvoker.create()
 
@@ -38,29 +40,11 @@ struct PageHome {
         }
     }
 
-    private tabController = new TabsController()
-
-    @Builder
-    TabMore() {
-        Column() {
-            Row() {
-                Image($r("app.media.baseline_arrow_back_ios_24")).width(32).height(32)
-                Text("关于").fontSize(16).margin({ left: 16 })
-            }
-
-            Row() {
-                Image($r("app.media.baseline_arrow_back_ios_24")).width(32).height(32)
-                Text("关于").fontSize(16).margin({ left: 16 })
-            }.margin({ top: 4 })
-        }
-    }
-
     @Builder
     Tab(id: number, title: string) {
         Text(title)
             .fontSize(18)
             .fontColor(this.currentTabId === id ? this.theme.colorPrimary : "#000000")
-            .fontWeight(this.currentTabId === id ? 600 : 400)
             .scale({ x: this.currentTabId === id ? 1.15 : 1, y: this.currentTabId === id ? 1.15 : 1 })
             .animation({
                 duration: 250
@@ -76,11 +60,13 @@ struct PageHome {
                 .tabBar(this.Tab(0, "首页"))
 
                 TabContent() {
-                    PageMediaLibrary()
+                    PageMediaLibrary({ onClickEvent: () => {
+                        this.tabController.changeIndex(0)
+                    } })
                 }.tabBar(this.Tab(1, "媒体库"))
 
                 TabContent() {
-                    this.TabMore()
+                    PageMore()
                 }.tabBar(this.Tab(2, "更多"))
             }
             .barWidth(300)

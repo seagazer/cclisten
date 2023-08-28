@@ -43,8 +43,8 @@ export struct PagePlayer {
         this.context = getContext(this)
         this.lyricController
             .setTextSize(vp2px(16))
-            .setCacheSize(4)
-            .setTextColor("#b3000000")
+            .setCacheSize(10)
+            .setTextColor("#99343434")
             .setHighlightColor(this.theme.colorPrimary)
             .setLineSpace(vp2px(16))
             .setHighlightStyle(false)
@@ -216,7 +216,7 @@ export struct PagePlayer {
             }
             .width('100%')
             .height('100%')
-            .padding({ left: 32, right: 32, top: 16, bottom: 16 })
+            .padding(16)
             .alignItems(HorizontalAlign.Center)
             .onClick(() => {
                 if (this.isShowPlaylist) {

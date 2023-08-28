@@ -10,11 +10,14 @@ export struct ListItemView {
     onItemClick: (song: Song) => void
     isHighLight: boolean = false
 
-    @Styles pressedStyles() {
+    @Styles
+    pressedStyles() {
+        .border({ radius: 4 })
         .backgroundColor(DEFAULT_THEME.colorAction)
     }
 
-    @Styles normalStyles() {
+    @Styles
+    normalStyles() {
         .backgroundColor(null)
     }
 
