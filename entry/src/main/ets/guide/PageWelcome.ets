@@ -54,15 +54,11 @@ export struct PageWelcome {
                 .animation({
                     duration: 800,
                 })
-
         }
         .width("100%")
         .height("100%")
         .justifyContent(FlexAlign.Center)
         .opacity(this.translationValue)
-        .onAreaChange(() => {
-
-        })
     }
 
     pageTransition() {

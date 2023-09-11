@@ -8,7 +8,7 @@ import { APP_THEME } from '../extensions/LiveData';
 
 @Entry
 @Component
-export struct PageSetup {
+export struct PageTheme {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     private colorPrimaryList = ["#ffFF405C", "#ff9456ff", "#ffd7c12d", "#ff22c25a",
         "#ffff8244", "#ff2a82df"]
@@ -36,15 +36,20 @@ export struct PageSetup {
 
     build() {
         Column() {
-            Row() {
-                Image($r("app.media.ic_theme")).width(56).height(56)
-                Text("请选择您喜欢的主题色")
-                    .fontSize(18)
-                    .width("100%")
-                    .textAlign(TextAlign.Start)
-                    .padding({ left: 16 })
-                    .fontColor(this.theme.colorPrimary)
-            }
+            Image($r("app.media.listen_theme")).width(156).height(156)
+                .fillColor(this.colorPrimaryList[this.selectIndex])
+                .animation({
+                    duration: 300
+                })
+            Text("请选择您喜欢的主题色")
+                .fontSize(18)
+                .width("100%")
+                .textAlign(TextAlign.Center)
+                .padding({ top: 32 })
+                .fontColor(this.colorPrimaryList[this.selectIndex])
+                .animation({
+                    duration: 300
+                })
 
             Grid() {
                 ForEach(this.colorPrimaryList, (color: string, index) => {
