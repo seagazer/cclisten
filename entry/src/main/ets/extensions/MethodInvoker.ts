@@ -1,11 +1,11 @@
-/**
- * Author: seagazer
- * Date: 2023/8/27
- */
 import { Logger } from './Logger'
 
 const TAG = "[MethodInvoker]"
 
+/**
+ * Author: seagazer
+ * Date: 2023/8/27
+ */
 export class MethodInvoker {
     private methodTable = new Map<string, Function>()
     private caller: any

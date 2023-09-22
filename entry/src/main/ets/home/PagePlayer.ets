@@ -38,11 +38,12 @@ export struct PagePlayer {
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileParser = new FileParser()
     private playlistScroller = new Scroller()
-    invoker: MethodInvoker
+    private invoker: MethodInvoker
 
     aboutToAppear() {
         router.clear()
         this.context = getContext(this)
+        this.mediaSession.initAvSession(this.context)
         this.lyricController
             .setTextSize(vp2px(16))
             .setCacheSize(10)

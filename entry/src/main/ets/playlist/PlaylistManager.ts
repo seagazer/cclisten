@@ -41,12 +41,10 @@ export class PlaylistManager {
     }
 
     add(song: Song) {
-        // todo update list index
         this.songList.push(song)
     }
 
     addList(songs: Array<Song>) {
-        // todo update list index
         this.songList = this.songList.concat(songs)
     }
 

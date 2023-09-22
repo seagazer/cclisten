@@ -1,4 +1,5 @@
 import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer/ccplayer'
+import { BackgroundTask } from '../extensions/BackgroundTask'
 import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
 import {
@@ -10,6 +11,8 @@ import {
 import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
+import common from '@ohos.app.ability.common'
+import avSession from '@ohos.multimedia.avsession'
 
 const TAG = "[MediaSession]"
 
@@ -23,6 +26,8 @@ export class MediaSession {
     private isSeeking = false
     private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
     private playlist: PlaylistManager = PlaylistManager.get()
+    private session: avSession.AVSession
+    private context: common.Context
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
@@ -39,10 +44,17 @@ export class MediaSession {
         this.isSeeking = false
     }
     private stateChangedListener = (newState: PlayerState) => {
+        Logger.d(TAG, "player state changed= " + newState)
         if (newState == PlayerState.STATE_STARTED) {
             LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, true)
+            BackgroundTask.getInstance().startBackgroundTask()
         } else {
             LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, false)
+            if (newState == PlayerState.STATE_PAUSED ||
+                newState == PlayerState.STATE_STOPPED ||
+                newState == PlayerState.STATE_ERROR) {
+                BackgroundTask.getInstance().stopBackgroundTask()
+            }
         }
     }
 
@@ -54,6 +66,17 @@ export class MediaSession {
             .addOnCompletionListener(this.completedListener)
             .addOnSeekChangedListener(this.seekChangedListener)
             .addOnStateChangedListener(this.stateChangedListener)
+    }
+
+    public initAvSession(context: common.Context) {
+        this.context = context
+        avSession.createAVSession(this.context, "ccplayer", "audio", (err, session) => {
+            if (err) {
+                Logger.e(TAG, "create av session error= " + JSON.stringify(err))
+                return
+            }
+            this.session = session
+        })
     }
 
     public static get(): MediaSession {
@@ -112,6 +135,8 @@ export class MediaSession {
     }
 
     release() {
+        this.session?.destroy()
+        BackgroundTask.getInstance().stopBackgroundTask()
         this.player
             .removeOnPreparedListener(this.prepareListener)
             .removeOnProgressChangedListener(this.progressChangedListener)

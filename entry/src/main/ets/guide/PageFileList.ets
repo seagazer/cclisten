@@ -8,6 +8,7 @@ import { Song } from '../bean/Song'
 import { APP_THEME, LiveData, MEDIA_SESSION_FILE_LIST, } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { PlaylistManager } from '../playlist/PlaylistManager'
+import { PlaylistDb } from '../playlist/PlaylistDb'
 
 const TAG = "[PageFileList]"
 
@@ -57,6 +58,8 @@ struct PageFileList {
                     ListItemView({ data: song, index: index + 1 })
                 }.onClick(() => {
                     // MediaSession.get().playSong(song)
+                    // todo save the playlist to db
+                    PlaylistDb.get(getContext(this)).addSongList(this.songList)
                     navigationTo(PageRouter.PAGE_PLAY, {
                         data: song
                     })
