@@ -1,6 +1,9 @@
 import { Song } from '../bean/Song'
+import { LiveData, MEDIA_SESSION_PLAYLIST } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { LoopMode } from '../player/LoopMode'
+import { PlaylistDb } from './PlaylistDb'
+import common from '@ohos.app.ability.common'
 
 
 const TAG = "[PlaylistManager]"
@@ -16,8 +19,10 @@ export class PlaylistManager {
     private static sInstance: PlaylistManager = null
     private songList = new Array<Song>()
     private currentIndex = 0
+    private playlistDb: PlaylistDb
 
     private constructor() {
+        this.playlistDb = new PlaylistDb()
     }
 
     static get(): PlaylistManager {
@@ -40,16 +45,42 @@ export class PlaylistManager {
         Logger.d(TAG, "current index= " + this.currentIndex)
     }
 
+    async initFromDb(context: common.Context) {
+        try {
+            await this.playlistDb.init(context)
+            let songList = await this.playlistDb.getPlaylist()
+            if (songList) {
+                this.songList = songList
+                this.onPlaylistChanged()
+            }
+        } catch (err) {
+            Logger.e(TAG, "init playlist from db error= " + JSON.stringify(err))
+        }
+    }
+
     add(song: Song) {
         this.songList.push(song)
+        this.onPlaylistChanged()
+        this.playlistDb.addSong(song)
     }
 
     addList(songs: Array<Song>) {
         this.songList = this.songList.concat(songs)
+        this.playlistDb.addSongList(songs)
+        this.onPlaylistChanged()
     }
 
-    remove() {
-        // todo update list index
+    remove(song: Song) {
+        let index = this.songList.indexOf(song)
+        if (index >= 0) {
+            this.songList.splice(index, 1)
+            this.playlistDb.removeSong(song)
+            this.onPlaylistChanged()
+        }
+    }
+
+    private onPlaylistChanged() {
+        LiveData.setValue(MEDIA_SESSION_PLAYLIST, this.songList)
     }
 
     getSong(index: number): Song {

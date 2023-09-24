@@ -1,10 +1,11 @@
 import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { ThemeManager } from '../theme/ThemeManager';
 import { Fab } from '../view/Fab';
 import router from '@ohos.router';
 import { APP_THEME } from '../extensions/LiveData';
+import { UIConfig } from '../config/UIConfig';
 
 @Entry
 @Component
@@ -42,7 +43,7 @@ export struct PageTheme {
                     duration: 300
                 })
             Text("请选择您喜欢的主题色")
-                .fontSize(18)
+                .fontSize(UIConfig.FONT_SUB_TITLE)
                 .width("100%")
                 .textAlign(TextAlign.Center)
                 .padding({ top: 32 })
@@ -84,7 +85,7 @@ export struct PageTheme {
 
             Fab({
                 text: "确定",
-                textSize: 18,
+                textSize: UIConfig.FONT_BUTTON,
                 color: this.themeColor,
                 marginSize: { top: 56 },
                 onAction: () => {
@@ -93,7 +94,7 @@ export struct PageTheme {
                     ThemeManager.updateTheme(theme)
                     AppStorage.Set<string>("isAppInit", "1")
                     AppStorage.Set<string>("themeString", JSON.stringify(theme))
-                    navigationTo(PageRouter.PAGE_GUIDE_BROWSE)
+                    navigationTo(PageRouter.PAGE_GUIDE_FILELIST)
                 }
             })
         }

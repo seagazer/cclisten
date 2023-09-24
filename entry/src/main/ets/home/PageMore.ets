@@ -2,6 +2,7 @@ import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { TimerDialog } from '../view/TimerDialog'
 import common from '@ohos.app.ability.common'
+import { UIConfig } from '../config/UIConfig'
 
 const TAG = "[PageMore]"
 
@@ -21,7 +22,7 @@ export struct PageMore {
 
     @Styles
     pressedStyles() {
-        .border({ radius: 4 })
+        .border({ radius: UIConfig.DIMENSION_CORNER })
         .backgroundColor(DEFAULT_THEME.colorAction)
     }
 

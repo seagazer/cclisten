@@ -1,3 +1,4 @@
+import { UIConfig } from '../config/UIConfig'
 import { dimColor } from '../extensions/Extensions'
 
 @Preview
@@ -21,14 +22,22 @@ export struct Fab {
     normalStyles(){
         .backgroundColor(this.color)
         .scale({ x: 1, y: 1 })
-        .shadow({ radius: 12, color: "#ccb8b8b8", offsetY: 12 })
+        .shadow({
+            radius: UIConfig.DIMENSION_NORMAL_SHADOW,
+            color: "#ccb8b8b8",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
     }
 
     @Styles
     pressedStyles(){
         .backgroundColor(this.dimColor)
         .scale({ x: 0.95, y: 0.95 })
-        .shadow({ radius: 6, color: "#ccb8b8b8", offsetY: 12 })
+        .shadow({
+            radius: UIConfig.DIMENSION_PRESS_SHADOW,
+            color: "#ccb8b8b8",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
     }
 
     build() {
@@ -38,7 +47,7 @@ export struct Fab {
             .textAlign(TextAlign.Center)
             .padding({ left: 16, right: 16, top: 8, bottom: 8 })
             .margin(this.marginSize)
-            .border({ radius: 4 })
+            .border({ radius: UIConfig.DIMENSION_CORNER })
             .stateStyles({
                 normal: this.normalStyles,
                 pressed: this.pressedStyles

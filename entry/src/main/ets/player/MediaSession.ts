@@ -12,6 +12,7 @@ import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
 import common from '@ohos.app.ability.common'
+
 import avSession from '@ohos.multimedia.avsession'
 
 const TAG = "[MediaSession]"

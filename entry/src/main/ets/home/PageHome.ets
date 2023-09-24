@@ -3,11 +3,10 @@ import { Song } from '../bean/Song';
 import { MediaSession } from '../player/MediaSession';
 import router from '@ohos.router';
 import { PagePlayer } from './PagePlayer';
-import { APP_THEME } from '../extensions/LiveData';
+import { APP_THEME, LiveData, MEDIA_SESSION_CURRENT_SONG } from '../extensions/LiveData';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { MethodInvoker } from '../extensions/MethodInvoker';
-import { PageMediaLibrary } from './PageMediaLibrary';
-import { PageMore } from './PageMore';
+import { UIConfig } from '../config/UIConfig';
 
 const TAG = "[PageHome]"
 
@@ -23,14 +22,20 @@ struct PageHome {
     private tabController = new TabsController()
     private mediaSession: MediaSession = MediaSession.get()
     private pagePlayerInvoker = MethodInvoker.create()
+    @State isNotPlayed: boolean = true
 
     aboutToAppear() {
         router.clear()
-        // @ts-ignore
-        let song = router.getParams().data
-        if (song) {
-            Logger.d(TAG, "play from router= " + JSON.stringify(song))
-            this.mediaSession.playSong(song as Song)
+        let param = router.getParams()
+        if (param) {
+            // @ts-ignore
+            let song = param.data
+            if (song) {
+                Logger.d(TAG, "play from router= " + JSON.stringify(song))
+                this.mediaSession.playSong(song as Song)
+                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
+                this.isNotPlayed = false
+            }
         }
     }
 
@@ -43,7 +48,7 @@ struct PageHome {
     @Builder
     Tab(id: number, title: string) {
         Text(title)
-            .fontSize(18)
+            .fontSize(UIConfig.FONT_SUB_TITLE)
             .fontColor(this.currentTabId === id ? this.theme.colorPrimary : "#000000")
             .scale({ x: this.currentTabId === id ? 1.15 : 1, y: this.currentTabId === id ? 1.15 : 1 })
             .animation({
@@ -55,19 +60,19 @@ struct PageHome {
         Column() {
             Tabs({ controller: this.tabController }) {
                 TabContent() {
-                    PagePlayer({ invoker: this.pagePlayerInvoker })
+                    PagePlayer({ invoker: this.pagePlayerInvoker, isNotPlayed: this.isNotPlayed })
                 }
                 .tabBar(this.Tab(0, "首页"))
 
-                TabContent() {
-                    PageMediaLibrary({ onClickEvent: () => {
-                        this.tabController.changeIndex(0)
-                    } })
-                }.tabBar(this.Tab(1, "媒体库"))
-
-                TabContent() {
-                    PageMore()
-                }.tabBar(this.Tab(2, "更多"))
+                // TabContent() {
+                //     PageMediaLibrary({ onClickEvent: () => {
+                //         this.tabController.changeIndex(0)
+                //     } })
+                // }.tabBar(this.Tab(1, "媒体库"))
+                //
+                // TabContent() {
+                //     PageMore()
+                // }.tabBar(this.Tab(2, "更多"))
             }
             .barWidth(300)
             .barMode(BarMode.Fixed)

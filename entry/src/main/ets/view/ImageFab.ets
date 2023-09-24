@@ -1,3 +1,4 @@
+import { UIConfig } from '../config/UIConfig'
 import { dimColor } from '../extensions/Extensions'
 
 @Component
@@ -10,16 +11,26 @@ export struct ImageFab {
         this.dimColor = dimColor(this.color, 0.95)
     }
 
-    @Styles normal(){
+    @Styles
+    normal(){
         .backgroundColor(this.color)
-        .border({ radius: 200 })
-        .shadow({ radius: 12, color: "#cc3a3a3a", offsetY: 12 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
+        .shadow({
+            radius: UIConfig.DIMENSION_NORMAL_SHADOW,
+            color: "#cc3a3a3a",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
     }
 
-    @Styles press(){
+    @Styles
+    press(){
         .backgroundColor(this.dimColor)
-        .border({ radius: 200 })
-        .shadow({ radius: 8, color: "#ff3a3a3a", offsetY: 12 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
+        .shadow({
+            radius: UIConfig.DIMENSION_PRESS_SHADOW,
+            color: "#ff3a3a3a",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
     }
 
     build() {

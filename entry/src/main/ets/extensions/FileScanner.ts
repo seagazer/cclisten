@@ -2,7 +2,7 @@ import fs from '@ohos.file.fs'
 import mediaLibrary from '@ohos.multimedia.mediaLibrary'
 import common from '@ohos.app.ability.common'
 import { Song } from '../bean/Song'
-import { Logger } from '../extensions/Logger'
+import { Logger } from './Logger'
 
 
 const TAG = "[FileScanner]"

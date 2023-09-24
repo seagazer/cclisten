@@ -1,3 +1,4 @@
+import { UIConfig } from '../config/UIConfig'
 import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { Fab } from './Fab'
@@ -17,7 +18,7 @@ export struct TimerDialog {
     build() {
         Column() {
             Text("请输入倒计时")
-                .fontSize(20)
+                .fontSize(UIConfig.FONT_SUB_TITLE)
 
             TextInput({ placeholder: "5分钟" })
                 .type(InputType.Number)
@@ -29,7 +30,7 @@ export struct TimerDialog {
             Row() {
                 Fab({
                     text: "确认",
-                    textSize: 18,
+                    textSize: UIConfig.FONT_BUTTON,
                     color: this.themeColor,
                     onAction: () => {
                         if (this.countDownMinute > 0) {

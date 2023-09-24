@@ -2,6 +2,7 @@ import { PlayModeController } from '../player/PlayModeController'
 import { LoopMode } from '../player/LoopMode'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { APP_THEME, MEDIA_SESSION_PLAYING_STATE } from '../extensions/LiveData'
+import { UIConfig } from '../config/UIConfig'
 
 @Extend(Image)
 function btnStyle(size: Length, padding: Length) {
@@ -26,13 +27,13 @@ export struct MediaController {
 
     @Styles
     pressedStyles() {
-        .border({ radius: 200 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
         .backgroundColor(this.theme.colorAction)
     }
 
     @Styles
     normalStyles() {
-        .border({ radius: 200 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
         .backgroundColor(null)
     }
 

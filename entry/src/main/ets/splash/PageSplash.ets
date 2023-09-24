@@ -1,14 +1,17 @@
 import { Logger } from '@seagazer/ccplayer'
 import { Song } from '../bean/Song'
+import { UIConfig } from '../config/UIConfig'
 import { navigationTo } from '../extensions/Extensions'
 import {
     APP_THEME,
     MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_FILE_LIST,
+    MEDIA_SESSION_PLAYLIST,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
 } from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
+import { PlayHistoryManager } from '../history/PlayHistoryManager'
+import { PlaylistManager } from '../playlist/PlaylistManager'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
 
@@ -19,14 +22,7 @@ const TAG = "PageSplash"
 @Entry
 @Component
 struct PageSplash {
-    // init all the livedata >>
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    @StorageLink(MEDIA_SESSION_CURRENT_SONG) currentSong: Song = null
-    @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
-    @StorageLink(MEDIA_SESSION_POSITION) currentPosition: number = 0
-    @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = null
-    // init all the livedata <<
-
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
     private duration = 500
@@ -38,6 +34,9 @@ struct PageSplash {
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
         Logger.d(TAG, "isAppInit = " + this.isAppInit)
+        // init playlist and history when playing animation
+        PlaylistManager.get().initFromDb(getContext(this))
+        PlayHistoryManager.get().initPlayHistory(getContext(this))
         if (this.isAppInit === "1") {
             let theme = JSON.parse(this.themeString)
             ThemeManager.updateTheme(theme)
@@ -53,7 +52,7 @@ struct PageSplash {
         Row() {
             ForEach(this.logoName, (name, index) => {
                 Text(name)
-                    .fontSize(48)
+                    .fontSize(UIConfig.FONT_LOGO)
                     .fontWeight(FontWeight.Medium)
                     .fontColor(this.theme.colorPrimary)
                     .scale({ x: this.alphas[index], y: this.alphas[index] })
@@ -79,7 +78,7 @@ struct PageSplash {
                 if (this.isAppInit === "0") {
                     navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
                 } else {
-                    navigationTo(PageRouter.PAGE_GUIDE_BROWSE)
+                    navigationTo(PageRouter.PAGE_HOME)
                 }
             }, 500 + this.duration + this.delay * this.logoName.length)
         })

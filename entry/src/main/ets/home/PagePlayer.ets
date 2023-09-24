@@ -3,13 +3,13 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricController, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
-import { FileScanner } from '../medialibrary/FileScanner';
+import { FileScanner } from '../extensions/FileScanner';
 import { FileParser } from '../player/FileParser';
 import { Song } from '../bean/Song';
 import {
     APP_THEME,
     MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_FILE_LIST,
+    MEDIA_SESSION_PLAYLIST,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
 } from '../extensions/LiveData';
@@ -19,6 +19,8 @@ import { ListItemView } from '../view/ListItemView';
 import router from '@ohos.router';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { MethodInvoker } from '../extensions/MethodInvoker';
+import { PlayHistoryManager } from '../history/PlayHistoryManager';
+import { UIConfig } from '../config/UIConfig';
 
 const TAG = "[HomePlayer]"
 
@@ -26,8 +28,8 @@ const TAG = "[HomePlayer]"
 export struct PagePlayer {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
-    @StorageLink(MEDIA_SESSION_FILE_LIST) fileList: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = null
+    @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
     @State animAlpha: number = 1
     @State lyricLine: string = " "
@@ -39,40 +41,35 @@ export struct PagePlayer {
     private lyricParser: FileParser = new FileParser()
     private playlistScroller = new Scroller()
     private invoker: MethodInvoker
+    @Prop isNotPlayed: boolean
 
     aboutToAppear() {
         router.clear()
         this.context = getContext(this)
         this.mediaSession.initAvSession(this.context)
         this.lyricController
-            .setTextSize(vp2px(16))
+            .setTextSize(vp2px(UIConfig.FONT_CONTENT))
             .setCacheSize(10)
             .setTextColor("#99343434")
             .setHighlightColor(this.theme.colorPrimary)
-            .setLineSpace(vp2px(16))
+            .setLineSpace(vp2px(UIConfig.FONT_SUB_CONTENT))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
             .setLyric(null)
             .setAlignMode("center")
-        // @ts-ignore
-        let song = router.getParams().data
-        if (song) {
-            Logger.d(TAG, "play from router= " + JSON.stringify(song))
-            this.mediaSession.playSong(song as Song)
-        }
         this.invoker?.registerContext(this)
         this.invoker?.registerMethod(this.backPress)
     }
 
     @Styles
     pressedStyles() {
-        .border({ radius: 200 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
         .backgroundColor(this.theme.colorAction)
     }
 
     @Styles
     normalStyles() {
-        .border({ radius: 200 })
+        .border({ radius: UIConfig.DIMENSION_CIRCLE })
         .backgroundColor(null)
     }
 
@@ -98,8 +95,12 @@ export struct PagePlayer {
                 })
             // duration
             Row() {
-                Text(timeToString(this.currentPosition)).fontSize(16).fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.currentSong.duration)).fontSize(16).fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.currentPosition))
+                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontColor(this.theme.colorSecondary)
+                Text(timeToString(this.currentSong.duration))
+                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontColor(this.theme.colorSecondary)
             }.width('100%')
             .alignItems(VerticalAlign.Bottom)
             .justifyContent(FlexAlign.SpaceBetween)
@@ -117,9 +118,9 @@ export struct PagePlayer {
                 .height(320)
                 .padding(32)
                 .backgroundColor(this.isPlaying ? "#ffbfbff1" : "#ffb7b7db")
-                .border({ radius: 8 })
+                .border({ radius: UIConfig.DIMENSION_CORNER })
                 .shadow({
-                    radius: this.isPlaying ? 12 : 6,
+                    radius: this.isPlaying ? UIConfig.DIMENSION_NORMAL_SHADOW : UIConfig.DIMENSION_PRESS_SHADOW,
                     offsetY: 12,
                     color: this.isPlaying ? "#b3dddddd" : "#b3989898"
                 })
@@ -131,12 +132,12 @@ export struct PagePlayer {
             // media title
             Column() {
                 Text(this.currentSong.title)
-                    .fontSize(20)
+                    .fontSize(UIConfig.FONT_SUB_TITLE)
                     .fontColor(this.theme.colorPrimary)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Text(this.currentSong.artist)
-                    .fontSize(16)
+                    .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorSecondary)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -155,7 +156,7 @@ export struct PagePlayer {
                 this.hidePlaylist()
                 return
             }
-            this.showHideLyric()
+            this.handleLyricVisible()
         })
     }
 
@@ -172,7 +173,7 @@ export struct PagePlayer {
             duration: 300,
             curve: Curve.Linear,
             delay: 0,
-            iterations: 1, // 设置-1表示动画无限循环
+            iterations: 1,
             playMode: PlayMode.Normal
         })
         .onClick(() => {
@@ -180,7 +181,7 @@ export struct PagePlayer {
                 this.hidePlaylist()
                 return
             }
-            this.showHideLyric()
+            this.handleLyricVisible()
         })
     }
 
@@ -219,9 +220,7 @@ export struct PagePlayer {
                         this.mediaSession.setLoopMode(mode)
                     },
                     actionPlaylist: () => {
-                        animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
-                            this.isShowPlaylist = true
-                        })
+                        this.showPlaylist()
                     }
                 })
             }
@@ -247,7 +246,7 @@ export struct PagePlayer {
     @Builder
     Playlist() {
         List({ scroller: this.playlistScroller }) {
-            ForEach(this.fileList, (song: Song, index) => {
+            ForEach(this.playlist, (song: Song, index) => {
                 ListItem() {
                     if (song.title == this.currentSong.title) {
                         ListItemView({ data: song, index: index + 1, isHighLight: true })
@@ -265,8 +264,8 @@ export struct PagePlayer {
         .width("90%")
         .height("60%")
         .margin({ bottom: 16 })
-        .border({ radius: 12 })
-        .backgroundColor("#faf7f7f7")
+        .border({ radius: UIConfig.DIMENSION_CORNER })
+        .backgroundColor("#fff7f7f7")
         .transition({ type: TransitionType.All, translate: { x: 0, y: "120%" } })
         .onAppear(() => {
             this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())
@@ -291,9 +290,16 @@ export struct PagePlayer {
         } else {
             Logger.e(TAG, "get lyric error!")
         }
+        Logger.d(TAG, "save play history= " + JSON.stringify(this.currentSong))
+        PlayHistoryManager.get().saveHistory(getContext(this), this.currentSong)
     }
 
     private async playOrPause() {
+        if (this.isNotPlayed && this.currentSong) {
+            this.mediaSession.playSong(this.currentSong)
+            this.isNotPlayed = false
+            return
+        }
         if (this.mediaSession.isPlaying()) {
             this.mediaSession.pause()
         } else {
@@ -301,12 +307,18 @@ export struct PagePlayer {
         }
     }
 
-    private showHideLyric() {
+    private handleLyricVisible() {
         if (this.isShowPlaylist) {
             return
         }
         this.isShowLyric = !this.isShowLyric
         this.animAlpha = this.isShowLyric ? 0 : 1
+    }
+
+    private showPlaylist() {
+        animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
+            this.isShowPlaylist = true
+        })
     }
 
     private hidePlaylist() {

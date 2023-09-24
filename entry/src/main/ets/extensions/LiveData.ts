@@ -1,6 +1,6 @@
 export class LiveData {
     static setValue<T>(key: string, value: T) {
-        AppStorage.Set<T>(key, value)
+        AppStorage.setOrCreate<T>(key, value)
     }
 }
 
@@ -12,4 +12,4 @@ export const MEDIA_SESSION_POSITION = "CUR_POSITION"
 
 export const MEDIA_SESSION_CURRENT_SONG = "CURRENT_SONG"
 
-export const MEDIA_SESSION_FILE_LIST = "FILE_LIST"
+export const MEDIA_SESSION_PLAYLIST = "PLAYLIST"

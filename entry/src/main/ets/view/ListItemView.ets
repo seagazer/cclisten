@@ -1,18 +1,19 @@
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { Song } from '../bean/Song'
 import { APP_THEME } from '../extensions/LiveData'
+import { UIConfig } from '../config/UIConfig'
 
 @Component
 export struct ListItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     index: number
-    data: Song
+    @ObjectLink data: Song
     onItemClick: (song: Song) => void
     isHighLight: boolean = false
 
     @Styles
     pressedStyles() {
-        .border({ radius: 4 })
+        .border({ radius: UIConfig.DIMENSION_CORNER })
         .backgroundColor(DEFAULT_THEME.colorAction)
     }
 
@@ -24,20 +25,20 @@ export struct ListItemView {
     build() {
         Row() {
             Text(this.index > 0 ? String(this.index) : "-")
-                .fontSize(16)
+                .fontSize(UIConfig.FONT_CONTENT)
                 .width(40)
                 .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                 .textAlign(TextAlign.Center)
 
             Column() {
                 Text(this.data.title)
-                    .fontSize(18)
+                    .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Text(this.data.artist ? this.data.artist : "未知")
                     .fontColor(this.isHighLight ? this.theme.colorSecondary : "#ffa4a4a4")
-                    .fontSize(12)
+                    .fontSize(UIConfig.FONT_SUB_CONTENT)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                     .margin({ top: 2 })

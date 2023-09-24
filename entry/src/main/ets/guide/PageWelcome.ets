@@ -4,6 +4,7 @@ import { PageRouter } from '../extensions/PageRouter'
 import { Fab } from '../view/Fab'
 import router from '@ohos.router'
 import { APP_THEME } from '../extensions/LiveData'
+import { UIConfig } from '../config/UIConfig'
 
 @Entry
 @Component
@@ -36,7 +37,7 @@ export struct PageWelcome {
                 })
 
             Text("欢迎使用Listen")
-                .fontSize(36)
+                .fontSize(UIConfig.FONT_HEADER)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(this.theme.colorPrimary)
                 .margin({ top: 48 })
@@ -44,7 +45,7 @@ export struct PageWelcome {
 
             Fab({
                 text: "开始",
-                textSize: 18,
+                textSize: UIConfig.FONT_BUTTON,
                 color: this.themeColor,
                 marginSize: { top: 56 },
                 onAction: () => {
