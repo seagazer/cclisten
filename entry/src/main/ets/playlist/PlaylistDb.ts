@@ -9,7 +9,7 @@ export class PlaylistDb {
         this.db.addTableColumn("url", "TEXT")
         this.db.addTableColumn("title", "TEXT")
         this.db.addTableColumn("artist", "TEXT")
-        this.db.addTableColumn("duration", "TEXT")
+        this.db.addTableColumn("duration", "INTEGER")
         await this.db.createTable(context, "playlist")
     }
 

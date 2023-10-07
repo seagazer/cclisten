@@ -5,8 +5,8 @@
  * Date: 2023/4/18
  */
 export enum LoopMode {
-    PLAYLIST_LOOP,
-    LOOP,
+    LOOP_ALL,
+    LOOP_SINGLE,
     SHUFFLE
 }
 

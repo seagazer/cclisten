@@ -16,6 +16,7 @@ export struct PageMore {
             this.timerDialogController.close()
         } }),
         autoCancel: true,
+        customStyle: true
     })
     private countDownTimer = -1
     @State countDownValue: string = ""

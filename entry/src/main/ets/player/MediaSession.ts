@@ -25,7 +25,7 @@ export class MediaSession {
     private static sInstance: MediaSession = null
     private player: CcPlayer = null
     private isSeeking = false
-    private loopMode: LoopMode = LoopMode.PLAYLIST_LOOP
+    private loopMode: LoopMode = LoopMode.LOOP_ALL
     private playlist: PlaylistManager = PlaylistManager.get()
     private session: avSession.AVSession
     private context: common.Context

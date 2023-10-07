@@ -16,8 +16,7 @@ function btnStyle(size: Length, padding: Length) {
 export struct MediaController {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
-    private playModeController: PlayModeController = new PlayModeController()
-    @State playModeIcon: Resource = this.playModeController.getIcon()
+    @State playModeIcon: Resource = PlayModeController.get().getIcon()
     actionPlayOrPause: () => void
     actionPlayNext: () => void
     actionPlayPre: () => void
@@ -37,6 +36,13 @@ export struct MediaController {
         .backgroundColor(null)
     }
 
+    aboutToAppear() {
+        PlayModeController.get().onModeChanged = (mode) => {
+            this.playModeIcon = PlayModeController.get().getIcon()
+            this.onModeChanged?.(mode)
+        }
+    }
+
     build() {
         Row() {
             // loop mode
@@ -47,8 +53,8 @@ export struct MediaController {
                     normal: this.normalStyles
                 })
                 .onClick(() => {
-                    let mode = this.playModeController.change()
-                    this.playModeIcon = this.playModeController.getIcon()
+                    let mode = PlayModeController.get().change()
+                    this.playModeIcon = PlayModeController.get().getIcon()
                     this.onModeChanged?.(mode)
                 })
             // play pre

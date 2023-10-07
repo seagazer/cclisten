@@ -42,18 +42,21 @@ export struct TimerDialog {
                 })
                 Fab({
                     text: "取消",
-                    textSize: 18,
-                    color: "#ff7c7c7c",
+                    textSize: UIConfig.FONT_BUTTON,
+                    color: "#ff939393",
                     marginSize: { left: 32 },
                     onAction: () => {
                         this.controller.close()
                     }
                 })
             }
-            .margin({ top: 16 })
+            .margin({ top: 32 })
             .justifyContent(FlexAlign.Center)
 
         }
-        .padding(16)
+        .padding(32)
+        .width(400)
+        .backgroundColor(Color.White)
+        .border({ radius: UIConfig.DIMENSION_CORNER })
     }
 }

@@ -2,13 +2,13 @@ import { IParser, Lyric, LyricParser } from '@seagazer/cclyric';
 import fs from '@ohos.file.fs'
 import { Logger } from '../extensions/Logger';
 
-const TAG = "[FileParser]"
+const TAG = "[FileLyricParser]"
 
 /**
  * Author: seagazer
  * Date: 2023/6/11
  */
-export class FileParser implements IParser {
+export class FileLyricParser implements IParser {
     private parser = new LyricParser()
 
     parse(filePath: string): Lyric {

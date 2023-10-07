@@ -1,13 +1,14 @@
 import common from '@ohos.app.ability.common'
 import preferences from '@ohos.data.preferences'
 import { Logger } from '../extensions/Logger'
-import { LiveData, MEDIA_SESSION_CURRENT_SONG } from '../extensions/LiveData'
-import { Song } from '../bean/Song'
+import { History } from '../bean/History'
 
 const TAG = "[PlayHistoryManager]"
 
 export class PlayHistoryManager {
     private static sInstance: PlayHistoryManager = null
+    private fileName = "history"
+    private key = "data"
 
     private constructor() {
     }
@@ -19,14 +20,14 @@ export class PlayHistoryManager {
         return this.sInstance
     }
 
-    public async saveHistory(context: common.Context, song: Song) {
+    public async saveHistory(context: common.Context, history: History) {
         try {
             Logger.d(TAG, "save history")
-            if (song) {
-                let sp = await preferences.getPreferences(context, "history")
-                await sp.put("data", JSON.stringify(song))
+            if (history) {
+                let sp = await preferences.getPreferences(context, this.fileName)
+                await sp.put(this.key, JSON.stringify(history))
                 await sp.flush()
-                Logger.d(TAG, "save history success= " + JSON.stringify(song))
+                Logger.d(TAG, "save history success= " + JSON.stringify(history))
             } else {
                 Logger.e(TAG, "save history error, the song is null!")
             }
@@ -35,16 +36,15 @@ export class PlayHistoryManager {
         }
     }
 
-    public async initPlayHistory(context: common.Context) {
+    public async readHistory(context: common.Context) {
         try {
             Logger.d(TAG, "read history")
-            let sp = await preferences.getPreferences(context, "history")
-            let data = await sp.get("data", null)
+            let sp = await preferences.getPreferences(context, this.fileName)
+            let data = await sp.get(this.key, null)
             if (data) {
                 Logger.d(TAG, "read history success= " + data)
-                let song = JSON.parse(data.toString()) as Song
-                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
-                return song
+                let history = JSON.parse(data.toString()) as History
+                return history
             }
         } catch (err) {
             Logger.e(TAG, "read history error= " + JSON.parse(err))

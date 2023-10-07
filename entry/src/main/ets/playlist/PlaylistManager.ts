@@ -102,13 +102,13 @@ export class PlaylistManager {
 
     getNext(mode: LoopMode): Song {
         switch (mode) {
-            case LoopMode.LOOP:
+            case LoopMode.LOOP_SINGLE:
                 return this.songList[this.currentIndex]
             case LoopMode.SHUFFLE:
             // todo get the shuffle next
                 let random = Math.round(Math.random() * this.songList.length)
                 return this.songList[random]
-            case LoopMode.PLAYLIST_LOOP:
+            case LoopMode.LOOP_ALL:
                 let nextIndex = ++this.currentIndex
                 if (nextIndex > this.songList.length - 1) {
                     nextIndex = 0
@@ -121,13 +121,13 @@ export class PlaylistManager {
 
     getPre(mode: LoopMode): Song {
         switch (mode) {
-            case LoopMode.LOOP:
+            case LoopMode.LOOP_SINGLE:
                 return this.songList[this.currentIndex]
             case LoopMode.SHUFFLE:
             // todo get the shuffle pre
                 let random = Math.round(Math.random() * this.songList.length)
                 return this.songList[random]
-            case LoopMode.PLAYLIST_LOOP:
+            case LoopMode.LOOP_ALL:
                 let preIndex = --this.currentIndex
                 if (preIndex < 0) {
                     preIndex = this.songList.length - 1

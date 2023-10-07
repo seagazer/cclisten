@@ -4,12 +4,10 @@ import { Logger } from '../extensions/Logger'
 import { FileScanner } from '../extensions/FileScanner'
 import router from '@ohos.router'
 import { Song } from '../bean/Song'
-import { APP_THEME, LiveData, MEDIA_SESSION_PLAYLIST, } from '../extensions/LiveData'
+import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
-import { PlaylistDb } from '../playlist/PlaylistDb'
 import { SelectItemView } from '../view/SelectItemView'
 import { PlaylistManager } from '../playlist/PlaylistManager'
-import { UIContext } from '@ohos.arkui.UIContext'
 import { UIConfig } from '../config/UIConfig'
 
 const TAG = "[PageFileList]"
@@ -59,7 +57,7 @@ struct PageFileList {
     @Builder
     MusicList() {
         List() {
-            ForEach(this.songList, (song: Song, index) => {
+            ForEach(this.songList, (song: Song, _) => {
                 ListItem() {
                     SelectItemView({ song: song, onItemSelectChanged: this.checkAllSelected })
                 }

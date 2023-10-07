@@ -34,9 +34,8 @@ struct PageSplash {
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
         Logger.d(TAG, "isAppInit = " + this.isAppInit)
-        // init playlist and history when playing animation
+        // init playlist when playing animation
         PlaylistManager.get().initFromDb(getContext(this))
-        PlayHistoryManager.get().initPlayHistory(getContext(this))
         if (this.isAppInit === "1") {
             let theme = JSON.parse(this.themeString)
             ThemeManager.updateTheme(theme)

@@ -4,7 +4,7 @@ import { LyricController, LyricView } from '@seagazer/cclyric';
 import { duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
-import { FileParser } from '../player/FileParser';
+import { FileLyricParser } from '../player/FileLyricParser';
 import { Song } from '../bean/Song';
 import {
     APP_THEME,
@@ -12,15 +12,18 @@ import {
     MEDIA_SESSION_PLAYLIST,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
+    LiveData,
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import common from '@ohos.app.ability.common';
 import { ListItemView } from '../view/ListItemView';
-import router from '@ohos.router';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { MethodInvoker } from '../extensions/MethodInvoker';
 import { PlayHistoryManager } from '../history/PlayHistoryManager';
 import { UIConfig } from '../config/UIConfig';
+import { History } from '../bean/History';
+import { LoopMode } from '../player/LoopMode';
+import { PlayModeController } from '../player/PlayModeController';
 
 const TAG = "[HomePlayer]"
 
@@ -31,20 +34,27 @@ export struct PagePlayer {
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = null
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
-    @State animAlpha: number = 1
+    @State coverAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
     @State isShowPlaylist: boolean = false
     private context: common.Context
     private mediaSession: MediaSession = MediaSession.get()
     private lyricController: LyricController = new LyricController()
-    private lyricParser: FileParser = new FileParser()
+    private lyricParser: FileLyricParser = new FileLyricParser()
     private playlistScroller = new Scroller()
     private invoker: MethodInvoker
     @Prop isNotPlayed: boolean
+    private loopMode: LoopMode = LoopMode.LOOP_ALL
 
     aboutToAppear() {
-        router.clear()
+        PlayHistoryManager.get().readHistory(getContext(this)).then((history) => {
+            if (history) {
+                this.loopMode = history.loopMode
+                PlayModeController.get().setCurrentMode(history.loopMode)
+                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
+            }
+        })
         this.context = getContext(this)
         this.mediaSession.initAvSession(this.context)
         this.lyricController
@@ -81,7 +91,7 @@ export struct PagePlayer {
                 {
                     style: SliderStyle.InSet,
                     min: 0,
-                    max: this.currentSong.duration,
+                    max: this.currentSong ? this.currentSong.duration : 0,
                     value: this.currentPosition
                 })
                 .width('100%')
@@ -98,7 +108,7 @@ export struct PagePlayer {
                 Text(timeToString(this.currentPosition))
                     .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.currentSong.duration))
+                Text(timeToString(this.currentSong ? this.currentSong.duration : 0))
                     .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorSecondary)
             }.width('100%')
@@ -131,12 +141,12 @@ export struct PagePlayer {
 
             // media title
             Column() {
-                Text(this.currentSong.title)
+                Text(this.currentSong ? this.currentSong.title : "未知")
                     .fontSize(UIConfig.FONT_SUB_TITLE)
                     .fontColor(this.theme.colorPrimary)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(this.currentSong.artist)
+                Text(this.currentSong ? this.currentSong.artist : "未知")
                     .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorSecondary)
                     .maxLines(1)
@@ -147,7 +157,7 @@ export struct PagePlayer {
         .width("100%")
         .height("100%")
         .justifyContent(FlexAlign.SpaceAround)
-        .opacity(this.animAlpha)
+        .opacity(this.coverAlpha)
         .animation({
             duration: 300
         })
@@ -168,7 +178,7 @@ export struct PagePlayer {
         .width("100%")
         .height("100%")
         .padding(32)
-        .opacity(1 - this.animAlpha)
+        .opacity(1 - this.coverAlpha)
         .animation({
             duration: 300,
             curve: Curve.Linear,
@@ -216,11 +226,12 @@ export struct PagePlayer {
                     actionPlayPre: () => {
                         this.mediaSession.playPre()
                     },
-                    onModeChanged: (mode) => {
-                        this.mediaSession.setLoopMode(mode)
-                    },
                     actionPlaylist: () => {
                         this.showPlaylist()
+                    },
+                    onModeChanged: (mode) => {
+                        this.loopMode = mode
+                        this.mediaSession.setLoopMode(mode)
                     }
                 })
             }
@@ -248,7 +259,7 @@ export struct PagePlayer {
         List({ scroller: this.playlistScroller }) {
             ForEach(this.playlist, (song: Song, index) => {
                 ListItem() {
-                    if (song.title == this.currentSong.title) {
+                    if (this.currentSong && song.title == this.currentSong.title) {
                         ListItemView({ data: song, index: index + 1, isHighLight: true })
                     } else {
                         ListItemView({ data: song, index: index + 1, isHighLight: false })
@@ -290,8 +301,9 @@ export struct PagePlayer {
         } else {
             Logger.e(TAG, "get lyric error!")
         }
+        // save history when song changed, so the history is not loss if the app crash
         Logger.d(TAG, "save play history= " + JSON.stringify(this.currentSong))
-        PlayHistoryManager.get().saveHistory(getContext(this), this.currentSong)
+        PlayHistoryManager.get().saveHistory(getContext(this), new History(this.loopMode, this.currentSong))
     }
 
     private async playOrPause() {
@@ -312,7 +324,7 @@ export struct PagePlayer {
             return
         }
         this.isShowLyric = !this.isShowLyric
-        this.animAlpha = this.isShowLyric ? 0 : 1
+        this.coverAlpha = this.isShowLyric ? 0 : 1
     }
 
     private showPlaylist() {

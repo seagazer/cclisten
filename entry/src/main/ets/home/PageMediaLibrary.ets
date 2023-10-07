@@ -1,6 +1,6 @@
 import { Song } from '../bean/Song'
 import { UIConfig } from '../config/UIConfig'
-import { APP_THEME, LiveData, MEDIA_SESSION_PLAYLIST } from '../extensions/LiveData'
+import { APP_THEME } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { FileScanner } from '../extensions/FileScanner'
 import { MediaSession } from '../player/MediaSession'
