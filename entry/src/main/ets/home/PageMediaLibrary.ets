@@ -16,7 +16,8 @@ export struct PageMediaLibrary {
     @State currentPosition: number = 0
     @State duration: number = 100
     @State isLoading: boolean = true
-    onClickEvent: () => void
+    onClickEvent: () => void = () => {
+    }
 
     aboutToAppear() {
         FileScanner.scanMediaLibrary(getContext(this)).then((result) => {

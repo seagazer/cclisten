@@ -6,9 +6,9 @@ import { UIConfig } from '../config/UIConfig'
 @Component
 export struct ListItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    index: number
+    index: number = 0
     @ObjectLink data: Song
-    onItemClick: (song: Song) => void
+    onItemClick: (song: Song) => void = (song)=>{}
     isHighLight: boolean = false
 
     @Styles

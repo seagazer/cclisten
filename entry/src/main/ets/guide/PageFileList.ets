@@ -180,9 +180,8 @@ struct PageFileList {
                     Logger.d(TAG, "select playlist = " + JSON.stringify(this.selectList))
                     if (this.selectList.length > 0) {
                         PlaylistManager.get().addList(this.selectList)
-                        navigationTo(PageRouter.PAGE_HOME, {
-                            data: this.selectList[0]
-                        })
+                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0]
+                        )
                     } else {
                         toast("请选择至少一首歌曲")
                     }

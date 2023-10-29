@@ -16,7 +16,7 @@ export struct PageTheme {
     private colorSecondaryList = ["#cccb2039", "#cc5c26ba", "#cc988613", "#cc0c8f3a",
         "#ccae4e1d", "#cc1258a3"]
     @State selectIndex: number = 0
-    private themeColor: string
+    private themeColor: string = ""
 
     aboutToAppear() {
         router.clear()
@@ -24,7 +24,7 @@ export struct PageTheme {
     }
 
     @Builder
-    ThemeItem(color1, color2) {
+    ThemeItem(color1: string, color2: string) {
         Row() {
             Stack().height("100%").layoutWeight(1).backgroundColor(color1)
             Stack()

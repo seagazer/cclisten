@@ -30,8 +30,7 @@ struct PageHome {
         router.clear()
         let param = router.getParams()
         if (param) {
-            // @ts-ignore
-            let song = param.data
+            let song = param as Song
             if (song) {
                 Logger.d(TAG, "play from router= " + JSON.stringify(song))
                 this.mediaSession.playSong(song as Song)
@@ -45,6 +44,7 @@ struct PageHome {
         if (this.pagePlayerInvoker.invoke("backPress")) {
             return true
         }
+        return false
     }
 
     @Builder

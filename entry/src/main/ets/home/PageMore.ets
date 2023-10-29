@@ -219,7 +219,7 @@ export struct PageMore {
 
     aboutToDisappear() {
         clearInterval(this.countDownTimer)
-        delete this.timerDialogController
-        this.timerDialogController = null
+        // delete this.timerDialogController
+        // this.timerDialogController = null
     }
 }

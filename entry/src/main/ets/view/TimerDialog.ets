@@ -7,7 +7,7 @@ import { Fab } from './Fab'
 export struct TimerDialog {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     controller: CustomDialogController
-    onAction: (minute: number) => void
+    onAction: (minute: number) => void = (minute)=>{}
     private countDownMinute: number = 5
     private themeColor: string = ""
 

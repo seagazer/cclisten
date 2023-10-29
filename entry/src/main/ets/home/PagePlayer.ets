@@ -31,19 +31,18 @@ const TAG = "[HomePlayer]"
 export struct PagePlayer {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
-    @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = null
+    @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("")
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
     @State coverAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
     @State isShowPlaylist: boolean = false
-    private context: common.Context
     private mediaSession: MediaSession = MediaSession.get()
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileLyricParser = new FileLyricParser()
     private playlistScroller = new Scroller()
-    private invoker: MethodInvoker
+    private invoker: MethodInvoker = MethodInvoker.create()
     @Prop isNotPlayed: boolean
     private loopMode: LoopMode = LoopMode.LOOP_ALL
 
@@ -55,8 +54,7 @@ export struct PagePlayer {
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
             }
         })
-        this.context = getContext(this)
-        this.mediaSession.initAvSession(this.context)
+        this.mediaSession.initAvSession(getContext(this))
         this.lyricController
             .setTextSize(vp2px(UIConfig.FONT_CONTENT))
             .setCacheSize(10)
@@ -219,7 +217,7 @@ export struct PagePlayer {
                 this.ProgressView()
                 // controller button
                 MediaController({
-                    actionPlayOrPause: this.playOrPause.bind(this),
+                    actionPlayOrPause: this.playOrPause,
                     actionPlayNext: () => {
                         this.mediaSession.playNext()
                     },
@@ -291,7 +289,7 @@ export struct PagePlayer {
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
         this.lyricLine = " "
         this.lyricController.setLyric(null)
-        let filePath = FileScanner.scanLyricSync(this.context.filesDir, this.currentSong.title)
+        let filePath = FileScanner.scanLyricSync(getContext(this).filesDir, this.currentSong.title)
         Logger.d(TAG, "update lyric= " + filePath)
         if (filePath) {
             let lrc = this.lyricParser.parse(filePath)
@@ -306,7 +304,7 @@ export struct PagePlayer {
         PlayHistoryManager.get().saveHistory(getContext(this), new History(this.loopMode, this.currentSong))
     }
 
-    private async playOrPause() {
+    private playOrPause = async () => {
         if (this.isNotPlayed && this.currentSong) {
             this.mediaSession.playSong(this.currentSong)
             this.isNotPlayed = false

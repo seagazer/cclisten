@@ -7,7 +7,8 @@ import { UIConfig } from '../config/UIConfig'
 export struct SelectItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @ObjectLink song: Song
-    onItemSelectChanged: () => void
+    onItemSelectChanged: () => void = () => {
+    }
 
     build() {
         Row() {

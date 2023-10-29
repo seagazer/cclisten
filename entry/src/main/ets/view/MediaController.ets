@@ -17,12 +17,18 @@ export struct MediaController {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
     @State playModeIcon: Resource = PlayModeController.get().getIcon()
-    actionPlayOrPause: () => void
-    actionPlayNext: () => void
-    actionPlayPre: () => void
-    actionPlayMode: () => void
-    actionPlaylist: () => void
-    onModeChanged: (mode: LoopMode) => void
+    actionPlayOrPause: () => void = () => {
+    }
+    actionPlayNext: () => void = () => {
+    }
+    actionPlayPre: () => void = () => {
+    }
+    actionPlayMode: () => void = () => {
+    }
+    actionPlaylist: () => void = () => {
+    }
+    onModeChanged: (mode: LoopMode) => void = (mode:LoopMode) => {
+    }
 
     @Styles
     pressedStyles() {

@@ -16,7 +16,7 @@ export class FileLyricParser implements IParser {
         let isCR = lrc.indexOf("\r") > 0 && lrc.indexOf("\n") < 0 // mac
         let isLF = lrc.indexOf("\n") > 0 && lrc.indexOf("\r") < 0 // unix
         let isCRLF = lrc.indexOf("\r") > 0 && lrc.indexOf("\n") > 0 // windows
-        let lrcArray = []
+        let lrcArray = new Array<string>()
         if (isCR) {
             Logger.d(TAG, "isCR mac")
             lrcArray = lrc.split("\r")

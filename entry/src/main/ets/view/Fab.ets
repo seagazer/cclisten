@@ -4,13 +4,14 @@ import { dimColor } from '../extensions/Extensions'
 @Preview
 @Component
 export struct Fab {
-    text: ResourceStr
-    textSize: number
+    text: ResourceStr = ""
+    textSize: number = 12
     textColor: ResourceColor = "#ffffff"
     color: number | string = "#ffc5c5c5"
-    onAction: (event: ClickEvent) => void
-    marginSize: Padding | Length
-    dimColor: number
+    onAction: (event: ClickEvent) => void = (event: ClickEvent) => {
+    }
+    marginSize: Padding | Length = 0
+    dimColor: number = 0x000000
     w: Length = 150
     h: Length = 50
 

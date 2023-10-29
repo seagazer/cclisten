@@ -8,13 +8,13 @@ export class PlayModeController {
     private mode: LoopMode = LoopMode.LOOP_ALL
     private playModeIcon: Resource = $r("app.media.baseline_repeat_24")
     private static sInstance = new PlayModeController()
-    onModeChanged: (mode: LoopMode) => void
+    onModeChanged: (mode: LoopMode) => void = (mode: LoopMode) => {}
 
     private constructor() {
     }
 
     public static get(): PlayModeController {
-        return this.sInstance
+        return PlayModeController.sInstance
     }
 
 

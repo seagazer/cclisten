@@ -13,7 +13,7 @@ export struct PageWelcome {
     @State translationValue: number = 1
     @State logoAnimValue: number = 0
     @State fabAnimValue: number = 0
-    private themeColor: string
+    private themeColor: string = ""
 
     aboutToAppear() {
         this.themeColor = this.theme.colorPrimary

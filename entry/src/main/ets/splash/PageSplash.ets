@@ -15,8 +15,8 @@ import { PlaylistManager } from '../playlist/PlaylistManager'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
 
-PersistentStorage.PersistProp<string>("themeString", JSON.stringify(DEFAULT_THEME))
-PersistentStorage.PersistProp<string>("isAppInit", "0")
+PersistentStorage.persistProp<string>("themeString", JSON.stringify(DEFAULT_THEME))
+PersistentStorage.persistProp<string>("isAppInit", "0")
 const TAG = "PageSplash"
 
 @Entry
@@ -37,7 +37,7 @@ struct PageSplash {
         // init playlist when playing animation
         PlaylistManager.get().initFromDb(getContext(this))
         if (this.isAppInit === "1") {
-            let theme = JSON.parse(this.themeString)
+            let theme = JSON.parse(this.themeString) as Theme
             ThemeManager.updateTheme(theme)
         } else {
             ThemeManager.updateTheme(new Theme("#FF405C", "#ffea223f"))
@@ -49,7 +49,7 @@ struct PageSplash {
 
     build() {
         Row() {
-            ForEach(this.logoName, (name, index) => {
+            ForEach(this.logoName, (name: string, index) => {
                 Text(name)
                     .fontSize(UIConfig.FONT_LOGO)
                     .fontWeight(FontWeight.Medium)
