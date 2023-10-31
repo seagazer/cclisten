@@ -6,7 +6,6 @@
     "guide/PageFileList",
     "home/PageHome",
     "settings/PageLanguageSettings",
-    "pages/Index",
     "settings/PageThemeSettings",
     "settings/PageStorageSettings",
     "settings/PageAbout",
