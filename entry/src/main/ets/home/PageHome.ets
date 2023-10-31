@@ -8,7 +8,6 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { MethodInvoker } from '../extensions/MethodInvoker';
 import { UIConfig } from '../config/UIConfig';
 import { PageMore } from './PageMore';
-import { PageMediaLibrary } from './PageMediaLibrary';
 
 const TAG = "[PageHome]"
 
@@ -65,12 +64,6 @@ struct PageHome {
                     PagePlayer({ invoker: this.pagePlayerInvoker, isNotPlayed: this.isNotPlayed })
                 }
                 .tabBar(this.Tab(0, "首页"))
-
-                TabContent() {
-                    PageMediaLibrary({ onClickEvent: () => {
-                        this.tabController.changeIndex(0)
-                    } })
-                }.tabBar(this.Tab(1, "媒体库"))
 
                 TabContent() {
                     PageMore()

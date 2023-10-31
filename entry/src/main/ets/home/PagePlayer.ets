@@ -13,9 +13,9 @@ import {
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
     LiveData,
+    MEDIA_SESSION_LOOP_MODE,
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
-import common from '@ohos.app.ability.common';
 import { ListItemView } from '../view/ListItemView';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { MethodInvoker } from '../extensions/MethodInvoker';
@@ -23,7 +23,6 @@ import { PlayHistoryManager } from '../history/PlayHistoryManager';
 import { UIConfig } from '../config/UIConfig';
 import { History } from '../bean/History';
 import { LoopMode } from '../player/LoopMode';
-import { PlayModeController } from '../player/PlayModeController';
 
 const TAG = "[HomePlayer]"
 
@@ -34,6 +33,7 @@ export struct PagePlayer {
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("")
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
+    @StorageLink(MEDIA_SESSION_LOOP_MODE) @Watch("onLoopModeChanged") loopMode: LoopMode = LoopMode.LOOP_ALL
     @State coverAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
@@ -44,13 +44,12 @@ export struct PagePlayer {
     private playlistScroller = new Scroller()
     private invoker: MethodInvoker = MethodInvoker.create()
     @Prop isNotPlayed: boolean
-    private loopMode: LoopMode = LoopMode.LOOP_ALL
 
     aboutToAppear() {
         PlayHistoryManager.get().readHistory(getContext(this)).then((history) => {
             if (history) {
                 this.loopMode = history.loopMode
-                PlayModeController.get().setCurrentMode(history.loopMode)
+                this.mediaSession.setLoopMode(history.loopMode)
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
             }
         })
@@ -120,12 +119,12 @@ export struct PagePlayer {
     CoverView() {
         Column() {
             // cover image
-            Image($r("app.media.ic_cover"))
+            Image($r("app.media.ic_launcher"))
                 .objectFit(ImageFit.Cover)
                 .width(320)
                 .height(320)
-                .padding(32)
-                .backgroundColor(this.isPlaying ? "#ffbfbff1" : "#ffb7b7db")
+                .padding(48)
+                .backgroundColor(this.isPlaying ? this.theme.colorPrimary : this.theme.colorSecondary)
                 .border({ radius: UIConfig.DIMENSION_CORNER })
                 .shadow({
                     radius: this.isPlaying ? UIConfig.DIMENSION_NORMAL_SHADOW : UIConfig.DIMENSION_PRESS_SHADOW,
@@ -217,7 +216,7 @@ export struct PagePlayer {
                 this.ProgressView()
                 // controller button
                 MediaController({
-                    actionPlayOrPause: this.playOrPause,
+                    actionPlay: this.playOrPause,
                     actionPlayNext: () => {
                         this.mediaSession.playNext()
                     },
@@ -226,10 +225,6 @@ export struct PagePlayer {
                     },
                     actionPlaylist: () => {
                         this.showPlaylist()
-                    },
-                    onModeChanged: (mode) => {
-                        this.loopMode = mode
-                        this.mediaSession.setLoopMode(mode)
                     }
                 })
             }
@@ -281,11 +276,11 @@ export struct PagePlayer {
         })
     }
 
-    private onProgressChanged() {
+    onProgressChanged() {
         this.lyricController.updatePosition(this.currentPosition)
     }
 
-    private onSongChanged() {
+    onSongChanged() {
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
         this.lyricLine = " "
         this.lyricController.setLyric(null)
@@ -302,6 +297,10 @@ export struct PagePlayer {
         // save history when song changed, so the history is not loss if the app crash
         Logger.d(TAG, "save play history= " + JSON.stringify(this.currentSong))
         PlayHistoryManager.get().saveHistory(getContext(this), new History(this.loopMode, this.currentSong))
+    }
+
+    onLoopModeChanged() {
+        this.mediaSession.setLoopMode(this.loopMode)
     }
 
     private playOrPause = async () => {

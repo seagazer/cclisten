@@ -5,6 +5,11 @@
     "guide/PageTheme",
     "guide/PageFileList",
     "home/PageHome",
-    "settings/PageSettings"
+    "settings/PageLanguageSettings",
+    "pages/Index",
+    "settings/PageThemeSettings",
+    "settings/PageStorageSettings",
+    "settings/PageAbout",
+    "settings/PageMediaLibrary"
   ]
 }

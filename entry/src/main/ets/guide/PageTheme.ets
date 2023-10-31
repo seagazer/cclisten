@@ -37,11 +37,7 @@ export struct PageTheme {
 
     build() {
         Column() {
-            Image($r("app.media.listen_theme")).width(156).height(156)
-                .fillColor(this.colorPrimaryList[this.selectIndex])
-                .animation({
-                    duration: 300
-                })
+            Image($r("app.media.ic_theme")).width(156).height(156)
             Text("请选择您喜欢的主题色")
                 .fontSize(UIConfig.FONT_SUB_TITLE)
                 .width("100%")
@@ -92,8 +88,8 @@ export struct PageTheme {
                     let theme = new Theme(this.colorPrimaryList[this.selectIndex],
                         this.colorSecondaryList[this.selectIndex])
                     ThemeManager.updateTheme(theme)
-                    AppStorage.Set<string>("isAppInit", "1")
-                    AppStorage.Set<string>("themeString", JSON.stringify(theme))
+                    AppStorage.set<string>("isAppInit", "1")
+                    AppStorage.set<string>("themeString", JSON.stringify(theme))
                     navigationTo(PageRouter.PAGE_GUIDE_FILE_LIST)
                 }
             })

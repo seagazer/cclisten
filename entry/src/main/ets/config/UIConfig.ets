@@ -1,4 +1,5 @@
 export class UIConfig {
+    static DIMENSION_PADDING = 16
     static DIMENSION_CORNER = 8
     static DIMENSION_CIRCLE = 200
     static DIMENSION_PRESS_SHADOW = 6

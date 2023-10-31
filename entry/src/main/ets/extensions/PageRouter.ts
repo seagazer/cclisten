@@ -8,5 +8,9 @@ export enum PageRouter {
     PAGE_GUIDE_SETUP = "guide/PageTheme",
     PAGE_GUIDE_FILE_LIST = "guide/PageFileList",
     PAGE_HOME = "home/PageHome",
-    PAGE_SETTINGS = "settings/PageSettings",
+    PAGE_LANGUAGE_SETTINGS = "settings/PageLanguageSettings",
+    PAGE_STORAGE_SETTINGS = "settings/PageStorageSettings",
+    PAGE_THEME_SETTINGS = "settings/PageThemeSettings",
+    PAGE_ABOUT = "settings/PageAbout",
+    PAGE_MEDIA_LIBRARY = "settings/PageMediaLibrary",
 }

@@ -40,6 +40,16 @@ export function duration2text(duration: number): string {
     return s1 + ":" + s2
 }
 
+export function seconds2text(seconds: number) {
+    let minute = Math.floor(seconds / 60)
+    let second = seconds - minute * 60
+    if (second < 10) {
+        return minute + ":0" + second
+    } else {
+        return minute + ":" + second
+    }
+}
+
 /**
  * Modify the color and dim with a factor in [0,1].
  * @param color The origin color to be dim.

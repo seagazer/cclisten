@@ -5,6 +5,7 @@ import { parseUri } from '../extensions/Extensions'
 import {
     LiveData,
     MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_LOOP_MODE,
     MEDIA_SESSION_PLAYING_STATE,
     MEDIA_SESSION_POSITION,
 } from '../extensions/LiveData'
@@ -71,7 +72,7 @@ export class MediaSession {
 
     public initAvSession(context: common.Context) {
         this.context = context
-        avSession.createAVSession(this.context, "ccplayer", "audio", (err, session) => {
+        avSession.createAVSession(this.context, "listen", "audio", (err, session) => {
             if (err) {
                 Logger.e(TAG, "create av session error= " + JSON.stringify(err))
                 return
@@ -89,6 +90,7 @@ export class MediaSession {
 
     setLoopMode(mode: LoopMode) {
         this.loopMode = mode
+        LiveData.setValue<LoopMode>(MEDIA_SESSION_LOOP_MODE, mode)
     }
 
     isPlaying(): boolean {
