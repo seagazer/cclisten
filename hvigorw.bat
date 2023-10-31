@@ -51,7 +51,14 @@ goto fail
 
 :execute
 @rem Execute hvigor
-"%NODE_EXE%" %WRAPPER_MODULE_PATH% %*
+"%NODE_EXE%" "%WRAPPER_MODULE_PATH%" %*
+
+if "%ERRORLEVEL%" == "0" goto hvigorwEnd
 
 :fail
 exit /b 1
+
+:hvigorwEnd
+if "%OS%" == "Windows_NT" endlocal
+
+:end

@@ -1,7 +1,7 @@
 {
   "license": "MIT License",
   "devDependencies": {
-    "@ohos/hypium": "1.0.6"
+    "@ohos/hypium": "1.0.11"
   },
   "author": "seagazer",
   "name": "myapplication",
