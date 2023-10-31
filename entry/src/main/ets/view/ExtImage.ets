@@ -13,18 +13,14 @@ export struct ExtImage {
     imageFit: ImageFit = ImageFit.Cover
     bg: ResourceColor
     asRatio: number = 0
-    // showPop: boolean = false
-    // popupOp: PopupOptions | CustomPopupOptions = null
-    // menuContent: {
-    //     value: string;
-    //     action: () => void
-    // }[] | CustomBuilder = null
 
-    @Styles pressedStyles() {
+    @Styles
+    pressedStyles() {
         .backgroundColor(DEFAULT_THEME.colorAction)
     }
 
-    @Styles normalStyles() {
+    @Styles
+    normalStyles() {
         .backgroundColor(null)
     }
 

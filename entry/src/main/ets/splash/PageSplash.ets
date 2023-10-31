@@ -1,19 +1,10 @@
 import { Logger } from '@seagazer/ccplayer'
-import { Song } from '../bean/Song'
 import { UIConfig } from '../config/UIConfig'
 import { navigationTo } from '../extensions/Extensions'
-import {
-    APP_THEME,
-    MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_PLAYLIST,
-    MEDIA_SESSION_PLAYING_STATE,
-    MEDIA_SESSION_POSITION,
-} from '../extensions/LiveData'
+import { APP_THEME } from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
-import { PlayHistoryManager } from '../history/PlayHistoryManager'
 import { PlaylistManager } from '../playlist/PlaylistManager'
-import { DEFAULT_THEME, Theme } from '../theme/Theme'
-import { ThemeManager } from '../theme/ThemeManager'
+import { DEFAULT_THEME, Theme, updateTheme } from '../theme/Theme'
 
 PersistentStorage.persistProp<string>("themeString", JSON.stringify(DEFAULT_THEME))
 PersistentStorage.persistProp<string>("isAppInit", "0")
@@ -38,9 +29,9 @@ struct PageSplash {
         PlaylistManager.get().initFromDb(getContext(this))
         if (this.isAppInit === "1") {
             let theme = JSON.parse(this.themeString) as Theme
-            ThemeManager.updateTheme(theme)
+            updateTheme(theme)
         } else {
-            ThemeManager.updateTheme(new Theme("#FF405C", "#ffea223f"))
+            updateTheme(new Theme("#FF405C", "#ffea223f"))
         }
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0

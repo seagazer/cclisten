@@ -8,7 +8,8 @@ export struct ListItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     index: number = 0
     @ObjectLink data: Song
-    onItemClick: (song: Song) => void = (song)=>{}
+    onItemClick: (song: Song) => void = (_) => {
+    }
     isHighLight: boolean = false
 
     @Styles

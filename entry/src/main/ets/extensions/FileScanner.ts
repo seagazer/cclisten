@@ -35,7 +35,7 @@ export class FileScanner {
             }
         })
         let lyricPath: string = null
-        for (let i = 0;i < files.length; i++) {
+        for (let i = 0; i < files.length; i++) {
             let f = files[i]
             if (f.indexOf(key) >= 0) {
                 lyricPath = f
@@ -57,7 +57,7 @@ export class FileScanner {
             }
         })
         let lyricPath: string = null
-        for (let i = 0;i < files.length; i++) {
+        for (let i = 0; i < files.length; i++) {
             let f = files[i]
             if (f.indexOf(key) >= 0) {
                 lyricPath = f

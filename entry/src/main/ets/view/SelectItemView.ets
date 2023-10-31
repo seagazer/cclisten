@@ -19,7 +19,7 @@ export struct SelectItemView {
                 .select(this.song.isAdd == 1)
                 .onChange((isChecked) => {
                     this.song.isAdd = isChecked ? 1 : 0
-                    this.onItemSelectChanged ?.()
+                    this.onItemSelectChanged?.()
                 })
 
             Column() {

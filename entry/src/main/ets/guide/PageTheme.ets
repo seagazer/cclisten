@@ -1,7 +1,6 @@
 import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { ThemeManager } from '../theme/ThemeManager';
+import { DEFAULT_THEME, Theme, updateTheme } from '../theme/Theme';
 import { Fab } from '../view/Fab';
 import router from '@ohos.router';
 import { APP_THEME } from '../extensions/LiveData';
@@ -87,7 +86,7 @@ export struct PageTheme {
                 onAction: () => {
                     let theme = new Theme(this.colorPrimaryList[this.selectIndex],
                         this.colorSecondaryList[this.selectIndex])
-                    ThemeManager.updateTheme(theme)
+                    updateTheme(theme)
                     AppStorage.set<string>("isAppInit", "1")
                     AppStorage.set<string>("themeString", JSON.stringify(theme))
                     navigationTo(PageRouter.PAGE_GUIDE_FILE_LIST)

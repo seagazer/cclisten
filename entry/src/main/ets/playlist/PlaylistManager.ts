@@ -34,7 +34,7 @@ export class PlaylistManager {
 
     updateCurrentSong(song: Song) {
         let index = -1
-        for (let i = 0;i < this.songList.length; i++) {
+        for (let i = 0; i < this.songList.length; i++) {
             let cur = this.songList[i]
             if (cur.url == song.url) {
                 index = i

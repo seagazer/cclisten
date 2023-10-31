@@ -3,9 +3,8 @@
   "devDependencies": {},
   "author": "seagazer",
   "name": "entry",
-  "description": "Please describe the basic information.",
+  "description": "A music player for OpenHarmony.",
   "main": "",
   "version": "1.0.0",
-  "dependencies": {
-  }
+  "dependencies": {}
 }

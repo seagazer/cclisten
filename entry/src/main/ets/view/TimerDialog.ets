@@ -48,7 +48,10 @@ export struct TimerDialog {
                         .fontColor(index == this.selectIndex ? "#ffffff" : "#000000")
                         .backgroundColor(index == this.selectIndex ? this.theme.colorPrimary : "#cce0e0e0")
                         .border({ radius: 100 })
-                        .scale({ x: this.selectIndex == index ? this.scaleSize : 1, y: this.selectIndex == index ? this.scaleSize : 1 })
+                        .scale({
+                            x: this.selectIndex == index ? this.scaleSize : 1,
+                            y: this.selectIndex == index ? this.scaleSize : 1
+                        })
                         .animation({
                             duration: 300
                         })

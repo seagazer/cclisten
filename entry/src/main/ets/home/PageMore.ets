@@ -7,8 +7,6 @@ import { SettingsItemView } from '../view/SettingsItemView'
 import { seconds2text } from '../extensions/Extensions'
 import { PageRouter } from '../extensions/PageRouter'
 
-const TAG = "[PageMore]"
-
 @Preview
 @Component
 export struct PageMore {
@@ -64,12 +62,32 @@ export struct PageMore {
 
     build() {
         Column() {
-            SettingsItemView({ icon: $r("app.media.baseline_list_24"), title: "媒体库", target: PageRouter.PAGE_MEDIA_LIBRARY })
-            SettingsItemView({ icon: $r("app.media.baseline_settings_24"), title: "主题设置", target: PageRouter.PAGE_THEME_SETTINGS })
-            SettingsItemView({ icon: $r("app.media.baseline_sd_storage_24"), title: "数据管理", target: PageRouter.PAGE_STORAGE_SETTINGS })
-            SettingsItemView({ icon: $r("app.media.baseline_language_24"), title: "语言设置", target: PageRouter.PAGE_LANGUAGE_SETTINGS })
+            SettingsItemView({
+                icon: $r("app.media.baseline_list_24"),
+                title: "媒体库",
+                target: PageRouter.PAGE_MEDIA_LIBRARY
+            })
+            SettingsItemView({
+                icon: $r("app.media.baseline_settings_24"),
+                title: "主题设置",
+                target: PageRouter.PAGE_THEME_SETTINGS
+            })
+            SettingsItemView({
+                icon: $r("app.media.baseline_sd_storage_24"),
+                title: "数据管理",
+                target: PageRouter.PAGE_STORAGE_SETTINGS
+            })
+            SettingsItemView({
+                icon: $r("app.media.baseline_language_24"),
+                title: "语言设置",
+                target: PageRouter.PAGE_LANGUAGE_SETTINGS
+            })
             this.ShutdownSetting()
-            SettingsItemView({ icon: $r("app.media.baseline_tips_and_updates_24"), title: "关于", target: PageRouter.PAGE_ABOUT })
+            SettingsItemView({
+                icon: $r("app.media.baseline_tips_and_updates_24"),
+                title: "关于",
+                target: PageRouter.PAGE_ABOUT
+            })
         }
         .width("100%")
         .height("100%")

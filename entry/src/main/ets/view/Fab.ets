@@ -8,7 +8,7 @@ export struct Fab {
     textSize: number = 12
     textColor: ResourceColor = "#ffffff"
     color: number | string = "#ffc5c5c5"
-    onAction: (event: ClickEvent) => void = (event: ClickEvent) => {
+    onAction: (event: ClickEvent) => void = (_: ClickEvent) => {
     }
     marginSize: Padding | Length = 0
     dimColor: number = 0x000000
