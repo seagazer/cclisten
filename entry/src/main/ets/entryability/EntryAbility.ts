@@ -6,6 +6,8 @@ import { MediaSession } from '../player/MediaSession';
 import { Logger } from '../extensions/Logger';
 import { BackgroundTask } from '../extensions/BackgroundTask';
 import errorManager from '@ohos.app.ability.errorManager';
+import { PlaylistManager } from '../playlist/PlaylistManager';
+import { ThemeManager } from '../theme/ThemeManager';
 
 const TAG = "[MainAbility]"
 
@@ -17,6 +19,9 @@ export default class EntryAbility extends UIAbility {
         this.mediaSession = MediaSession.get()
         this.mediaSession.initAvSession(this.context)
         BackgroundTask.getInstance().init(this.context)
+
+        PlaylistManager.get().initFromDb(this.context)
+        ThemeManager.get().init(this.context)
         // request permission
         aac.createAtManager()
             .requestPermissionsFromUser(this.context, ["ohos.permission.READ_MEDIA", "ohos.permission.READ_AUDIO"])

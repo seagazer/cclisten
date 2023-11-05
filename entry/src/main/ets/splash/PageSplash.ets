@@ -4,11 +4,12 @@ import { navigationTo } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
 import { PlaylistManager } from '../playlist/PlaylistManager'
-import { DEFAULT_THEME, Theme, updateTheme } from '../theme/Theme'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { ThemeManager } from '../theme/ThemeManager'
 
-PersistentStorage.persistProp<string>("themeString", JSON.stringify(DEFAULT_THEME))
 PersistentStorage.persistProp<string>("isAppInit", "0")
-const TAG = "PageSplash"
+
+const TAG = "[PageSplash]"
 
 @Entry
 @Component
@@ -19,23 +20,26 @@ struct PageSplash {
     private duration = 500
     private delay = 200
     @StorageLink("isAppInit") isAppInit: string = "0"
-    @StorageLink("themeString") themeString: string = JSON.stringify(DEFAULT_THEME)
 
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
         Logger.d(TAG, "isAppInit = " + this.isAppInit)
         // init playlist when playing animation
-        PlaylistManager.get().initFromDb(getContext(this))
         if (this.isAppInit === "1") {
-            let theme = JSON.parse(this.themeString) as Theme
-            updateTheme(theme)
+            this.loadTheme()
         } else {
-            updateTheme(new Theme("#FF405C", "#ffea223f"))
+            ThemeManager.get().updateTheme(new Theme("#FF405C", "#ffea223f"))
         }
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })
+    }
+
+    private async loadTheme() {
+        let theme = await ThemeManager.get().readTheme()
+        Logger.d(TAG, "user theme =" + JSON.stringify(theme))
+        ThemeManager.get().updateTheme(theme)
     }
 
     build() {

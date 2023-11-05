@@ -70,7 +70,6 @@ export struct TimerDialog {
                 Fab({
                     text: "确认",
                     textSize: UIConfig.FONT_BUTTON,
-                    color: this.theme.colorPrimary,
                     onAction: () => {
                         if (this.currentSelectDuration > 0) {
                             this.onAction?.(this.currentSelectDuration)
@@ -82,7 +81,6 @@ export struct TimerDialog {
                 Fab({
                     text: "取消",
                     textSize: UIConfig.FONT_BUTTON,
-                    color: "#ff939393",
                     marginSize: { left: 32 },
                     onAction: () => {
                         this.controller.close()

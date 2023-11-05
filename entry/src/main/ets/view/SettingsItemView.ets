@@ -22,8 +22,8 @@ export struct SettingsItemView {
     build() {
         Column() {
             Row() {
-                Image(this.icon).width(32).height(32)
-                Text(this.title).height(56).margin({ left: 16 }).layoutWeight(1)
+                Image(this.icon).width(50).height(50)
+                Text(this.title).fontSize(UIConfig.FONT_SUB_TITLE).height(56).margin({ left: 16 }).layoutWeight(1)
                 Image($r("app.media.baseline_keyboard_arrow_right_24"))
                     .width(56)
                     .height("100%")
@@ -31,7 +31,7 @@ export struct SettingsItemView {
             }
         }
         .width("100%")
-        .height(56)
+        .height(64)
         .padding({ left: 8, right: 8 })
         .stateStyles({
             normal: this.normalStyles,

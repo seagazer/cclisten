@@ -9,6 +9,8 @@ import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { SelectItemView } from '../view/SelectItemView'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { UIConfig } from '../config/UIConfig'
+import { Fab } from '../view/Fab'
+import Stack from '@ohos.util.Stack'
 
 const TAG = "[PageFileList]"
 
@@ -56,17 +58,38 @@ struct PageFileList {
 
     @Builder
     MusicList() {
-        List() {
-            ForEach(this.songList, (song: Song, _) => {
-                ListItem() {
-                    SelectItemView({ song: song, onItemSelectChanged: this.checkAllSelected })
+        Column() {
+            List() {
+                ForEach(this.songList, (song: Song, _) => {
+                    ListItem() {
+                        SelectItemView({ song: song, onItemSelectChanged: this.checkAllSelected })
+                    }
+                })
+            }
+            .width("100%")
+            .layoutWeight(1)
+            .margin({ top: 16 })
+            .scrollBar(BarState.Auto)
+
+            Fab({
+                text: "完成",
+                textSize: UIConfig.FONT_BUTTON,
+                marginSize: { top: 56 },
+                onAction: () => {
+                    Logger.d(TAG, "select playlist = " + JSON.stringify(this.selectList))
+                    if (this.selectList.length > 0) {
+                        PlaylistManager.get().addList(this.selectList)
+                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0]
+                        )
+                    } else {
+                        toast("请选择至少一首歌曲")
+                    }
                 }
             })
         }
         .width("100%")
+        .justifyContent(FlexAlign.End)
         .layoutWeight(1)
-        .margin({ top: 16 })
-        .scrollBar(BarState.Auto)
     }
 
     private checkAllSelected = () => {
@@ -96,98 +119,68 @@ struct PageFileList {
     }
 
     build() {
-        RelativeContainer() {
-            Column() {
-                this.TitleBar()
+        Column() {
+            this.TitleBar()
 
-                Row() {
-                    Checkbox()
-                        .width(24)
-                        .height(24)
-                        .selectedColor(this.theme.colorPrimary)
-                        .select(this.isAllSelected)
-                        .onChange((isChecked) => {
-                            if (this.isAllSelected != isChecked) {
-                                this.isAllSelected = isChecked
-                                if (this.isAllSelected) {
-                                    this.songList.forEach((song) => {
-                                        song.isAdd = 1
-                                    })
-                                } else {
-                                    this.songList.forEach((song) => {
-                                        song.isAdd = 0
-                                    })
-                                }
+            Row() {
+                Checkbox()
+                    .width(24)
+                    .height(24)
+                    .selectedColor(this.theme.colorPrimary)
+                    .select(this.isAllSelected)
+                    .onChange((isChecked) => {
+                        if (this.isAllSelected != isChecked) {
+                            this.isAllSelected = isChecked
+                            if (this.isAllSelected) {
+                                this.songList.forEach((song) => {
+                                    song.isAdd = 1
+                                })
+                            } else {
+                                this.songList.forEach((song) => {
+                                    song.isAdd = 0
+                                })
                             }
-                        })
-                    Text(this.isAllSelected ? "取消全选" : "全选").padding({ left: 16 })
-                        .width("100%")
-                }
-                .margin({ top: 16 })
-
-                if (this.isLoading) {
-                    Column() {
-                        LoadingProgress()
-                            .width(48).height(48).color(this.theme.colorPrimary)
-
-                        Text("正在扫描").fontSize(UIConfig.FONT_SUB_TITLE).fontColor(this.theme.colorPrimary)
-                            .margin({ top: 16 })
-                    }
-                    .width("100%")
-                    .layoutWeight(1)
-                    .justifyContent(FlexAlign.Center)
-                    .onAppear(() => {
-                        FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
-                            Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
-                            this.songList = result
-                            this.isLoading = false
-                        })
+                        }
                     })
+                Text(this.isAllSelected ? "取消全选" : "全选").padding({ left: 16 })
+                    .width("100%")
+            }
+            .margin({ top: 16 })
+
+            if (this.isLoading) {
+                Column() {
+                    LoadingProgress()
+                        .width(48).height(48).color(this.theme.colorPrimary)
+
+                    Text("正在扫描").fontSize(UIConfig.FONT_SUB_TITLE).fontColor(this.theme.colorPrimary)
+                        .margin({ top: 16 })
+                }
+                .width("100%")
+                .layoutWeight(1)
+                .justifyContent(FlexAlign.Center)
+                .onAppear(() => {
+                    FileScanner.scanMediaLibrary(getContext(this)).then((result) => {
+                        Logger.d(TAG, "scan audio files= " + JSON.stringify(result))
+                        this.songList = result
+                        this.isLoading = false
+                    })
+                })
+            } else {
+                if (this.songList.length > 0) {
+                    this.MusicList()
                 } else {
-                    if (this.songList.length > 0) {
-                        this.MusicList()
-                    } else {
-                        this.EmptyView()
-                    }
+                    this.EmptyView()
                 }
             }
-            .id("list")
-            .width("100%")
-            .height("100%")
-            .padding(16)
-            .alignItems(HorizontalAlign.Start)
-            .alignRules({
-                left: { anchor: "__container__", align: HorizontalAlign.Start },
-                top: { anchor: "__container__", align: VerticalAlign.Top }
-            })
-
-            Image($r('app.media.baseline_play_circle_24'))
-                .id("play")
-                .width(64)
-                .height(64)
-                .padding(2)
-                .stateStyles({
-                    pressed: this.pressedStyles,
-                    normal: this.normalStyles
-                })
-                .fillColor(this.theme.colorPrimary)
-                .alignRules({
-                    right: { anchor: "__container__", align: HorizontalAlign.End },
-                    bottom: { anchor: "__container__", align: VerticalAlign.Bottom }
-                })
-                .margin({ right: 16, bottom: 48 })
-                .onClick(() => {
-                    Logger.d(TAG, "select playlist = " + JSON.stringify(this.selectList))
-                    if (this.selectList.length > 0) {
-                        PlaylistManager.get().addList(this.selectList)
-                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0]
-                        )
-                    } else {
-                        toast("请选择至少一首歌曲")
-                    }
-                })
         }
+        .id("list")
         .width("100%")
         .height("100%")
+        .padding(16)
+        .alignItems(HorizontalAlign.Start)
+        .alignRules({
+            left: { anchor: "__container__", align: HorizontalAlign.Start },
+            top: { anchor: "__container__", align: VerticalAlign.Top }
+        })
     }
 }

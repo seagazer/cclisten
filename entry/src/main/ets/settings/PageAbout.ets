@@ -3,6 +3,8 @@ import bundleManager from '@ohos.bundle.bundleManager'
 import { Logger } from '../extensions/Logger'
 
 const TAG = "[PageAbout]"
+const Developer = "Develop by Seagazer"
+const Github = "https://github.com/seagazer"
 
 @Entry
 @Component
@@ -23,7 +25,7 @@ struct PageAbout {
     build() {
         Column() {
             Column() {
-                Image($r('app.media.ic_launcher')).width(96).height(96)
+                Image($r("app.media.ic_launcher")).width(96).height(96)
 
                 Text(this.appName).fontWeight(FontWeight.Bold).fontSize(UIConfig.FONT_TITLE).margin({ top: 32 })
 
@@ -33,10 +35,10 @@ struct PageAbout {
             .layoutWeight(1)
             .justifyContent(FlexAlign.Center)
 
-            Text("Develop by Seagazer")
+            Text(Developer)
                 .fontStyle(FontStyle.Italic)
                 .textAlign(TextAlign.Center).fontSize(UIConfig.FONT_CONTENT)
-            Text("https://github.com/seagazer")
+            Text(Github)
                 .fontColor("#cc8a8a8a")
                 .textAlign(TextAlign.Center).fontSize(UIConfig.FONT_SUB_CONTENT)
                 .margin({ top: 4, bottom: 16 })

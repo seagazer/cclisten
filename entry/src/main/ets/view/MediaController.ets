@@ -51,9 +51,9 @@ export struct MediaController {
     build() {
         Row() {
             // loop mode
-            Image(this.loopMode == LoopMode.LOOP_ALL ? $r("app.media.baseline_repeat_24") :
-                this.loopMode == LoopMode.SHUFFLE ? $r("app.media.baseline_shuffle_24") : $r("app.media.baseline_repeat_one_24"))
-                .btnStyle(48, 12)
+            Image(this.loopMode == LoopMode.LOOP_ALL ? $r("app.media.ic_loop_all") :
+                this.loopMode == LoopMode.SHUFFLE ? $r("app.media.ic_loop_shuttle") : $r("app.media.ic_loop_one"))
+                .btnStyle(56, 8)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -62,8 +62,8 @@ export struct MediaController {
                     this.changedLoopMode()
                 })
             // play pre
-            Image($r('app.media.baseline_skip_previous_24'))
-                .btnStyle(48, 6)
+            Image($r('app.media.ic_play_pre'))
+                .btnStyle(56, 6)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -72,8 +72,8 @@ export struct MediaController {
                     this.actionPlayPre?.()
                 })
             // play & pause
-            Image(this.isPlaying ? $r('app.media.baseline_pause_circle_24') : $r('app.media.baseline_play_circle_24'))
-                .btnStyle(76, 2)
+            Image(this.isPlaying ? $r('app.media.ic_pause') : $r('app.media.ic_play'))
+                .btnStyle(80, 1)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -83,8 +83,8 @@ export struct MediaController {
                     this.actionPlay?.()
                 })
             // play next
-            Image($r('app.media.baseline_skip_next_24'))
-                .btnStyle(48, 6)
+            Image($r('app.media.ic_play_next'))
+                .btnStyle(56, 6)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
@@ -93,8 +93,8 @@ export struct MediaController {
                     this.actionPlayNext?.()
                 })
             // playlist
-            Image($r('app.media.baseline_list_24'))
-                .btnStyle(48, 12)
+            Image($r("app.media.ic_playlist"))
+                .btnStyle(56, 8)
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles

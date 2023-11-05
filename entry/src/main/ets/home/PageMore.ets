@@ -25,9 +25,11 @@ export struct PageMore {
     @Builder
     ShutdownSetting() {
         Row() {
-            Image($r("app.media.baseline_av_timer_24")).width(32).height(32)
-                .fillColor(this.countDownText != "" ? this.theme.colorSecondary : Color.Black)
+            Image(this.countDownText != "" ? $r("app.media.ic_timer_active") : $r("app.media.ic_timer"))
+                .width(50)
+                .height(50)
             Text("定时关闭")
+                .fontSize(UIConfig.FONT_SUB_TITLE)
                 .height(56)
                 .fontColor(this.countDownText != "" ? this.theme.colorPrimary : Color.Black)
                 .margin({ left: 16 })
@@ -49,7 +51,7 @@ export struct PageMore {
                 })
         }
         .width("100%")
-        .height(56)
+        .height(64)
         .padding({ left: 8, right: 8 })
         .stateStyles({
             normal: this.normalStyles,
@@ -63,19 +65,14 @@ export struct PageMore {
     build() {
         Column() {
             SettingsItemView({
-                icon: $r("app.media.baseline_list_24"),
+                icon: $r("app.media.ic_playlist"),
                 title: "媒体库",
                 target: PageRouter.PAGE_MEDIA_LIBRARY
             })
             SettingsItemView({
-                icon: $r("app.media.baseline_settings_24"),
+                icon: $r("app.media.ic_theme"),
                 title: "主题设置",
                 target: PageRouter.PAGE_THEME_SETTINGS
-            })
-            SettingsItemView({
-                icon: $r("app.media.baseline_sd_storage_24"),
-                title: "数据管理",
-                target: PageRouter.PAGE_STORAGE_SETTINGS
             })
             SettingsItemView({
                 icon: $r("app.media.baseline_language_24"),
@@ -84,7 +81,7 @@ export struct PageMore {
             })
             this.ShutdownSetting()
             SettingsItemView({
-                icon: $r("app.media.baseline_tips_and_updates_24"),
+                icon: $r("app.media.ic_about"),
                 title: "关于",
                 target: PageRouter.PAGE_ABOUT
             })

@@ -13,16 +13,14 @@ export struct PageWelcome {
     @State translationValue: number = 1
     @State logoAnimValue: number = 0
     @State fabAnimValue: number = 0
-    private themeColor: string = ""
 
     aboutToAppear() {
-        this.themeColor = this.theme.colorPrimary
         router.clear()
     }
 
     build() {
         Column() {
-            Image($r("app.media.ic_welcome"))
+            Image($r("app.media.ic_hello"))
                 .width(100)
                 .height(100)
                 .scale({ x: this.logoAnimValue, y: this.logoAnimValue })
@@ -43,15 +41,16 @@ export struct PageWelcome {
                 .margin({ top: 48 })
                 .translate({ y: (1 - this.translationValue) * 100 })
 
-            Fab({
-                text: "开始",
-                textSize: UIConfig.FONT_BUTTON,
-                color: this.themeColor,
-                marginSize: { top: 56 },
-                onAction: () => {
-                    navigationTo(PageRouter.PAGE_GUIDE_SETUP)
-                }
-            }).opacity(this.fabAnimValue)
+            Fab(
+                {
+                    text: "开始",
+                    textSize: UIConfig.FONT_BUTTON,
+                    marginSize: { top: 56 },
+                    onAction: () => {
+                        navigationTo(PageRouter.PAGE_GUIDE_SETUP)
+                    }
+                })
+                .opacity(this.fabAnimValue)
                 .animation({
                     duration: 800,
                 })

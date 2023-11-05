@@ -49,7 +49,7 @@ struct PageHome {
     @Builder
     Tab(id: number, title: string) {
         Text(title)
-            .fontSize(UIConfig.FONT_SUB_TITLE)
+            .fontSize(UIConfig.FONT_TITLE)
             .fontColor(this.currentTabId === id ? this.theme.colorPrimary : "#000000")
             .scale({ x: this.currentTabId === id ? 1.15 : 1, y: this.currentTabId === id ? 1.15 : 1 })
             .animation({

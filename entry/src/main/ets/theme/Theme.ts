@@ -1,5 +1,3 @@
-import { APP_THEME, LiveData } from '../extensions/LiveData'
-
 /**
  * Author: seagazer
  * Date: 2023/4/9
@@ -18,6 +16,3 @@ export class Theme {
 
 export const DEFAULT_THEME = new Theme("#ff000000", "#e69a9a9a")
 
-export function updateTheme(theme: Theme) {
-    LiveData.setValue(APP_THEME, theme)
-}

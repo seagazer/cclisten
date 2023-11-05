@@ -1,10 +1,11 @@
 import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme, updateTheme } from '../theme/Theme';
+import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { Fab } from '../view/Fab';
 import router from '@ohos.router';
 import { APP_THEME } from '../extensions/LiveData';
 import { UIConfig } from '../config/UIConfig';
+import { ThemeManager } from '../theme/ThemeManager';
 
 @Entry
 @Component
@@ -15,28 +16,14 @@ export struct PageTheme {
     private colorSecondaryList = ["#cccb2039", "#cc5c26ba", "#cc988613", "#cc0c8f3a",
         "#ccae4e1d", "#cc1258a3"]
     @State selectIndex: number = 0
-    private themeColor: string = ""
+    private scaleSize = 1.2
 
     aboutToAppear() {
         router.clear()
-        this.themeColor = this.theme.colorPrimary
-    }
-
-    @Builder
-    ThemeItem(color1: string, color2: string) {
-        Row() {
-            Stack().height("100%").layoutWeight(1).backgroundColor(color1)
-            Stack()
-                .height("100%")
-                .layoutWeight(1)
-                .backgroundColor(color2)
-        }
-        .width("100%").height("100%")
     }
 
     build() {
         Column() {
-            Image($r("app.media.ic_theme")).width(156).height(156)
             Text("请选择您喜欢的主题色")
                 .fontSize(UIConfig.FONT_SUB_TITLE)
                 .width("100%")
@@ -49,46 +36,43 @@ export struct PageTheme {
 
             Grid() {
                 ForEach(this.colorPrimaryList, (color: string, index) => {
-                    if (this.selectIndex == index) {
-                        GridItem() {
-                            this.ThemeItem(color, this.colorSecondaryList[index])
-                        }
-                        .width(100)
-                        .height(50)
-                        .border({ color: this.theme.colorPrimary, width: 2 })
-                        .onClick(() => {
-                            this.selectIndex = index
-                        })
-                    } else {
-                        GridItem() {
-                            this.ThemeItem(color, this.colorSecondaryList[index])
-                        }
-                        .width(100)
-                        .height(50)
-                        .onClick(() => {
-                            this.selectIndex = index
-                        })
+                    GridItem() {
+                        Stack()
+                            .width(40)
+                            .height(40)
+                            .border({ radius: 64, color: Color.Black, width: this.selectIndex == index ? 2 : 0 })
+                            .backgroundColor(color)
+                            .scale({
+                                x: this.selectIndex == index ? this.scaleSize : 1,
+                                y: this.selectIndex == index ? this.scaleSize : 1
+                            })
+                            .animation({
+                                duration: 300
+                            })
+                            .onClick(() => {
+                                this.selectIndex = index
+                                let theme = new Theme(this.colorPrimaryList[this.selectIndex], this.colorSecondaryList[this.selectIndex])
+                                ThemeManager.get().updateTheme(theme)
+                            })
                     }
                 })
             }
-            .align(Alignment.Center)
-            .columnsTemplate("1fr 1fr 1fr")
+            .columnsTemplate("1fr 1fr 1fr 1fr 1fr 1fr")
+            .height(80)
             .rowsGap(16)
             .columnsGap(16)
             .margin({ top: 48 })
-            .height(126)
+            .padding(16)
 
             Fab({
-                text: "确定",
+                text: "下一步",
                 textSize: UIConfig.FONT_BUTTON,
-                color: this.themeColor,
                 marginSize: { top: 56 },
                 onAction: () => {
-                    let theme = new Theme(this.colorPrimaryList[this.selectIndex],
-                        this.colorSecondaryList[this.selectIndex])
-                    updateTheme(theme)
+                    let theme = new Theme(this.colorPrimaryList[this.selectIndex], this.colorSecondaryList[this.selectIndex])
+                    ThemeManager.get().updateTheme(theme)
+                    ThemeManager.get().saveTheme(theme)
                     AppStorage.set<string>("isAppInit", "1")
-                    AppStorage.set<string>("themeString", JSON.stringify(theme))
                     navigationTo(PageRouter.PAGE_GUIDE_FILE_LIST)
                 }
             })

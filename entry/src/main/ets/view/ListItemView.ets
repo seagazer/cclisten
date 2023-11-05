@@ -50,7 +50,8 @@ export struct ListItemView {
             .alignItems(HorizontalAlign.Start)
 
             if (this.isHighLight) {
-                Image($r("app.media.ic_equalizer"))
+                Image($r("app.media.ic_dance"))
+                    .fillColor(this.theme.colorPrimary)
                     .width(56)
                     .height(56)
                     .padding(16)

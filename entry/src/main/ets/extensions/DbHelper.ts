@@ -9,9 +9,9 @@ export interface IDbAction<T> {
 
     insertArray(t: Array<T>): Promise<number>
 
-    update(t: T, key: string): Promise<number>
+    update(matchKey: string, data: T): Promise<number>
 
-    delete(t: T, key: string): Promise<number>
+    delete(matchKey: string, data: T): Promise<number>
 
     query(): Promise<Array<T>>
 }
@@ -26,22 +26,27 @@ export class DbHelper<T> implements IDbAction<T> {
     private db: relationalStore.RdbStore = null
     private keyMap = new Map<string, ColumnValueType>()
     private tableName: string
+    private primaryKey: string = "id"
 
-    public addTableColumn(key: string, valueType: ColumnValueType) {
+    public setPrimaryKey(primaryKey: string) {
+        this.primaryKey = primaryKey
+    }
+
+    public addColumn(key: string, valueType: ColumnValueType) {
         this.keyMap.set(key, valueType)
     }
 
-    public async createTable(context: common.Context, tableName: string) {
+    public async create(context: common.Context, tableName: string, level: relationalStore.SecurityLevel = relationalStore.SecurityLevel.S1) {
         try {
             if (this.keyMap.size <= 0) {
                 Logger.e(TAG, "The column of table is null, create table failed!")
-                return -1
+                return null
             }
             this.tableName = tableName
             this.db = await relationalStore.getRdbStore(context,
                 {
                     name: tableName + '.db',
-                    securityLevel: relationalStore.SecurityLevel.S1
+                    securityLevel: level
                 })
             Logger.d(TAG, "create db= " + this.db)
             let keyMapSql = ""
@@ -49,26 +54,40 @@ export class DbHelper<T> implements IDbAction<T> {
             for (let key of this.keyMap.keys()) {
                 let value = this.keyMap.get(key)
                 if (i != this.keyMap.size - 1) {
-                    keyMapSql += key + " " + value + ", "
+                    if (key === this.primaryKey) {
+                        keyMapSql += key + " " + value + " PRIMARY KEY, "
+                    } else {
+                        keyMapSql += key + " " + value + ", "
+                    }
                 } else {
-                    keyMapSql += key + " " + value
+                    if (key === this.primaryKey) {
+                        keyMapSql += key + " " + value + " PRIMARY KEY"
+                    } else {
+                        keyMapSql += key + " " + value
+                    }
                 }
                 i++
             }
-            let sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (id INTEGER PRIMARY KEY AUTOINCREMENT, " + keyMapSql + ")"
+            let sql = ""
+            if (this.keyMap.get(this.primaryKey)) {
+                sql = "CREATE TABLE IF NOT EXISTS " + tableName + " ( " + keyMapSql + ")"
+            } else {
+                sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (id INTEGER PRIMARY KEY AUTOINCREMENT, " + keyMapSql + ")"
+            }
             Logger.d(TAG, "sql= " + sql)
             await this.db.executeSql(sql)
             Logger.d(TAG, "execute sql success")
-            return 1
+            return this.db
         } catch (err) {
-            return -1
+            Logger.e(TAG, "create db error= " + JSON.stringify(err))
+            return null
         }
     }
 
     public async insert(data: T) {
         if (!this.db) {
             Logger.w(TAG, "The RdbStore is null!")
-            return
+            return -1
         }
         try {
             let value = {}
@@ -87,34 +106,34 @@ export class DbHelper<T> implements IDbAction<T> {
     public async insertArray(list: Array<T>) {
         if (!this.db) {
             Logger.w(TAG, "The RdbStore is null!")
-            return
+            return -1
         }
         try {
-            let values = []
-            list.forEach((t) => {
+            let valueList = []
+            list.forEach((data) => {
                 let value = {}
                 this.keyMap.forEach((_, key) => {
-                    value[key] = t[key]
+                    value[key] = data[key]
                 })
                 Logger.d(TAG, "insert data= " + JSON.stringify(value))
-                values.push(value)
+                valueList.push(value)
             })
-            let resultCode = await this.db.batchInsert(this.tableName, values)
+            let resultCode = await this.db.batchInsert(this.tableName, valueList)
             return resultCode
         } catch (err) {
-            Logger.e(TAG, "insert array error= " + JSON.stringify(err))
+            Logger.e(TAG, "insert error= " + JSON.stringify(err))
             return -1
         }
     }
 
-    public async delete(data: T, key: string) {
+    public async delete(matchKey: string, data: T) {
         if (!this.db) {
             Logger.w(TAG, "The RdbStore is null!")
-            return
+            return -1
         }
         try {
             let predicates = new relationalStore.RdbPredicates(this.tableName)
-            predicates.equalTo(key, data[key])
+            predicates.equalTo(matchKey, data[matchKey])
             Logger.d(TAG, "delete data= " + JSON.stringify(data))
             let resultCode = await this.db.delete(predicates)
             return resultCode
@@ -124,10 +143,10 @@ export class DbHelper<T> implements IDbAction<T> {
         }
     }
 
-    public async update(data: T, key: string) {
+    public async update(matchKey: string, data: T) {
         if (!this.db) {
             Logger.w(TAG, "The RdbStore is null!")
-            return
+            return -1
         }
         try {
             const value = {}
@@ -135,7 +154,7 @@ export class DbHelper<T> implements IDbAction<T> {
                 value[key] = data[key]
             })
             const predicates = new relationalStore.RdbPredicates(this.tableName)
-            predicates.equalTo(key, data[key])
+            predicates.equalTo(matchKey, data[matchKey])
             Logger.d(TAG, "update data= " + JSON.stringify(value))
             let resultCode = await this.db.update(value, predicates)
             return resultCode
@@ -160,7 +179,7 @@ export class DbHelper<T> implements IDbAction<T> {
             let result: Array<T> = []
             cursor.goToFirstRow()
             while (!cursor.isEnded) {
-                let t = this.readProps(cursor)
+                let t = this.readRow(cursor)
                 result.push(t)
                 cursor.goToNextRow()
             }
@@ -173,18 +192,18 @@ export class DbHelper<T> implements IDbAction<T> {
         }
     }
 
-    private readProps(cursor: relationalStore.ResultSet) {
+    private readRow(cursor: relationalStore.ResultSet) {
         let result = {}
         for (let key of this.keyMap.keys()) {
             let valueType = this.keyMap.get(key)
             switch (valueType) {
                 case "TEXT":
-                    let tv = cursor.getString(cursor.getColumnIndex(key))
-                    result[key] = tv
+                    let stringValue = cursor.getString(cursor.getColumnIndex(key))
+                    result[key] = stringValue
                     break
                 case "INTEGER":
-                    let iv = cursor.getLong(cursor.getColumnIndex(key))
-                    result[key] = iv
+                    let intValue = cursor.getLong(cursor.getColumnIndex(key))
+                    result[key] = intValue
                     break
             }
         }
