@@ -1,7 +1,8 @@
 import common from '@ohos.app.ability.common'
 import { DEFAULT_THEME, Theme } from './Theme'
-import { DbHelper } from '../extensions/DbHelper'
+import { DbHelper } from '../base/DbHelper'
 import { APP_THEME, LiveData } from '../extensions/LiveData'
+import { UserConfigHelper } from '../base/UserConfigHelper'
 
 
 const TAG = "[ThemeManager]"
@@ -15,10 +16,9 @@ const TAG = "[ThemeManager]"
  */
 export class ThemeManager {
     private static sInstance: ThemeManager = null
-    private db: DbHelper<Theme>
+    private sp: UserConfigHelper
 
     private constructor() {
-        this.db = new DbHelper<Theme>()
     }
 
     static get(): ThemeManager {
@@ -29,20 +29,17 @@ export class ThemeManager {
     }
 
     async init(context: common.Context) {
-        this.db.addColumn("colorPrimary", "TEXT")
-        this.db.addColumn("colorSecondary", "TEXT")
-        this.db.addColumn("colorAction", "TEXT")
-        await this.db.create(context, "appTheme")
+        this.sp = UserConfigHelper.get(context)
     }
 
     async saveTheme(theme: Theme) {
-        await this.db.insert(theme)
+        this.sp?.write(UserConfigHelper.CONFIG_THEME, JSON.stringify(theme))
     }
 
     async readTheme() {
-        let data = await this.db.query()
+        let data = this.sp.read<string>(UserConfigHelper.CONFIG_THEME, "")
         if (data.length > 0) {
-            return data[0]
+            return JSON.parse(data) as Theme
         }
         return DEFAULT_THEME
     }

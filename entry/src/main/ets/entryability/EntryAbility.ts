@@ -8,6 +8,7 @@ import { BackgroundTask } from '../extensions/BackgroundTask';
 import errorManager from '@ohos.app.ability.errorManager';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { ThemeManager } from '../theme/ThemeManager';
+import { Theme } from '../theme/Theme';
 
 const TAG = "[MainAbility]"
 
@@ -19,7 +20,6 @@ export default class EntryAbility extends UIAbility {
         this.mediaSession = MediaSession.get()
         this.mediaSession.initAvSession(this.context)
         BackgroundTask.getInstance().init(this.context)
-
         PlaylistManager.get().initFromDb(this.context)
         ThemeManager.get().init(this.context)
         // request permission
@@ -36,10 +36,10 @@ export default class EntryAbility extends UIAbility {
     onWindowStageCreate(windowStage: window.WindowStage) {
         let win = windowStage.getMainWindowSync()
         win.setWindowSystemBarProperties({
-            statusBarColor: "#ffffff",
-            navigationBarColor: "#ffffff",
-            statusBarContentColor: "#ff575757",
-            navigationBarContentColor: "#ff575757"
+            statusBarColor: Theme.APP_BACKGROUND_COLOR,
+            navigationBarColor: Theme.APP_BACKGROUND_COLOR,
+            statusBarContentColor: Theme.APP_SYSTEM_COLOR,
+            navigationBarContentColor: Theme.APP_SYSTEM_COLOR
         })
         windowStage.loadContent(PageRouter.PAGE_SPLASH)
     }

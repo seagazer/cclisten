@@ -5,9 +5,9 @@ import router from '@ohos.router';
 import { PagePlayer } from './PagePlayer';
 import { APP_THEME, LiveData, MEDIA_SESSION_CURRENT_SONG } from '../extensions/LiveData';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { MethodInvoker } from '../extensions/MethodInvoker';
+import { MethodInvoker } from '../base/MethodInvoker';
 import { UIConfig } from '../config/UIConfig';
-import { PageMore } from './PageMore';
+// import { PageMore } from './PageMore';
 
 const TAG = "[PageHome]"
 
@@ -49,7 +49,7 @@ struct PageHome {
     @Builder
     Tab(id: number, title: string) {
         Text(title)
-            .fontSize(UIConfig.FONT_TITLE)
+            .fontSize(UIConfig.FONT_SUB_TITLE)
             .fontColor(this.currentTabId === id ? this.theme.colorPrimary : "#000000")
             .scale({ x: this.currentTabId === id ? 1.15 : 1, y: this.currentTabId === id ? 1.15 : 1 })
             .animation({
@@ -65,13 +65,14 @@ struct PageHome {
                 }
                 .tabBar(this.Tab(0, "首页"))
 
-                TabContent() {
-                    PageMore()
-                }.tabBar(this.Tab(2, "更多"))
+                // TabContent() {
+                //     PageMore()
+                // }.tabBar(this.Tab(2, "更多"))
             }
             .barWidth(300)
             .barMode(BarMode.Fixed)
             .animationDuration(300)
+            .backgroundColor(Theme.APP_BACKGROUND_COLOR)
             .onChange((index: number) => {
                 this.currentTabId = index
             })

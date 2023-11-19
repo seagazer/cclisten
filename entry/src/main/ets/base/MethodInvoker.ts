@@ -1,4 +1,4 @@
-import { Logger } from './Logger'
+import { Logger } from '../extensions/Logger'
 
 const TAG = "[MethodInvoker]"
 

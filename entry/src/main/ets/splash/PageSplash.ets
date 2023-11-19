@@ -3,11 +3,9 @@ import { UIConfig } from '../config/UIConfig'
 import { navigationTo } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
-import { PlaylistManager } from '../playlist/PlaylistManager'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
-
-PersistentStorage.persistProp<string>("isAppInit", "0")
+import { UserConfigHelper } from '../base/UserConfigHelper'
 
 const TAG = "[PageSplash]"
 
@@ -19,14 +17,16 @@ struct PageSplash {
     @State alphas: Array<number> = new Array()
     private duration = 500
     private delay = 200
-    @StorageLink("isAppInit") isAppInit: string = "0"
+    private isAppInit: number = 0
 
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
     aboutToAppear() {
+        let sp = UserConfigHelper.get(getContext(this))
+        this.isAppInit = sp.read<number>(UserConfigHelper.CONFIG_INIT_STEP, 0)
         Logger.d(TAG, "isAppInit = " + this.isAppInit)
         // init playlist when playing animation
-        if (this.isAppInit === "1") {
+        if (this.isAppInit > 0) {
             this.loadTheme()
         } else {
             ThemeManager.get().updateTheme(new Theme("#FF405C", "#ffea223f"))
@@ -69,8 +69,10 @@ struct PageSplash {
                     })
             })
             setTimeout(() => {
-                if (this.isAppInit === "0") {
+                if (this.isAppInit == 0) {
                     navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
+                } else if (this.isAppInit == 1) {
+                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
                 } else {
                     navigationTo(PageRouter.PAGE_HOME)
                 }

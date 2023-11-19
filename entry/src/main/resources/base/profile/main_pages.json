@@ -3,12 +3,9 @@
     "splash/PageSplash",
     "guide/PageWelcome",
     "guide/PageTheme",
-    "guide/PageFileList",
+    "guide/PageMediaLibrary",
     "home/PageHome",
-    "settings/PageLanguageSettings",
     "settings/PageThemeSettings",
-    "settings/PageStorageSettings",
-    "settings/PageAbout",
-    "settings/PageMediaLibrary"
+    "settings/PageAbout"
   ]
 }

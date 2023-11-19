@@ -1,5 +1,5 @@
 import { Song } from '../bean/Song'
-import { DbHelper } from '../extensions/DbHelper'
+import { DbHelper } from '../base/DbHelper'
 import common from '@ohos.app.ability.common'
 
 /**

@@ -1,7 +1,7 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricController, LyricView } from '@seagazer/cclyric';
-import { duration2text as timeToString } from '../extensions/Extensions';
+import { dimColor, duration2text as timeToString } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
@@ -16,13 +16,14 @@ import {
     MEDIA_SESSION_LOOP_MODE,
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
-import { ListItemView } from '../view/ListItemView';
+import { PlaylistItemView } from '../view/PlaylistItemView';
 import { PlaylistManager } from '../playlist/PlaylistManager';
-import { MethodInvoker } from '../extensions/MethodInvoker';
+import { MethodInvoker } from '../base/MethodInvoker';
 import { PlayHistoryManager } from '../history/PlayHistoryManager';
 import { UIConfig } from '../config/UIConfig';
 import { History } from '../bean/History';
 import { LoopMode } from '../player/LoopMode';
+import { AnimCoverView } from '../view/AnimCoverView';
 
 const TAG = "[HomePlayer]"
 
@@ -30,7 +31,7 @@ const TAG = "[HomePlayer]"
 export struct PagePlayer {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
-    @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("")
+    @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("", "", "", 0)
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
     @StorageLink(MEDIA_SESSION_LOOP_MODE) @Watch("onLoopModeChanged") loopMode: LoopMode = LoopMode.LOOP_ALL
@@ -55,11 +56,12 @@ export struct PagePlayer {
         })
         this.mediaSession.initAvSession(getContext(this))
         this.lyricController
-            .setTextSize(vp2px(UIConfig.FONT_CONTENT))
+            .setTextSize(vp2px(18))
             .setCacheSize(10)
-            .setTextColor("#99343434")
+            .setAnimationDuration(500)
+            .setTextColor("#98999A")
             .setHighlightColor(this.theme.colorPrimary)
-            .setLineSpace(vp2px(UIConfig.FONT_SUB_CONTENT))
+            .setLineSpace(vp2px(16))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
             .setLyric(null)
@@ -81,71 +83,23 @@ export struct PagePlayer {
     }
 
     @Builder
-    ProgressView() {
-        Column() {
-            // slider
-            Slider(
-                {
-                    style: SliderStyle.InSet,
-                    min: 0,
-                    max: this.currentSong ? this.currentSong.duration : 0,
-                    value: this.currentPosition
-                })
-                .width('100%')
-                .trackColor(this.theme.colorAction)
-                .selectedColor(this.theme.colorPrimary)
-                .onChange((value, mode) => {
-                    if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
-                        Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
-                        this.mediaSession.seekTo(value)
-                    }
-                })
-            // duration
-            Row() {
-                Text(timeToString(this.currentPosition))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorSecondary)
-                Text(timeToString(this.currentSong ? this.currentSong.duration : 0))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorSecondary)
-            }.width('100%')
-            .alignItems(VerticalAlign.Bottom)
-            .justifyContent(FlexAlign.SpaceBetween)
-            .padding({ left: 8, right: 8 })
-        }
-    }
-
-    @Builder
     CoverView() {
         Column() {
             // cover image
-            Image($r("app.media.ic_launcher"))
-                .objectFit(ImageFit.Cover)
-                .width(320)
-                .height(320)
-                .padding(48)
-                .backgroundColor(this.isPlaying ? this.theme.colorPrimary : this.theme.colorSecondary)
-                .border({ radius: UIConfig.DIMENSION_CORNER })
-                .shadow({
-                    radius: this.isPlaying ? UIConfig.DIMENSION_NORMAL_SHADOW : UIConfig.DIMENSION_PRESS_SHADOW,
-                    offsetY: 12,
-                    color: this.isPlaying ? "#b3dddddd" : "#b3989898"
-                })
-                .scale({ x: this.isPlaying ? 1 : 0.9, y: this.isPlaying ? 1 : 0.9 })
-                .animation({
-                    duration: 300
-                })
-
+            AnimCoverView({
+                isAnim: this.isPlaying && !this.isShowLyric,
+                strokeColor: this.theme.colorPrimary
+            })
             // media title
             Column() {
-                Text(this.currentSong ? this.currentSong.title : "未知")
+                Text(this.currentSong.title)
                     .fontSize(UIConfig.FONT_SUB_TITLE)
                     .fontColor(this.theme.colorPrimary)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(this.currentSong ? this.currentSong.artist : "未知")
+                Text(this.currentSong.artist)
                     .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorSecondary)
+                    .fontColor(dimColor(this.theme.colorPrimary, 0.9))
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                     .margin({ top: 8 })
@@ -190,6 +144,41 @@ export struct PagePlayer {
             }
             this.handleLyricVisible()
         })
+    }
+
+    @Builder
+    ProgressView() {
+        Column() {
+            // slider
+            Slider(
+                {
+                    style: SliderStyle.OutSet,
+                    min: 0,
+                    max: this.currentSong.duration,
+                    value: this.currentPosition
+                })
+                .width('100%')
+                .trackColor(this.theme.colorAction)
+                .selectedColor(this.theme.colorPrimary)
+                .onChange((value, mode) => {
+                    if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
+                        Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
+                        this.mediaSession.seekTo(value)
+                    }
+                })
+            // duration
+            Row() {
+                Text(timeToString(this.currentPosition))
+                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontColor(this.theme.colorPrimary)
+                Text(timeToString(this.currentSong.duration))
+                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontColor(this.theme.colorPrimary)
+            }.width('100%')
+            .alignItems(VerticalAlign.Bottom)
+            .justifyContent(FlexAlign.SpaceBetween)
+            .padding({ left: 8, right: 8 })
+        }
     }
 
     backPress() {
@@ -250,13 +239,9 @@ export struct PagePlayer {
     @Builder
     Playlist() {
         List({ scroller: this.playlistScroller }) {
-            ForEach(this.playlist, (song: Song, index) => {
+            ForEach(this.playlist, (song: Song, _) => {
                 ListItem() {
-                    if (this.currentSong && song.title == this.currentSong.title) {
-                        ListItemView({ data: song, index: index + 1, isHighLight: true })
-                    } else {
-                        ListItemView({ data: song, index: index + 1, isHighLight: false })
-                    }
+                    PlaylistItemView({ data: song, isHighLight: song.title == this.currentSong.title })
                 }.onClick(() => {
                     this.mediaSession.playSong(song)
                     this.hidePlaylist()
@@ -265,11 +250,10 @@ export struct PagePlayer {
         }
         .padding({ left: 16, right: 16, top: 32, bottom: 16 })
         .scrollBar(BarState.Auto)
-        .width("90%")
+        .width("100%")
         .height("60%")
-        .margin({ bottom: 16 })
-        .border({ radius: UIConfig.DIMENSION_CORNER })
-        .backgroundColor("#fff7f7f7")
+        .border({ radius: 16 })
+        .backgroundColor("#fff6f6f6")
         .transition({ type: TransitionType.All, translate: { x: 0, y: "120%" } })
         .onAppear(() => {
             this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())

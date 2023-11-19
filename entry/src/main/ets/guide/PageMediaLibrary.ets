@@ -10,13 +10,13 @@ import { SelectItemView } from '../view/SelectItemView'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { UIConfig } from '../config/UIConfig'
 import { Fab } from '../view/Fab'
-import Stack from '@ohos.util.Stack'
+import { UserConfigHelper } from '../base/UserConfigHelper'
 
-const TAG = "[PageFileList]"
+const TAG = "[PageMediaLibrary]"
 
 @Entry
 @Component
-struct PageFileList {
+struct PageMediaLibrary {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @State songList: Array<Song> = new Array()
     @State currentPosition: number = 0
@@ -43,7 +43,7 @@ struct PageFileList {
     @Builder
     EmptyView() {
         Column() {
-            Image($r("app.media.ic_empty"))
+            Image($r("app.media.ic_normal_folder_empty"))
                 .width(100)
                 .height(100)
             Text("暂无歌曲")
@@ -78,9 +78,9 @@ struct PageFileList {
                 onAction: () => {
                     Logger.d(TAG, "select playlist = " + JSON.stringify(this.selectList))
                     if (this.selectList.length > 0) {
+                        UserConfigHelper.get(getContext(this)).write(UserConfigHelper.CONFIG_INIT_STEP, 2)
                         PlaylistManager.get().addList(this.selectList)
-                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0]
-                        )
+                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0])
                     } else {
                         toast("请选择至少一首歌曲")
                     }

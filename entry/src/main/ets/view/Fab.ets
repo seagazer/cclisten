@@ -1,4 +1,5 @@
 import { UIConfig } from '../config/UIConfig'
+import { dimColor } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
@@ -28,7 +29,7 @@ export struct Fab {
 
     @Styles
     pressedStyles(){
-        .backgroundColor(this.theme.colorSecondary)
+        .backgroundColor(dimColor(this.theme.colorPrimary))
         .scale({ x: 0.95, y: 0.95 })
         .shadow({
             radius: UIConfig.DIMENSION_PRESS_SHADOW,

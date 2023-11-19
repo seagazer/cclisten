@@ -1,6 +1,6 @@
 import relationalStore from '@ohos.data.relationalStore'
 import common from '@ohos.app.ability.common'
-import { Logger } from './Logger'
+import { Logger } from '../extensions/Logger'
 
 const TAG = "[DbHelper]"
 

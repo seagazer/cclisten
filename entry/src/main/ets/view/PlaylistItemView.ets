@@ -4,9 +4,8 @@ import { APP_THEME } from '../extensions/LiveData'
 import { UIConfig } from '../config/UIConfig'
 
 @Component
-export struct ListItemView {
+export struct PlaylistItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    index: number = 0
     @ObjectLink data: Song
     onItemClick: (song: Song) => void = (_) => {
     }
@@ -25,40 +24,26 @@ export struct ListItemView {
 
     build() {
         Row() {
-            Text(this.index > 0 ? String(this.index) : "-")
-                .fontSize(UIConfig.FONT_CONTENT)
-                .width(40)
-                .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
-                .textAlign(TextAlign.Center)
-
             Column() {
                 Text(this.data.title)
-                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                 Text(this.data.artist ? this.data.artist : "未知")
-                    .fontColor(this.isHighLight ? this.theme.colorSecondary : "#ffa4a4a4")
-                    .fontSize(UIConfig.FONT_SUB_CONTENT)
+                    .fontColor(this.isHighLight ? this.theme.colorPrimary : "#ffa4a4a4")
+                    .fontSize(16)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                     .margin({ top: 2 })
             }
-            .padding({ left: 16 })
             .layoutWeight(1)
             .justifyContent(FlexAlign.SpaceBetween)
             .alignItems(HorizontalAlign.Start)
-
-            if (this.isHighLight) {
-                Image($r("app.media.ic_dance"))
-                    .fillColor(this.theme.colorPrimary)
-                    .width(56)
-                    .height(56)
-                    .padding(16)
-            }
         }
         .width("100%")
         .height(56)
+        .padding({ left: 16, right: 16 })
         .stateStyles({
             normal: this.normalStyles,
             pressed: this.pressedStyles
