@@ -88,7 +88,9 @@ export struct PagePlayer {
             // cover image
             AnimCoverView({
                 isAnim: this.isPlaying && !this.isShowLyric,
-                strokeColor: this.theme.colorPrimary
+                strokeColor: this.theme.colorPrimary,
+                viewSize: 360,
+                animEdge: 64
             })
             // media title
             Column() {
