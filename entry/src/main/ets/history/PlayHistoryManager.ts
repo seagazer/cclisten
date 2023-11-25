@@ -5,6 +5,10 @@ import { History } from '../bean/History'
 
 const TAG = "[PlayHistoryManager]"
 
+/**
+ * Author: seagazer
+ * Date: 2023/8/27
+ */
 export class PlayHistoryManager {
     private static sInstance: PlayHistoryManager = null
     private fileName = "history"

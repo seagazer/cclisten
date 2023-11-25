@@ -81,6 +81,6 @@ export struct PageTheme {
         ThemeManager.get().updateTheme(theme)
         await ThemeManager.get().saveTheme(theme)
         await UserConfigHelper.get(getContext(this)).write(UserConfigHelper.CONFIG_INIT_STEP, 1)
-        navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+        navigationTo(PageRouter.PAGE_SETUPWIZARD_MEDIA_LIBRARY)
     }
 }

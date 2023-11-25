@@ -1,9 +1,9 @@
 {
   "src": [
     "splash/PageSplash",
-    "guide/PageWelcome",
-    "guide/PageTheme",
-    "guide/PageMediaLibrary",
+    "setupwizard/PageWelcome",
+    "setupwizard/PageTheme",
+    "setupwizard/PageMediaLibrary",
     "home/PageHome",
     "settings/PageThemeSettings",
     "settings/PageAbout"

@@ -70,9 +70,9 @@ struct PageSplash {
             })
             setTimeout(() => {
                 if (this.isAppInit == 0) {
-                    navigationTo(PageRouter.PAGE_GUIDE_WELCOME)
+                    navigationTo(PageRouter.PAGE_SETUPWIZARD_WELCOME)
                 } else if (this.isAppInit == 1) {
-                    navigationTo(PageRouter.PAGE_MEDIA_LIBRARY)
+                    navigationTo(PageRouter.PAGE_SETUPWIZARD_MEDIA_LIBRARY)
                 } else {
                     navigationTo(PageRouter.PAGE_HOME)
                 }

@@ -4,10 +4,10 @@
  */
 export enum PageRouter {
     PAGE_SPLASH = "splash/PageSplash",
-    PAGE_GUIDE_WELCOME = "guide/PageWelcome",
-    PAGE_GUIDE_SETUP = "guide/PageTheme",
-    PAGE_MEDIA_LIBRARY = "guide/PageMediaLibrary",
+    PAGE_SETUPWIZARD_WELCOME = "setupwizard/PageWelcome",
+    PAGE_SETUPWIZARD_THEME = "setupwizard/PageTheme",
+    PAGE_SETUPWIZARD_MEDIA_LIBRARY = "setupwizard/PageMediaLibrary",
     PAGE_HOME = "home/PageHome",
-    PAGE_THEME_SETTINGS = "settings/PageThemeSettings",
-    PAGE_ABOUT = "settings/PageAbout",
+    PAGE_SETTINGS_THEME = "settings/PageThemeSettings",
+    PAGE_SETTINGS_ABOUT = "settings/PageAbout",
 }

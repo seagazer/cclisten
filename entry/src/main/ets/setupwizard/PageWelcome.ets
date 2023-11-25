@@ -47,7 +47,7 @@ export struct PageWelcome {
                     textSize: UIConfig.FONT_BUTTON,
                     marginSize: { top: 56 },
                     onAction: () => {
-                        navigationTo(PageRouter.PAGE_GUIDE_SETUP)
+                        navigationTo(PageRouter.PAGE_SETUPWIZARD_THEME)
                     }
                 })
                 .opacity(this.fabAnimValue)

@@ -1,7 +1,7 @@
 import { MediaController } from '../view/MediaController';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { LyricController, LyricView } from '@seagazer/cclyric';
-import { dimColor, duration2text as timeToString } from '../extensions/Extensions';
+import { dimColor, duration2text } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
@@ -170,10 +170,10 @@ export struct PagePlayer {
                 })
             // duration
             Row() {
-                Text(timeToString(this.currentPosition))
+                Text(duration2text(this.currentPosition))
                     .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorPrimary)
-                Text(timeToString(this.currentSong.duration))
+                Text(duration2text(this.currentSong.duration))
                     .fontSize(UIConfig.FONT_CONTENT)
                     .fontColor(this.theme.colorPrimary)
             }.width('100%')
@@ -207,6 +207,8 @@ export struct PagePlayer {
                 this.ProgressView()
                 // controller button
                 MediaController({
+                    isPlaying: $isPlaying,
+                    loopMode: $loopMode,
                     actionPlay: this.playOrPause,
                     actionPlayNext: () => {
                         this.mediaSession.playNext()

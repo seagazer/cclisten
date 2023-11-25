@@ -1,5 +1,5 @@
 import common from '@ohos.app.ability.common'
-import { Preference } from './Preference'
+import { Preference } from './PreferenceHelper'
 import { Context } from '@ohos.abilityAccessCtrl'
 import preferences from '@ohos.data.preferences'
 
