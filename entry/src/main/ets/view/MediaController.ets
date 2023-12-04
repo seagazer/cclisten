@@ -80,6 +80,6 @@ export struct MediaController {
         }
         .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
-        .margin({ top: 16 })
+        .margin({ top: 8 })
     }
 }

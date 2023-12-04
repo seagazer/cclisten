@@ -5,7 +5,7 @@ import { duration2text } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
-const TAG = "[MediaProgressView"
+const TAG = "[MediaProgressView]"
 
 @Component
 export struct MediaProgressView {
@@ -16,7 +16,10 @@ export struct MediaProgressView {
     }
 
     build() {
-        Column() {
+        Row() {
+            Text(duration2text(this.currentPosition))
+                .fontSize(UIConfig.FONT_CONTENT)
+                .fontColor(this.theme.colorPrimary)
             // slider
             Slider(
                 {
@@ -25,7 +28,8 @@ export struct MediaProgressView {
                     max: this.currentSong.duration,
                     value: this.currentPosition
                 })
-                .width('100%')
+                .layoutWeight(1)
+                .margin({ left: 8, right: 8 })
                 .trackColor(this.theme.colorAction)
                 .selectedColor(this.theme.colorPrimary)
                 .onChange((value, mode) => {
@@ -34,18 +38,10 @@ export struct MediaProgressView {
                         this.onSeekChanged(value)
                     }
                 })
-            // duration
-            Row() {
-                Text(duration2text(this.currentPosition))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorPrimary)
-                Text(duration2text(this.currentSong.duration))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorPrimary)
-            }.width('100%')
-            .alignItems(VerticalAlign.Bottom)
-            .justifyContent(FlexAlign.SpaceBetween)
-            .padding({ left: 8, right: 8 })
+
+            Text(duration2text(this.currentSong.duration))
+                .fontSize(UIConfig.FONT_CONTENT)
+                .fontColor(this.theme.colorPrimary)
         }
     }
 }

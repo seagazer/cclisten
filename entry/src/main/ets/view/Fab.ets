@@ -47,7 +47,7 @@ export struct Fab {
             .height(this.h)
             .padding({ left: 16, right: 16, top: 8, bottom: 8 })
             .margin(this.marginSize)
-            .border({ radius: UIConfig.DIMENSION_CORNER })
+            .border({ radius: this.h })
             .stateStyles({
                 normal: this.normalStyles,
                 pressed: this.pressedStyles

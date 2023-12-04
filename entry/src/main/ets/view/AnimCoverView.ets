@@ -9,32 +9,34 @@ export struct AnimCoverView {
     animEdge = 48
     animDuration = 5000
     @Watch("stateChanged") @Prop isAnim: boolean = false
-    private anim: AnimatorResult = Animator.create({
-        duration: this.animDuration,
-        easing: "linear",
-        delay: 0,
-        fill: "forwards",
-        direction: 'normal',
-        iterations: -1,
-        begin: 0,
-        end: 1
-    })
+    private anim?: AnimatorResult
     @State animAlpha: number = 0
     @State animSize: number = 0
-    private anim2: AnimatorResult = Animator.create({
-        duration: this.animDuration,
-        easing: "linear",
-        delay: this.animDuration / 2,
-        fill: "forwards",
-        direction: 'normal',
-        iterations: -1,
-        begin: 0,
-        end: 1
-    })
+    private anim2?: AnimatorResult
     @State animAlpha2: number = 0
     @State animSize2: number = 0
 
     aboutToAppear() {
+        this.anim = Animator.create({
+            duration: this.animDuration,
+            easing: "linear",
+            delay: 0,
+            fill: "forwards",
+            direction: 'normal',
+            iterations: -1,
+            begin: 0,
+            end: 1
+        })
+        this.anim2 = Animator.create({
+            duration: this.animDuration,
+            easing: "linear",
+            delay: this.animDuration / 2,
+            fill: "forwards",
+            direction: 'normal',
+            iterations: -1,
+            begin: 0,
+            end: 1
+        })
         this.anim.onframe = (progress) => {
             this.animSize = this.viewSize - this.animEdge + this.animEdge * progress
             this.animAlpha = 1 - progress
@@ -71,16 +73,16 @@ export struct AnimCoverView {
 
     stateChanged() {
         if (this.isAnim) {
-            this.anim.play()
-            this.anim2.play()
+            this.anim?.play()
+            this.anim2?.play()
         } else {
-            this.anim.pause()
-            this.anim2.pause()
+            this.anim?.pause()
+            this.anim2?.pause()
         }
     }
 
     aboutToDisappear() {
-        this.anim.cancel()
-        this.anim2.cancel()
+        this.anim?.cancel()
+        this.anim2?.cancel()
     }
 }

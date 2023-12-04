@@ -108,7 +108,8 @@ struct PageHome {
                 isAnim: this.isPlaying && !this.isShowLyric,
                 strokeColor: this.theme.colorPrimary,
                 viewSize: 360,
-                animEdge: 64
+                animEdge: 64,
+                animDuration: 4000
             }).onClick(() => {
                 if (this.isShowPlaylist) {
                     this.hidePlaylist()
@@ -179,14 +180,15 @@ struct PageHome {
 
                 // menu
                 Row() {
-                    StatelessImageButton({ image: $r("app.media.ic_public_send") })
+                    // TODO
                     StatelessImageButton({ image: $r("app.media.ic_public_favor") })
-                    // StatelessImageButton({ image: $r("app.media.ic_public_storage") })
+                    StatelessImageButton({ image: $r("app.media.ic_public_send") })
+                    StatelessImageButton({ image: $r("app.media.ic_public_clock") })
                     StatelessImageButton({ image: $r("app.media.ic_public_text") })
                     StatelessImageButton({ image: $r("app.media.ic_public_more") })
                 }.width("100%")
                 .justifyContent(FlexAlign.SpaceBetween)
-                .padding({ left: 6, right: 6, top: 16, bottom: 16 })
+                .padding({ top: 8, bottom: 12 })
 
                 // progress
                 MediaProgressView({

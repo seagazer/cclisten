@@ -13,8 +13,8 @@ function btnStyle(width: Length, height: Length, padding: Length) {
 export struct StatefulImageButton {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     @Link image: Resource
-    w: Length = 48
-    h: Length = 48
+    w: Length = 42
+    h: Length = 42
     edge: Length = 6
     isFill = false
 
