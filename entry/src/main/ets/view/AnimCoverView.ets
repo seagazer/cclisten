@@ -7,9 +7,10 @@ export struct AnimCoverView {
     strokeWidth: number = 2
     viewSize: number = 320
     animEdge = 48
+    animDuration = 5000
     @Watch("stateChanged") @Prop isAnim: boolean = false
     private anim: AnimatorResult = Animator.create({
-        duration: 4 * 1000,
+        duration: this.animDuration,
         easing: "linear",
         delay: 0,
         fill: "forwards",
@@ -21,9 +22,9 @@ export struct AnimCoverView {
     @State animAlpha: number = 0
     @State animSize: number = 0
     private anim2: AnimatorResult = Animator.create({
-        duration: 4 * 1000,
+        duration: this.animDuration,
         easing: "linear",
-        delay: 2 * 1000,
+        delay: this.animDuration / 2,
         fill: "forwards",
         direction: 'normal',
         iterations: -1,

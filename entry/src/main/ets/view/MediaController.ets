@@ -45,7 +45,7 @@ export struct MediaController {
         Row() {
             // loop mode
             StatefulImageButton({
-                image: $loopIcon
+                image: this.loopIcon
             }).onClick(() => {
                 this.changedLoopMode()
             })
@@ -60,7 +60,7 @@ export struct MediaController {
                 w: 72,
                 h: 72,
                 edge: 2,
-                image: $playIcon,
+                image: this.playIcon,
                 isFill: true
             }).onClick(() => {
                 this.actionPlay()

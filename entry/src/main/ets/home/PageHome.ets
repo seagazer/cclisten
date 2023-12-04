@@ -2,19 +2,16 @@ import router from '@ohos.router';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { MediaController } from '../view/MediaController';
 import { LyricController, LyricView } from '@seagazer/cclyric';
-import { dimColor, duration2text } from '../extensions/Extensions';
+import { dimColor } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
 import { Song } from '../bean/Song';
 import {
     APP_THEME,
-    MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_PLAYLIST,
-    MEDIA_SESSION_PLAYING_STATE,
-    MEDIA_SESSION_POSITION,
     LiveData,
-    MEDIA_SESSION_LOOP_MODE,
+    MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_PLAYLIST
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import { PlaylistItemView } from '../view/PlaylistItemView';
@@ -24,6 +21,9 @@ import { UIConfig } from '../config/UIConfig';
 import { History } from '../bean/History';
 import { LoopMode } from '../player/LoopMode';
 import { AnimCoverView } from '../view/AnimCoverView';
+import { MediaProgressView } from '../view/MediaProgressView';
+import { StatefulImageButton } from '../view/StatefulImageButton';
+import { StatelessImageButton } from '../view/StatelessImageButton';
 
 const TAG = "[PageHome]"
 
@@ -32,11 +32,11 @@ const TAG = "[PageHome]"
 @Component
 struct PageHome {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    @StorageLink(MEDIA_SESSION_POSITION) @Watch("onProgressChanged") currentPosition: number = 0
+    @State currentPosition: number = 0
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("", "", "", 0)
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
-    @StorageLink(MEDIA_SESSION_PLAYING_STATE) isPlaying: boolean = false
-    @State @Watch("onLoopModeChanged") loopMode: LoopMode = LoopMode.LOOP_ALL
+    @State isPlaying: boolean = false
+    @Watch("onLoopModeChanged") @State loopMode: LoopMode = LoopMode.LOOP_ALL
     @State coverAlpha: number = 1
     @State lyricLine: string = " "
     @State isShowLyric: boolean = false
@@ -70,6 +70,15 @@ struct PageHome {
             }
         })
         this.mediaSession.initAvSession(getContext(this))
+        this.mediaSession.onProgressChanged((position) => {
+            this.currentPosition = position
+            if (this.isShowLyric) {
+                this.lyricController.updatePosition(this.currentPosition)
+            }
+        })
+        this.mediaSession.onStateChanged((isPlaying: boolean) => {
+            this.isPlaying = isPlaying
+        })
         this.lyricController
             .setTextSize(vp2px(18))
             .setCacheSize(10)
@@ -141,41 +150,6 @@ struct PageHome {
         })
     }
 
-    @Builder
-    ProgressView() {
-        Column() {
-            // slider
-            Slider(
-                {
-                    style: SliderStyle.OutSet,
-                    min: 0,
-                    max: this.currentSong.duration,
-                    value: this.currentPosition
-                })
-                .width('100%')
-                .trackColor(this.theme.colorAction)
-                .selectedColor(this.theme.colorPrimary)
-                .onChange((value, mode) => {
-                    if (mode == SliderChangeMode.End || mode == SliderChangeMode.Click) {
-                        Logger.d(TAG, "seek to " + value + ", mode=" + mode + ", curPosition=" + this.currentPosition)
-                        this.mediaSession.seekTo(value)
-                    }
-                })
-            // duration
-            Row() {
-                Text(duration2text(this.currentPosition))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorPrimary)
-                Text(duration2text(this.currentSong.duration))
-                    .fontSize(UIConfig.FONT_CONTENT)
-                    .fontColor(this.theme.colorPrimary)
-            }.width('100%')
-            .alignItems(VerticalAlign.Bottom)
-            .justifyContent(FlexAlign.SpaceBetween)
-            .padding({ left: 8, right: 8 })
-        }
-    }
-
     build() {
         Stack() {
             Column() {
@@ -205,26 +179,27 @@ struct PageHome {
 
                 // menu
                 Row() {
-                    Image($r("app.media.ic_public_text"))//lyric
-                        .width(32).height(32)
-                    Image($r("app.media.ic_public_favor"))//like
-                        .width(32).height(32)
-                    Image($r("app.media.ic_public_send"))//timer
-                        .width(32).height(32)
-                    Image($r("app.media.ic_public_storage"))//file
-                        .width(32).height(32)
-                    Image($r("app.media.ic_public_more"))//theme
-                        .width(32).height(32)
+                    StatelessImageButton({ image: $r("app.media.ic_public_send") })
+                    StatelessImageButton({ image: $r("app.media.ic_public_favor") })
+                    // StatelessImageButton({ image: $r("app.media.ic_public_storage") })
+                    StatelessImageButton({ image: $r("app.media.ic_public_text") })
+                    StatelessImageButton({ image: $r("app.media.ic_public_more") })
                 }.width("100%")
                 .justifyContent(FlexAlign.SpaceBetween)
                 .padding({ left: 6, right: 6, top: 16, bottom: 16 })
 
                 // progress
-                this.ProgressView()
+                MediaProgressView({
+                    currentSong: this.currentSong,
+                    currentPosition: this.currentPosition,
+                    onSeekChanged: (position: number) => {
+                        this.mediaSession.seekTo(position)
+                    }
+                })
                 // controller button
                 MediaController({
-                    isPlaying: $isPlaying,
-                    loopMode: $loopMode,
+                    isPlaying: this.isPlaying,
+                    loopMode: this.loopMode,
                     actionPlay: this.playOrPause,
                     actionPlayNext: () => {
                         this.mediaSession.playNext()
@@ -278,10 +253,6 @@ struct PageHome {
         .onAppear(() => {
             this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())
         })
-    }
-
-    onProgressChanged() {
-        this.lyricController.updatePosition(this.currentPosition)
     }
 
     onSongChanged() {

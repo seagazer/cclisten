@@ -2,12 +2,7 @@ import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer
 import { BackgroundTask } from '../extensions/BackgroundTask'
 import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
-import {
-    LiveData,
-    MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_PLAYING_STATE,
-    MEDIA_SESSION_POSITION,
-} from '../extensions/LiveData'
+import { LiveData, MEDIA_SESSION_CURRENT_SONG } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
@@ -29,10 +24,14 @@ export class MediaSession {
     private playlist: PlaylistManager = PlaylistManager.get()
     private session: avSession.AVSession
     private context: common.Context
+    private progressListeners: Array<(position: number) => void> = new Array()
+    private stateChangedListeners: Array<(isPlaying: boolean) => void> = new Array()
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
-            LiveData.setValue(MEDIA_SESSION_POSITION, position)
+            this.progressListeners.forEach(listen => {
+                listen(position)
+            })
         }
     }
     private prepareListener = () => {
@@ -47,10 +46,14 @@ export class MediaSession {
     private stateChangedListener = (newState: PlayerState) => {
         Logger.d(TAG, "player state changed= " + newState)
         if (newState == PlayerState.STATE_STARTED) {
-            LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, true)
             BackgroundTask.getInstance().startBackgroundTask()
+            this.stateChangedListeners.forEach(listen => {
+                listen(true)
+            })
         } else {
-            LiveData.setValue(MEDIA_SESSION_PLAYING_STATE, false)
+            this.stateChangedListeners.forEach(listen => {
+                listen(false)
+            })
             if (newState == PlayerState.STATE_PAUSED ||
                 newState == PlayerState.STATE_STOPPED ||
                 newState == PlayerState.STATE_ERROR) {
@@ -122,6 +125,14 @@ export class MediaSession {
         let pre = this.playlist.getPre(this.loopMode)
         Logger.d(TAG, "play pre= " + JSON.stringify(pre))
         this.playSong(pre)
+    }
+
+    onProgressChanged(listener: (position: number) => void) {
+        this.progressListeners.push(listener)
+    }
+
+    onStateChanged(listener: (isPlaying: boolean) => void) {
+        this.stateChangedListeners.push(listener)
     }
 
     async playSong(song: Song) {
