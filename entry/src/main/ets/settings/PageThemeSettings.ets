@@ -1,4 +1,4 @@
-import { navigationTo } from '../extensions/Extensions';
+import { navigationTo, toast } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { Fab } from '../view/Fab';
@@ -16,10 +16,6 @@ export struct PageThemeSettings {
         "#E40078", "#00AAEE"]
     @State selectIndex: number = 0
     private scaleSize = 1.25
-
-    aboutToAppear() {
-        router.clear()
-    }
 
     build() {
         Column() {
@@ -55,8 +51,20 @@ export struct PageThemeSettings {
                                 ThemeManager.get().updateTheme(theme)
                             })
                     })
-                }
+                    Stack()
+                        .width(40)
+                        .height(40)
+                        .margin({ left: 20 })
+                        .backgroundColor("#ffffff")
+                        .border({ radius: 100, color: Color.Grey, width: 1 })
+                        .onClick(() => {
+                            // todo
+                            toast("ColorWheel")
+                        })
+                }.justifyContent(FlexAlign.SpaceEvenly)
             }
+            .scrollBar(BarState.Off)
+            .scrollable(ScrollDirection.Horizontal)
             .height(64)
             .width("100%")
             .margin({ top: 48 })
@@ -74,13 +82,19 @@ export struct PageThemeSettings {
         .height("100%")
         .padding(32)
         .justifyContent(FlexAlign.Center)
+        .onAppear(() => {
+            for (let i = 0; i < this.colorPrimaryList.length; i++) {
+                if (this.theme.colorPrimary == this.colorPrimaryList[i]) {
+                    this.selectIndex = i
+                }
+            }
+        })
     }
 
     private async setTheme() {
         let theme = new Theme(this.colorPrimaryList[this.selectIndex])
         ThemeManager.get().updateTheme(theme)
         await ThemeManager.get().saveTheme(theme)
-        await UserConfigHelper.get(getContext(this)).write(UserConfigHelper.CONFIG_INIT_STEP, 1)
-        navigationTo(PageRouter.PAGE_SETUPWIZARD_MEDIA_LIBRARY)
+        router.back()
     }
 }

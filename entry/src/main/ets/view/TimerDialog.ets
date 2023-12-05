@@ -1,5 +1,7 @@
 import { UIConfig } from '../config/UIConfig'
+import { toast } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
+import { Logger } from '../extensions/Logger'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { Fab } from './Fab'
 
@@ -72,9 +74,10 @@ export struct TimerDialog {
                     textSize: UIConfig.FONT_BUTTON,
                     onAction: () => {
                         if (this.currentSelectDuration > 0) {
-                            this.onAction?.(this.currentSelectDuration)
-                        } else {
+                            this.onAction(this.currentSelectDuration)
                             this.controller.close()
+                        } else {
+                            toast("请选择时间")
                         }
                     }
                 })
@@ -83,6 +86,7 @@ export struct TimerDialog {
                     textSize: UIConfig.FONT_BUTTON,
                     marginSize: { left: 32 },
                     onAction: () => {
+                        this.onAction(0)
                         this.controller.close()
                     }
                 })

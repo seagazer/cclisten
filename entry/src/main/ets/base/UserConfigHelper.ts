@@ -28,7 +28,7 @@ export class UserConfigHelper {
         await this.sp.write(key, value)
     }
 
-    read<T extends preferences.ValueType>(key: string, defaultValue: preferences.ValueType) {
-        return this.sp.read<T>(key, defaultValue)
+    async read<T extends preferences.ValueType>(key: string, defaultValue: preferences.ValueType) {
+        return await this.sp.read<T>(key, defaultValue)
     }
 }

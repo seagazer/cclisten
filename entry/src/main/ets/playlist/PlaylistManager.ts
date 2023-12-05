@@ -45,6 +45,7 @@ export class PlaylistManager {
         Logger.d(TAG, "current index= " + this.currentIndex)
     }
 
+
     async initFromDb(context: common.Context) {
         try {
             await this.playlistDb.init(context)
@@ -56,6 +57,10 @@ export class PlaylistManager {
         } catch (err) {
             Logger.e(TAG, "init playlist from db error= " + JSON.stringify(err))
         }
+    }
+
+    updateSong(song: Song) {
+        this.playlistDb.update(song)
     }
 
     add(song: Song) {

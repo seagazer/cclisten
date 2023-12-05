@@ -1,6 +1,12 @@
+import { Platform } from '../base/Platform'
+
 export class LiveData {
     static setValue<T>(key: string, value: T) {
-        AppStorage.setOrCreate<T>(key, value)
+        if (Platform.apiVersion() > 9) {
+            AppStorage.setOrCreate<T>(key, value)
+        } else {
+            AppStorage.SetOrCreate<T>(key, value)
+        }
     }
 }
 

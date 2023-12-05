@@ -57,6 +57,8 @@ export struct PageTheme {
                     })
                 }
             }
+            .scrollBar(BarState.Off)
+            .scrollable(ScrollDirection.Horizontal)
             .height(64)
             .width("100%")
             .margin({ top: 48 })

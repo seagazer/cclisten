@@ -16,7 +16,7 @@ export struct StatefulImageButton {
     w: Length = 42
     h: Length = 42
     edge: Length = 6
-    isFill = false
+    isFill: boolean = false
 
     @Styles
     pressedStyles() {

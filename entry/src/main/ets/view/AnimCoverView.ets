@@ -1,9 +1,10 @@
 import Animator, { AnimatorResult } from '@ohos.animator'
+import { APP_THEME } from '../extensions/LiveData'
+import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
-@Preview
 @Component
 export struct AnimCoverView {
-    strokeColor: string = "#000000"
+    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     strokeWidth: number = 2
     viewSize: number = 320
     animEdge = 48
@@ -54,18 +55,18 @@ export struct AnimCoverView {
                 .height(this.animSize)
                 .border({ radius: this.animSize })
                 .opacity(this.animAlpha)
-                .backgroundColor(this.strokeColor)
+                .backgroundColor(this.theme.colorPrimary)
             Stack()
                 .width(this.animSize2)
                 .height(this.animSize2)
                 .border({ radius: this.animSize2 })
                 .opacity(this.animAlpha2)
-                .backgroundColor(this.strokeColor)
+                .backgroundColor(this.theme.colorPrimary)
             Image($r('app.media.ic_cover'))
                 .objectFit(ImageFit.Contain)
                 .width(this.viewSize - this.animEdge)
                 .height(this.viewSize - this.animEdge)
-                .border({ radius: this.viewSize / 2, width: this.strokeWidth, color: this.strokeColor })
+                .border({ radius: this.viewSize / 2, width: this.strokeWidth, color: this.theme.colorPrimary })
         }
         .width(this.viewSize)
         .height(this.viewSize)

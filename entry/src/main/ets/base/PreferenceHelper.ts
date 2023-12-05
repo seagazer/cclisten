@@ -4,14 +4,21 @@
  */
 import common from '@ohos.app.ability.common';
 import preferences from '@ohos.data.preferences';
+import { Platform } from './Platform';
 
 export class Preference {
     private sp: preferences.Preferences | null = null
 
     constructor(context: common.Context, name: string) {
-        this.sp = preferences.getPreferencesSync(context, {
-            name: name
-        })
+        if (Platform.apiVersion() > 9) {
+            this.sp = preferences.getPreferencesSync(context, {
+                name: name
+            })
+        } else {
+            preferences.getPreferences(context, name, (err, sp) => {
+                this.sp = sp
+            })
+        }
     }
 
     async write(key: string, value: preferences.ValueType) {
@@ -19,7 +26,11 @@ export class Preference {
         await this.sp?.flush()
     }
 
-    read<T extends preferences.ValueType>(key: string, defaultValue: preferences.ValueType) {
-        return this.sp?.getSync(key, defaultValue) as T
+    async read<T extends preferences.ValueType>(key: string, defaultValue: preferences.ValueType) {
+        if (Platform.apiVersion() > 9) {
+            return this.sp?.getSync(key, defaultValue) as T
+        } else {
+            return await this.sp?.get(key, defaultValue) as T
+        }
     }
 }

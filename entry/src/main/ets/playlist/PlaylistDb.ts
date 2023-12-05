@@ -16,6 +16,7 @@ export class PlaylistDb {
         this.db.addColumn("title", "TEXT")
         this.db.addColumn("artist", "TEXT")
         this.db.addColumn("duration", "INTEGER")
+        this.db.addColumn("isFavourite", "INTEGER")
         await this.db.create(context, "playlist")
     }
 
@@ -29,6 +30,10 @@ export class PlaylistDb {
 
     public removeSong(song: Song) {
         this.db.delete("url", song)
+    }
+
+    public update(song: Song) {
+        this.db.update("url", song)
     }
 
     public getPlaylist() {

@@ -16,7 +16,7 @@ export struct StatelessImageButton {
     widthSize: Length = 42
     heightSize: Length = 42
     paddingSize: Length = 6
-    isFillColor = false
+    isFillColor: boolean = false
 
     @Styles
     pressedStyles() {

@@ -9,6 +9,7 @@ import errorManager from '@ohos.app.ability.errorManager';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { ThemeManager } from '../theme/ThemeManager';
 import { Theme } from '../theme/Theme';
+import { Platform } from '../base/Platform';
 
 const TAG = "[MainAbility]"
 
@@ -16,6 +17,7 @@ export default class EntryAbility extends UIAbility {
     private mediaSession: MediaSession = null
 
     onCreate(want, launchParam) {
+        Platform.init()
         // init media session
         this.mediaSession = MediaSession.get()
         this.mediaSession.initAvSession(this.context)

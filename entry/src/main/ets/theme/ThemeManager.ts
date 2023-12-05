@@ -37,7 +37,7 @@ export class ThemeManager {
     }
 
     async readTheme() {
-        let data = this.sp.read<string>(UserConfigHelper.CONFIG_THEME, "")
+        let data = await this.sp.read<string>(UserConfigHelper.CONFIG_THEME, "")
         if (data.length > 0) {
             return JSON.parse(data) as Theme
         }
