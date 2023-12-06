@@ -1,21 +1,52 @@
-import { navigationTo, toast } from '../extensions/Extensions';
-import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme } from '../theme/Theme';
-import { Fab } from '../view/Fab';
+import { dimColor, toast } from '../extensions/Extensions';
+import { Theme } from '../theme/Theme';
 import router from '@ohos.router';
-import { APP_THEME } from '../extensions/LiveData';
 import { UIConfig } from '../config/UIConfig';
 import { ThemeManager } from '../theme/ThemeManager';
-import { UserConfigHelper } from '../base/UserConfigHelper';
+import { Logger } from '../extensions/Logger';
+
+export const ROUTER_DATA = "themeColor"
+
+const TAG = "[PageThemeSettings]"
 
 @Entry
 @Component
 export struct PageThemeSettings {
-    @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     private colorPrimaryList = ["#FF405C", "#007DFF", "#47CC47", "#FF7500",
         "#E40078", "#00AAEE"]
     @State selectIndex: number = 0
     private scaleSize = 1.25
+    private colorPrimary: string = ""
+
+    aboutToAppear() {
+        let p = router.getParams() as Record<string, string>
+        if (p) {
+            this.colorPrimary = p.ROUTER_DATA
+        }
+        Logger.d(TAG, "router data = " + JSON.stringify(p))
+    }
+
+    @Styles
+    normalStyles(){
+        .backgroundColor(this.colorPrimaryList[this.selectIndex])
+        .scale({ x: 1, y: 1 })
+        .shadow({
+            radius: UIConfig.DIMENSION_NORMAL_SHADOW,
+            color: "#ccb8b8b8",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
+    }
+
+    @Styles
+    pressedStyles(){
+        .backgroundColor(dimColor(this.colorPrimaryList[this.selectIndex]))
+        .scale({ x: 0.95, y: 0.95 })
+        .shadow({
+            radius: UIConfig.DIMENSION_PRESS_SHADOW,
+            color: "#ccb8b8b8",
+            offsetY: UIConfig.DIMENSION_OFFSET_SHADOW
+        })
+    }
 
     build() {
         Column() {
@@ -47,8 +78,6 @@ export struct PageThemeSettings {
                             })
                             .onClick(() => {
                                 this.selectIndex = index
-                                let theme = new Theme(this.colorPrimaryList[this.selectIndex])
-                                ThemeManager.get().updateTheme(theme)
                             })
                     })
                     Stack()
@@ -69,22 +98,34 @@ export struct PageThemeSettings {
             .width("100%")
             .margin({ top: 48 })
 
-            Fab({
-                text: "确定",
-                textSize: UIConfig.FONT_BUTTON,
-                marginSize: { top: 48 },
-                onAction: () => {
+            Text("确定")
+                .fontSize(UIConfig.FONT_BUTTON)
+                .fontColor("#ffffff")
+                .textAlign(TextAlign.Center)
+                .width(150)
+                .height(50)
+                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+                .margin(48)
+                .border({ radius: 50 })
+                .stateStyles({
+                    normal: this.normalStyles,
+                    pressed: this.pressedStyles
+                })
+                .onClick(() => {
                     this.setTheme()
-                }
-            })
+                })
+                .animation({
+                    duration: 300
+                })
         }
         .width("100%")
         .height("100%")
         .padding(32)
         .justifyContent(FlexAlign.Center)
         .onAppear(() => {
+            Logger.d(TAG, "current colorPrimary = " + this.colorPrimary)
             for (let i = 0; i < this.colorPrimaryList.length; i++) {
-                if (this.theme.colorPrimary == this.colorPrimaryList[i]) {
+                if (this.colorPrimary == this.colorPrimaryList[i]) {
                     this.selectIndex = i
                 }
             }

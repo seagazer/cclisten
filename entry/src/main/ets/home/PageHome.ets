@@ -21,6 +21,7 @@ import { StatefulImageButton } from '../view/StatefulImageButton';
 import { StatelessImageButton } from '../view/StatelessImageButton';
 import { TimerDialog } from '../view/TimerDialog';
 import { PageRouter } from '../extensions/PageRouter';
+import { ROUTER_DATA } from '../settings/PageThemeSettings';
 
 const TAG = "[PageHome]"
 
@@ -159,7 +160,9 @@ struct PageHome {
             .height(30)
             .justifyContent(FlexAlign.Start)
             .onClick(() => {
-                navigationTo(PageRouter.PAGE_SETTINGS_THEME)
+                navigationTo(PageRouter.PAGE_SETTINGS_THEME, {
+                    ROUTER_DATA: this.theme.colorPrimary
+                })
             })
 
             Row() {
