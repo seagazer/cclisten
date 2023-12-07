@@ -28,7 +28,7 @@ export struct MediaController {
         }
     }
 
-    loopModeChanged(){
+    loopModeChanged() {
         switch (this.loopMode) {
             case LoopMode.LOOP_ALL:
                 this.loopIcon = $r("app.media.ic_public_list_cycle")
@@ -90,8 +90,8 @@ export struct MediaController {
                 this.actionPlaylist()
             })
         }
-        .justifyContent(FlexAlign.SpaceBetween)
         .width('100%')
         .margin({ top: 8 })
+        .justifyContent(FlexAlign.SpaceBetween)
     }
 }

@@ -5,8 +5,6 @@ import { UIConfig } from '../config/UIConfig';
 import { ThemeManager } from '../theme/ThemeManager';
 import { Logger } from '../extensions/Logger';
 
-export const ROUTER_DATA = "themeColor"
-
 const TAG = "[PageThemeSettings]"
 
 @Entry
@@ -21,7 +19,7 @@ export struct PageThemeSettings {
     aboutToAppear() {
         let p = router.getParams() as Record<string, string>
         if (p) {
-            this.colorPrimary = p.ROUTER_DATA
+            this.colorPrimary = p.DATA_THEME
         }
         Logger.d(TAG, "router data = " + JSON.stringify(p))
     }

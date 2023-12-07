@@ -21,7 +21,6 @@ import { StatefulImageButton } from '../view/StatefulImageButton';
 import { StatelessImageButton } from '../view/StatelessImageButton';
 import { TimerDialog } from '../view/TimerDialog';
 import { PageRouter } from '../extensions/PageRouter';
-import { ROUTER_DATA } from '../settings/PageThemeSettings';
 
 const TAG = "[PageHome]"
 
@@ -57,6 +56,9 @@ struct PageHome {
         alignment: DialogAlignment.Bottom,
         offset: { dx: 0, dy: -32 }
     })
+    @State favouriteIcon: Resource = $r("app.media.ic_public_favor")
+    @State timerIcon: Resource = $r("app.media.ic_public_clock")
+    @State lyricIcon: Resource = $r("app.media.ic_public_text")
 
     aboutToAppear() {
         router.clear()
@@ -110,10 +112,27 @@ struct PageHome {
 
     onBackPress() {
         if (this.isShowPlaylist) {
-            this.hidePlaylist()
+            this.isShowPlaylist = false
             return true
         }
         return false
+    }
+
+    @Builder
+    MediaTitle() {
+        Column() {
+            Text(this.currentSong.title)
+                .fontSize(UIConfig.FONT_TITLE)
+                .fontColor(this.theme.colorPrimary)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.currentSong.artist)
+                .fontSize(UIConfig.FONT_CONTENT)
+                .fontColor(dimColor(this.theme.colorPrimary, 0.9))
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+                .margin({ top: 8 })
+        }
     }
 
     @Builder
@@ -130,9 +149,6 @@ struct PageHome {
         .width("100%")
         .height("100%")
         .justifyContent(FlexAlign.SpaceAround)
-        .animation({
-            duration: 300
-        })
         .visibility(this.isShowLyric ? Visibility.Hidden : Visibility.Visible)
     }
 
@@ -143,58 +159,58 @@ struct PageHome {
         }
         .width("100%")
         .height("100%")
-        .padding(32)
-        .animation({
-            duration: 300,
-        })
         .visibility(this.isShowLyric ? Visibility.Visible : Visibility.Hidden)
     }
 
     @Builder
-    MoreMenu() {
+    MenuMore() {
         Column() {
             Row() {
-                Image($r("app.media.app_icon")).width(20).height(20).margin({ right: 5 })
-                Text("主题设置").fontSize(20)
+                Image($r("app.media.ic_public_themes")).width(24).height(24).margin({ right: 12 })
+                Text("主题设置").fontSize(16)
             }
             .width('100%')
-            .height(30)
+            .height(32)
             .justifyContent(FlexAlign.Start)
+            .alignItems(VerticalAlign.Center)
             .onClick(() => {
                 navigationTo(PageRouter.PAGE_SETTINGS_THEME, {
-                    ROUTER_DATA: this.theme.colorPrimary
+                    DATA_THEME: this.theme.colorPrimary
                 })
             })
 
+            Divider().width("100%").height(1).margin({ top: 4, bottom: 4 })
             Row() {
-                Image($r("app.media.app_icon")).width(20).height(20).margin({ right: 5 })
-                Text("媒体库").fontSize(20)
+                Image($r("app.media.ic_public_albums")).width(24).height(24).margin({ right: 12 })
+                Text("媒体库").fontSize(16)
             }
             .width('100%')
-            .height(30)
+            .height(32)
             .justifyContent(FlexAlign.Start)
+            .alignItems(VerticalAlign.Center)
+            .onClick(() => {
+                toast("TODO")
+            })
 
+            Divider().width("100%").height(1).margin({ top: 4, bottom: 4 })
             Row() {
-                Image($r("app.media.app_icon")).width(20).height(20).margin({ right: 5 })
-                Text("关于").fontSize(20)
+                Image($r("app.media.ic_public_app")).width(24).height(24).margin({ right: 12 })
+                Text("关于").fontSize(16)
             }
             .width('100%')
-            .height(30)
+            .height(32)
             .justifyContent(FlexAlign.Start)
+            .alignItems(VerticalAlign.Center)
             .onClick(() => {
                 navigationTo(PageRouter.PAGE_SETTINGS_ABOUT)
             })
         }
-        .width(100)
-        .padding(5)
+        .width(160)
+        .padding(8)
     }
 
-    @State favouriteIcon: Resource = $r("app.media.ic_public_favor")
-    @State timerIcon: Resource = $r("app.media.ic_public_clock")
-    @State lyricIcon: Resource = $r("app.media.ic_public_text")
-
     @Builder
-    MenuContainer() {
+    ActionContainer() {
         Row() {
             StatefulImageButton({ image: this.favouriteIcon })
                 .onClick(() => {
@@ -231,33 +247,43 @@ struct PageHome {
                     }
                 })
             StatelessImageButton({ image: $r("app.media.ic_public_more") })
-                .bindMenu(this.MoreMenu)
-        }.width("100%")
+                .bindMenu(this.MenuMore)
+        }
+        .width("100%")
         .justifyContent(FlexAlign.SpaceBetween)
-        .padding({ top: 8, bottom: 12 })
+        .margin({ top: 8, bottom: 12 })
     }
 
     @Builder
-    Playlist() {
-        List({ scroller: this.playlistScroller }) {
-            ForEach(this.playlist, (song: Song, _) => {
-                ListItem() {
-                    PlaylistItemView({ data: song, isHighLight: song.title == this.currentSong.title })
-                }.onClick(() => {
-                    this.mediaSession.playSong(song)
-                    this.hidePlaylist()
+    PlaylistContainer() {
+        Panel(true) {
+            List({ scroller: this.playlistScroller }) {
+                ForEach(this.playlist, (song: Song, _) => {
+                    ListItem() {
+                        PlaylistItemView({ data: song, isHighLight: song.title == this.currentSong.title })
+                    }.onClick(() => {
+                        this.mediaSession.playSong(song)
+                        this.isShowPlaylist = false
+                    })
                 })
+            }
+            .padding(16)
+            .scrollBar(BarState.Auto)
+            .width("100%")
+            .height("100%")
+            .onAppear(() => {
+                this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())
             })
         }
-        .padding({ left: 16, right: 16, top: 32, bottom: 16 })
-        .scrollBar(BarState.Auto)
-        .width("100%")
-        .height("60%")
-        .border({ radius: 16 })
-        .backgroundColor("#fff6f6f6")
-        .transition({ type: TransitionType.All, translate: { x: 0, y: "120%" } })
-        .onAppear(() => {
-            this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())
+        .mode(PanelMode.Full)
+        .type(PanelType.Minibar)
+        .fullHeight(600)
+        .miniHeight(0)
+        .backgroundColor("#fff5f5f5")
+        .onChange((_, __, mode) => {
+            if (mode == PanelMode.Mini) {
+                this.isShowPlaylist = false
+            }
         })
     }
 
@@ -265,20 +291,7 @@ struct PageHome {
         Stack() {
             Column() {
                 // media title
-                Column() {
-                    Text(this.currentSong.title)
-                        .fontSize(UIConfig.FONT_TITLE)
-                        .fontColor(this.theme.colorPrimary)
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    Text(this.currentSong.artist)
-                        .fontSize(UIConfig.FONT_CONTENT)
-                        .fontColor(dimColor(this.theme.colorPrimary, 0.9))
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.Ellipsis })
-                        .margin({ top: 8 })
-                }.margin({ top: 16 })
-
+                this.MediaTitle()
                 Stack() {
                     // cover
                     this.MediaCoverView()
@@ -288,9 +301,8 @@ struct PageHome {
                 .width("100%")
                 .layoutWeight(1)
 
-                // menu
-                this.MenuContainer()
-
+                // actions buttons
+                this.ActionContainer()
                 // progress
                 MediaProgressView({
                     currentSong: this.currentSong,
@@ -322,23 +334,20 @@ struct PageHome {
                         this.mediaSession.playPre()
                     },
                     actionPlaylist: () => {
-                        this.showPlaylist()
+                        this.isShowPlaylist = true
                     }
                 })
             }
             .width('100%')
             .height('100%')
             .padding(16)
-            .alignItems(HorizontalAlign.Center)
-            .onClick(() => {
-                this.hidePlaylist()
-            })
 
             // playlist
             if (this.isShowPlaylist) {
-                this.Playlist()
+                this.PlaylistContainer()
             }
-        }.alignContent(Alignment.Bottom)
+        }
+        .alignContent(Alignment.Bottom)
         .width('100%')
         .height('100%')
     }
@@ -374,22 +383,6 @@ struct PageHome {
 
     onLoopModeChanged() {
         this.mediaSession.setLoopMode(this.loopMode)
-    }
-
-    private showPlaylist() {
-        if (!this.isShowPlaylist) {
-            animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
-                this.isShowPlaylist = true
-            })
-        }
-    }
-
-    private hidePlaylist() {
-        if (this.isShowPlaylist) {
-            animateTo({ duration: 400, curve: Curve.FastOutSlowIn }, () => {
-                this.isShowPlaylist = false
-            })
-        }
     }
 
     aboutToDisappear() {

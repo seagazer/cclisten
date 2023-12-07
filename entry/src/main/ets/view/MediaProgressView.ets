@@ -42,6 +42,6 @@ export struct MediaProgressView {
             Text(duration2text(this.currentSong.duration))
                 .fontSize(UIConfig.FONT_CONTENT)
                 .fontColor(this.theme.colorPrimary)
-        }
+        }.width("100%")
     }
 }
