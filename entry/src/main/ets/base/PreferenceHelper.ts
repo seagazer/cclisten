@@ -6,7 +6,7 @@ import common from '@ohos.app.ability.common';
 import preferences from '@ohos.data.preferences';
 import { Platform } from './Platform';
 
-export class Preference {
+export class PreferenceHelper {
     private sp: preferences.Preferences | null = null
 
     constructor(context: common.Context, name: string) {

@@ -39,6 +39,7 @@ struct PageHome {
     @State isShowPlaylist: boolean = false
     @State isNotPlayed: boolean = true
     private mediaSession: MediaSession = MediaSession.get()
+    private historyManager: PlayHistoryManager = PlayHistoryManager.get(getContext(this))
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileLyricParser = new FileLyricParser()
     private playlistScroller = new Scroller()
@@ -69,7 +70,7 @@ struct PageHome {
                 this.isNotPlayed = false
             }
         }
-        PlayHistoryManager.get().readHistory(getContext(this)).then((history) => {
+        this.historyManager.readHistory().then((history) => {
             if (history) {
                 Logger.d(TAG, "read history = " + JSON.stringify(history))
                 setTimeout(() => {
@@ -356,15 +357,19 @@ struct PageHome {
             Logger.e(TAG, "get lyric error!")
         }
         // save history when song changed, so the history is not loss if the app crash
-        let history = new History(this.loopMode, this.currentSong)
-        Logger.d(TAG, "save play history= " + JSON.stringify(history))
-        PlayHistoryManager.get().saveHistory(getContext(this), history)
+        this.saveHistory()
         // refresh favourite ui
         if (this.currentSong.isFavourite == 1) {
             this.favouriteIcon = $r("app.media.ic_public_favor_filled")
         } else {
             this.favouriteIcon = $r("app.media.ic_public_favor")
         }
+    }
+
+    private async saveHistory() {
+        let history = new History(this.loopMode, this.currentSong)
+        Logger.d(TAG, "save play history= " + JSON.stringify(history))
+        await this.historyManager.saveHistory(history)
     }
 
     onLoopModeChanged() {
@@ -385,5 +390,9 @@ struct PageHome {
                 this.isShowPlaylist = false
             })
         }
+    }
+
+    aboutToDisappear() {
+        this.saveHistory()
     }
 }

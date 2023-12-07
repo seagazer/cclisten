@@ -3,6 +3,10 @@ import { Logger } from '../extensions/Logger'
 
 const TAG = "[Platform]"
 
+/**
+ * Author: seagazer
+ * Date: 2023/8/27
+ */
 export class Platform {
     private static sApiVersion: number
 

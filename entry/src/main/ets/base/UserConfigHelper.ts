@@ -1,6 +1,5 @@
 import common from '@ohos.app.ability.common'
-import { Preference } from './PreferenceHelper'
-import { Context } from '@ohos.abilityAccessCtrl'
+import { PreferenceHelper } from './PreferenceHelper'
 import preferences from '@ohos.data.preferences'
 
 /**
@@ -11,10 +10,10 @@ export class UserConfigHelper {
     static CONFIG_INIT_STEP = "step"
     static CONFIG_THEME = "theme"
     private static sInstance: UserConfigHelper = null
-    private sp: Preference
+    private sp: PreferenceHelper
 
-    constructor(context: Context) {
-        this.sp = new Preference(context, "AppUserConfig")
+    private constructor(context: common.Context) {
+        this.sp = new PreferenceHelper(context, "AppUserConfig")
     }
 
     public static get(context: common.Context) {

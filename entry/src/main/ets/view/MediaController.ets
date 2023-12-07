@@ -7,8 +7,8 @@ import { StatelessImageButton } from './StatelessImageButton'
 @Component
 export struct MediaController {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    @Link @Watch("playStateChanged") isPlaying: boolean
-    @Link loopMode: LoopMode
+    @Watch("playStateChanged") @Link isPlaying: boolean
+    @Watch("loopModeChanged") @Link loopMode: LoopMode
     @State loopIcon: Resource = $r("app.media.ic_public_list_cycle")
     @State playIcon: Resource = $r("app.media.ic_play")
     actionPlay = () => {
@@ -28,17 +28,29 @@ export struct MediaController {
         }
     }
 
+    loopModeChanged(){
+        switch (this.loopMode) {
+            case LoopMode.LOOP_ALL:
+                this.loopIcon = $r("app.media.ic_public_list_cycle")
+                break
+            case LoopMode.LOOP_SINGLE:
+                this.loopIcon = $r("app.media.ic_public_single_cycle")
+                break
+            case LoopMode.SHUFFLE:
+                this.loopIcon = $r("app.media.ic_public_random")
+                break
+        }
+    }
+
     private changedLoopMode() {
         if (this.loopMode == LoopMode.SHUFFLE) {
             this.loopMode = LoopMode.LOOP_ALL
-            this.loopIcon = $r("app.media.ic_public_list_cycle")
         } else if (this.loopMode == LoopMode.LOOP_ALL) {
             this.loopMode = LoopMode.LOOP_SINGLE
-            this.loopIcon = $r("app.media.ic_public_single_cycle")
         } else if (this.loopMode == LoopMode.LOOP_SINGLE) {
             this.loopMode = LoopMode.SHUFFLE
-            this.loopIcon = $r("app.media.ic_public_random")
         }
+        this.loopModeChanged()
     }
 
     build() {
