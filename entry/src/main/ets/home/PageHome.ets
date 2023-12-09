@@ -21,6 +21,8 @@ import { StatefulImageButton } from '../view/StatefulImageButton';
 import { StatelessImageButton } from '../view/StatelessImageButton';
 import { TimerDialog } from '../view/TimerDialog';
 import { PageRouter } from '../extensions/PageRouter';
+import { DeleteDialog } from '../view/DeleteDialog';
+import { FavouriteItemView } from '../view/FavouriteItemView';
 
 const TAG = "[PageHome]"
 
@@ -38,13 +40,15 @@ struct PageHome {
     @State isShowLyric: boolean = false
     @State isShowPlaylist: boolean = false
     @State isNotPlayed: boolean = true
+    @State deleteSong?: Song = undefined
+    @State curTabIndex: number = 0
     private mediaSession: MediaSession = MediaSession.get()
     private historyManager: PlayHistoryManager = PlayHistoryManager.get()
     private playlistManager: PlaylistManager = PlaylistManager.get()
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileLyricParser = new FileLyricParser()
     private playlistScroller = new Scroller()
-    private dialogController = new CustomDialogController({
+    private timerDialogController = new CustomDialogController({
         builder: TimerDialog({
             onAction: (minute) => {
                 if (minute > 0) {
@@ -58,31 +62,41 @@ struct PageHome {
         alignment: DialogAlignment.Bottom,
         offset: { dx: 0, dy: -32 }
     })
+    private deleteDialogController = new CustomDialogController({
+        builder: DeleteDialog({
+            song: this.deleteSong,
+            onAction: (song: Song) => {
+                this.playlistManager.remove(song)
+            }
+        }),
+        autoCancel: true,
+        alignment: DialogAlignment.Bottom,
+        offset: { dx: 0, dy: -32 }
+    })
     @State favouriteIcon: Resource = $r("app.media.ic_public_favor")
     @State timerIcon: Resource = $r("app.media.ic_public_clock")
     @State lyricIcon: Resource = $r("app.media.ic_public_text")
 
     aboutToAppear() {
         router.clear()
-        let param = router.getParams()
-        if (param) {
-            let song = param as Song
+        let param = router.getParams() as Record<string, Object>
+        Logger.d(TAG, "router param= " + JSON.stringify(param))
+        if (param.song) {
+            let song = param.song as Song
             if (song) {
-                Logger.d(TAG, "play from router= " + JSON.stringify(song))
                 this.mediaSession.playSong(song)
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
                 this.isNotPlayed = false
             }
-        } else {
-            this.historyManager.readHistory().then((history) => {
-                if (history) {
-                    Logger.d(TAG, "read history = " + JSON.stringify(history))
-                    this.loopMode = history.loopMode
-                    this.mediaSession.setLoopMode(history.loopMode)
-                    LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
-                    this.playingIndex = this.playlistManager.getIndex(history.song)
-                }
-            })
+        } else if (param.history) {
+            let history = param.history as History
+            if (history) {
+                Logger.d(TAG, "read history = " + JSON.stringify(history))
+                this.loopMode = history.loopMode
+                this.mediaSession.setLoopMode(history.loopMode)
+                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
+                this.playingIndex = this.playlistManager.getIndex(history.song)
+            }
         }
         this.mediaSession.initAvSession(getContext(this))
         this.mediaSession.onProgressChanged((position) => {
@@ -233,7 +247,7 @@ struct PageHome {
             //     })
             StatefulImageButton({ image: this.timerIcon })
                 .onClick(() => {
-                    this.dialogController.open()
+                    this.timerDialogController.open()
                 })
             StatefulImageButton({ image: this.lyricIcon })
                 .onClick(() => {
@@ -245,6 +259,7 @@ struct PageHome {
                             return
                         }
                         this.isShowLyric = true
+                        this.lyricController.updatePosition(this.currentPosition)
                         this.lyricIcon = $r('app.media.ic_public_text_filled')
                     }
                 })
@@ -256,41 +271,105 @@ struct PageHome {
         .margin({ top: 8, bottom: 12 })
     }
 
+    private deleteAction(song: Song) {
+        this.deleteSong = song
+        this.deleteDialogController.open()
+    }
+
+    @Builder
+    TabTitle(title: string, index: number) {
+        Text(title).fontSize(UIConfig.FONT_SUB_TITLE)
+            .fontColor(this.curTabIndex == index ? this.theme.colorPrimary : "#cc3e3e3e")
+    }
+
     @Builder
     PlaylistContainer() {
         Panel(true) {
-            List({ scroller: this.playlistScroller }) {
-                ForEach(this.playlist, (song: Song, index: number) => {
-                    if (this.playingIndex == index) {
-                        ListItem() {
-                            PlaylistItemView({ data: song, isHighLight: true })
-                        }.onClick(() => {
-                            this.mediaSession.playSong(song)
-                            this.isShowPlaylist = false
-                        })
-                    } else {
-                        ListItem() {
-                            PlaylistItemView({ data: song, isHighLight: false })
-                        }.onClick(() => {
-                            this.mediaSession.playSong(song)
-                            this.isShowPlaylist = false
+            Tabs() {
+                TabContent() {
+                    List({ scroller: this.playlistScroller }) {
+                        ForEach(this.playlist, (song: Song, index: number) => {
+                            if (this.playingIndex == index) {
+                                ListItem() {
+                                    PlaylistItemView({
+                                        data: song,
+                                        index: index,
+                                        isHighLight: true,
+                                        onAction: (song: Song) => {
+                                            this.mediaSession.playSong(song)
+                                            // this.isShowPlaylist = false
+                                        },
+                                        onDelete: (song: Song) => {
+                                            this.deleteAction(song)
+                                        }
+                                    })
+                                }
+                            } else {
+                                ListItem() {
+                                    PlaylistItemView({
+                                        data: song,
+                                        index: index,
+                                        isHighLight: false,
+                                        onAction: (song: Song) => {
+                                            this.mediaSession.playSong(song)
+                                            // this.isShowPlaylist = false
+                                        },
+                                        onDelete: (song: Song) => {
+                                            this.deleteAction(song)
+                                        }
+                                    })
+                                }
+                            }
                         })
                     }
-                })
+                    .padding({ left: 16, right: 16, top: 8 })
+                    .scrollBar(BarState.Auto)
+                    .width("100%")
+                    .height("100%")
+                    .onAppear(() => {
+                        this.playlistScroller.scrollToIndex(this.playingIndex)
+                    })
+                }.tabBar(this.TabTitle("播放列表", 0))
+                .tabIndex(0)
+
+                TabContent() {
+                    List({ scroller: this.playlistScroller }) {
+                        ForEach(this.playlist, (song: Song) => {
+                            ListItem() {
+                                FavouriteItemView({ data: song, isHighLight: false,
+                                    onAction: (song: Song) => {
+                                        this.mediaSession.playSong(song)
+                                        this.isShowPlaylist = false
+                                    },
+                                    onDelete: (song: Song) => {
+                                        this.deleteAction(song)
+                                    }
+                                })
+                            }
+                        })
+                    }
+                    .padding({ left: 16, right: 16, top: 8 })
+                    .scrollBar(BarState.Auto)
+                    .width("100%")
+                    .height("100%")
+                }.tabBar(this.TabTitle("我的收藏", 1))
+                .tabIndex(1)
             }
-            .padding(16)
-            .scrollBar(BarState.Auto)
-            .width("100%")
-            .height("100%")
+            .barMode(BarMode.Fixed)
+            .barHeight(32)
+            .animationDuration(300)
+            .onChange((index) => {
+                this.curTabIndex = index
+            })
             .onAppear(() => {
-                this.playlistScroller.scrollToIndex(this.playingIndex)
+                this.curTabIndex = 0
             })
         }
         .mode(PanelMode.Full)
         .type(PanelType.Minibar)
         .fullHeight(500)
         .miniHeight(0)
-        .backgroundColor("#fff5f5f5")
+        .backgroundColor("#fff8f8f8")
         .onChange((_, __, mode) => {
             if (mode == PanelMode.Mini) {
                 this.isShowPlaylist = false

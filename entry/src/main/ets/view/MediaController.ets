@@ -20,6 +20,10 @@ export struct MediaController {
     actionPlaylist = () => {
     }
 
+    aboutToAppear(){
+        this.loopModeChanged()
+    }
+
     playStateChanged() {
         if (this.isPlaying) {
             this.playIcon = $r('app.media.ic_pause')

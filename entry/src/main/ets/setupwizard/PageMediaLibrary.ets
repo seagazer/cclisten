@@ -80,7 +80,7 @@ struct PageMediaLibrary {
                     if (this.selectList.length > 0) {
                         UserConfigHelper.get(getContext(this)).write(UserConfigHelper.CONFIG_INIT_STEP, 2)
                         PlaylistManager.get().addList(this.selectList)
-                        navigationTo(PageRouter.PAGE_HOME, this.selectList[0])
+                        navigationTo(PageRouter.PAGE_HOME, { song: this.selectList[0] })
                     } else {
                         toast("请选择至少一首歌曲")
                     }

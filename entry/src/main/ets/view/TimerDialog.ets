@@ -1,7 +1,6 @@
 import { UIConfig } from '../config/UIConfig'
 import { toast } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
-import { Logger } from '../extensions/Logger'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { Fab } from './Fab'
 

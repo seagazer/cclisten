@@ -6,6 +6,8 @@ import { PageRouter } from '../extensions/PageRouter'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
 import { UserConfigHelper } from '../config/UserConfigHelper'
+import { PlayHistoryManager } from '../history/PlayHistoryManager'
+import { History } from '../bean/History'
 
 const TAG = "[PageSplash]"
 
@@ -18,6 +20,7 @@ struct PageSplash {
     private duration = 500
     private delay = 200
     private isAppInit: number = 0
+    private history?: History | null = null
 
     // {"id":0,"width":720,"height":1280,"refreshRate":69,"name":"display_0","alive":true,"state":0,"rotation":0,
     // "densityDPI":240,"densityPixels":1.5,"scaledDensity":1.5,"xDPI":0,"yDPI":0}
@@ -25,7 +28,7 @@ struct PageSplash {
         this.init()
     }
 
-    async init() {
+    private async init() {
         let sp = UserConfigHelper.get(getContext(this))
         this.isAppInit = await sp.read<number>(UserConfigHelper.CONFIG_INIT_STEP, 0)
         Logger.d(TAG, "isAppInit = " + this.isAppInit)
@@ -38,6 +41,7 @@ struct PageSplash {
         this.logoName.forEach((_, index) => {
             this.alphas[index] = 0
         })
+        this.history = await PlayHistoryManager.get().readHistory()
     }
 
     private async loadTheme() {
@@ -78,7 +82,8 @@ struct PageSplash {
                 } else if (this.isAppInit == 1) {
                     navigationTo(PageRouter.PAGE_SETUPWIZARD_MEDIA_LIBRARY)
                 } else {
-                    navigationTo(PageRouter.PAGE_HOME)
+                    Logger.d(TAG, "read history = " + JSON.stringify(this.history))
+                    navigationTo(PageRouter.PAGE_HOME, { history: this.history })
                 }
             }, 500 + this.duration + this.delay * this.logoName.length)
         })

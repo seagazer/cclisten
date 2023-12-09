@@ -4,10 +4,9 @@ import { APP_THEME } from '../extensions/LiveData'
 import { UIConfig } from '../config/UIConfig'
 
 @Component
-export struct PlaylistItemView {
+export struct FavouriteItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     data?: Song = undefined
-    index: number = 0
     isHighLight: boolean = false
     onAction = (song: Song) => {
     }
@@ -28,7 +27,7 @@ export struct PlaylistItemView {
     build() {
         Row() {
             Row() {
-                Text(this.index + ". " + this.data?.title + " - ")
+                Text(this.data?.title + " - ")
                     .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
@@ -47,7 +46,7 @@ export struct PlaylistItemView {
                 this.onAction(this.data)
             })
 
-            Image($r("app.media.ic_public_cancel"))
+            Image($r("app.media.ic_public_favor_filled"))
                 .width(36)
                 .height(36)
                 .padding(6)
