@@ -2,7 +2,7 @@ import common from '@ohos.app.ability.common'
 import { DEFAULT_THEME, Theme } from './Theme'
 import { DbHelper } from '../base/DbHelper'
 import { APP_THEME, LiveData } from '../extensions/LiveData'
-import { UserConfigHelper } from '../base/UserConfigHelper'
+import { UserConfigHelper } from '../config/UserConfigHelper'
 
 
 const TAG = "[ThemeManager]"

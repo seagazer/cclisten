@@ -10,6 +10,7 @@ import { PlaylistManager } from '../playlist/PlaylistManager';
 import { ThemeManager } from '../theme/ThemeManager';
 import { Theme } from '../theme/Theme';
 import { Platform } from '../base/Platform';
+import { PlayHistoryManager } from '../history/PlayHistoryManager';
 
 const TAG = "[MainAbility]"
 
@@ -18,11 +19,12 @@ export default class EntryAbility extends UIAbility {
 
     onCreate(want, launchParam) {
         Platform.init()
-        // init media session
+        // init
         this.mediaSession = MediaSession.get()
         this.mediaSession.initAvSession(this.context)
         BackgroundTask.getInstance().init(this.context)
-        PlaylistManager.get().initFromDb(this.context)
+        PlaylistManager.get().init(this.context)
+        PlayHistoryManager.get().init(this.context)
         ThemeManager.get().init(this.context)
         // request permission
         aac.createAtManager()

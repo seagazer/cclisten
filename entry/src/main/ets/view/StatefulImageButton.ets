@@ -35,6 +35,7 @@ export struct StatefulImageButton {
             Image(this.image)
                 .btnStyle(this.w, this.h, this.edge)
                 .fillColor(this.theme.colorPrimary)
+                .animation({ duration: UIConfig.ANIM_DURATION })
                 .stateStyles({
                     pressed: this.pressedStyles,
                     normal: this.normalStyles

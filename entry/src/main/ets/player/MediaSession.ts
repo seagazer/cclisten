@@ -2,7 +2,6 @@ import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer
 import { BackgroundTask } from '../extensions/BackgroundTask'
 import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
-import { LiveData, MEDIA_SESSION_CURRENT_SONG } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { LoopMode } from './LoopMode'
@@ -137,7 +136,6 @@ export class MediaSession {
 
     async playSong(song: Song) {
         Logger.d(TAG, "start play= " + JSON.stringify(song))
-        LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
         this.playlist.updateCurrentSong(song)
         let fd = await parseUri(song.url)
         let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)

@@ -6,7 +6,7 @@ import { UIConfig } from '../config/UIConfig'
 @Component
 export struct PlaylistItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    @ObjectLink data: Song
+    data?: Song = undefined
     onItemClick: (song: Song) => void = (_) => {
     }
     isHighLight: boolean = false
@@ -25,12 +25,12 @@ export struct PlaylistItemView {
     build() {
         Row() {
             Column() {
-                Text(this.data.title)
+                Text(this.data?.title)
                     .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(this.data.artist ? this.data.artist : "未知")
+                Text(this.data?.artist ? this.data?.artist : "未知")
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#ffa4a4a4")
                     .fontSize(16)
                     .maxLines(1)

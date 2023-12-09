@@ -12,4 +12,6 @@ export class UIConfig {
     static FONT_CONTENT = 16
     static FONT_SUB_CONTENT = 12
     static FONT_BUTTON = 18
+
+    static ANIM_DURATION = 200
 }

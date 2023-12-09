@@ -1,5 +1,5 @@
 import { Song } from '../bean/Song'
-import { LiveData, MEDIA_SESSION_PLAYLIST } from '../extensions/LiveData'
+import { LiveData, MEDIA_SESSION_CURRENT_SONG, MEDIA_SESSION_PLAYLIST } from '../extensions/LiveData'
 import { Logger } from '../extensions/Logger'
 import { LoopMode } from '../player/LoopMode'
 import { PlaylistDb } from './PlaylistDb'
@@ -42,11 +42,11 @@ export class PlaylistManager {
             }
         }
         this.currentIndex = index
+        LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
         Logger.d(TAG, "current index= " + this.currentIndex)
     }
 
-
-    async initFromDb(context: common.Context) {
+    async init(context: common.Context) {
         try {
             await this.playlistDb.init(context)
             let songList = await this.playlistDb.getPlaylist()
@@ -76,7 +76,7 @@ export class PlaylistManager {
     }
 
     remove(song: Song) {
-        let index = this.songList.indexOf(song)
+        let index = this.indexOf(song)
         if (index >= 0) {
             this.songList.splice(index, 1)
             this.playlistDb.removeSong(song)
@@ -96,7 +96,7 @@ export class PlaylistManager {
     }
 
     getIndex(song: Song): number {
-        let index = this.songList.indexOf(song)
+        let index = this.indexOf(song)
         Logger.d(TAG, "song index= " + index)
         return index
     }
@@ -148,5 +148,15 @@ export class PlaylistManager {
 
     current(): Song {
         return this.songList[this.currentIndex]
+    }
+
+    private indexOf(song: Song) {
+        for (let i = 0; i < this.songList.length; i++) {
+            let id = this.songList[i].url
+            if (id == song.url) {
+                return i
+            }
+        }
+        return -1
     }
 }

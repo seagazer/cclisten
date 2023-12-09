@@ -16,4 +16,6 @@ export class Theme {
 
 export const DEFAULT_THEME = new Theme("#ff000000", "#80d4d4d4")
 
+export const THEME_COLOR = ["#FF405C", "#007DFF", "#47CC47", "#FF7500", "#E40078", "#00AAEE"]
+
 

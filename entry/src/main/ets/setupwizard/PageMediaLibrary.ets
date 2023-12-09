@@ -10,7 +10,7 @@ import { SelectItemView } from '../view/SelectItemView'
 import { PlaylistManager } from '../playlist/PlaylistManager'
 import { UIConfig } from '../config/UIConfig'
 import { Fab } from '../view/Fab'
-import { UserConfigHelper } from '../base/UserConfigHelper'
+import { UserConfigHelper } from '../config/UserConfigHelper'
 
 const TAG = "[PageMediaLibrary]"
 

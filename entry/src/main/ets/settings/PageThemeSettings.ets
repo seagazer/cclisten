@@ -1,5 +1,5 @@
 import { dimColor, toast } from '../extensions/Extensions';
-import { Theme } from '../theme/Theme';
+import { Theme, THEME_COLOR } from '../theme/Theme';
 import router from '@ohos.router';
 import { UIConfig } from '../config/UIConfig';
 import { ThemeManager } from '../theme/ThemeManager';
@@ -10,8 +10,6 @@ const TAG = "[PageThemeSettings]"
 @Entry
 @Component
 export struct PageThemeSettings {
-    private colorPrimaryList = ["#FF405C", "#007DFF", "#47CC47", "#FF7500",
-        "#E40078", "#00AAEE"]
     @State selectIndex: number = 0
     private scaleSize = 1.25
     private colorPrimary: string = ""
@@ -26,7 +24,7 @@ export struct PageThemeSettings {
 
     @Styles
     normalStyles(){
-        .backgroundColor(this.colorPrimaryList[this.selectIndex])
+        .backgroundColor(THEME_COLOR[this.selectIndex])
         .scale({ x: 1, y: 1 })
         .shadow({
             radius: UIConfig.DIMENSION_NORMAL_SHADOW,
@@ -37,7 +35,7 @@ export struct PageThemeSettings {
 
     @Styles
     pressedStyles(){
-        .backgroundColor(dimColor(this.colorPrimaryList[this.selectIndex]))
+        .backgroundColor(dimColor(THEME_COLOR[this.selectIndex]))
         .scale({ x: 0.95, y: 0.95 })
         .shadow({
             radius: UIConfig.DIMENSION_PRESS_SHADOW,
@@ -53,14 +51,14 @@ export struct PageThemeSettings {
                 .width("100%")
                 .textAlign(TextAlign.Center)
                 .padding({ top: 32 })
-                .fontColor(this.colorPrimaryList[this.selectIndex])
+                .fontColor(THEME_COLOR[this.selectIndex])
                 .animation({
-                    duration: 300
+                    duration: UIConfig.ANIM_DURATION
                 })
 
             Scroll() {
                 Row() {
-                    ForEach(this.colorPrimaryList, (color: string, index) => {
+                    ForEach(THEME_COLOR, (color: string, index) => {
                         Stack()
                             .width(40)
                             .height(40)
@@ -72,7 +70,7 @@ export struct PageThemeSettings {
                                 y: this.selectIndex == index ? this.scaleSize : 1
                             })
                             .animation({
-                                duration: 300
+                                duration: UIConfig.ANIM_DURATION
                             })
                             .onClick(() => {
                                 this.selectIndex = index
@@ -113,7 +111,7 @@ export struct PageThemeSettings {
                     this.setTheme()
                 })
                 .animation({
-                    duration: 300
+                    duration: UIConfig.ANIM_DURATION
                 })
         }
         .width("100%")
@@ -122,8 +120,8 @@ export struct PageThemeSettings {
         .justifyContent(FlexAlign.Center)
         .onAppear(() => {
             Logger.d(TAG, "current colorPrimary = " + this.colorPrimary)
-            for (let i = 0; i < this.colorPrimaryList.length; i++) {
-                if (this.colorPrimary == this.colorPrimaryList[i]) {
+            for (let i = 0; i < THEME_COLOR.length; i++) {
+                if (this.colorPrimary == THEME_COLOR[i]) {
                     this.selectIndex = i
                 }
             }
@@ -131,7 +129,7 @@ export struct PageThemeSettings {
     }
 
     private async setTheme() {
-        let theme = new Theme(this.colorPrimaryList[this.selectIndex])
+        let theme = new Theme(THEME_COLOR[this.selectIndex])
         ThemeManager.get().updateTheme(theme)
         await ThemeManager.get().saveTheme(theme)
         router.back()

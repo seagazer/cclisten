@@ -1,5 +1,5 @@
 import common from '@ohos.app.ability.common'
-import { PreferenceHelper } from './PreferenceHelper'
+import { PreferenceHelper } from '../base/PreferenceHelper'
 import preferences from '@ohos.data.preferences'
 
 /**

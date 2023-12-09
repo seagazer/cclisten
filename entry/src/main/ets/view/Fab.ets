@@ -56,7 +56,7 @@ export struct Fab {
                 this.onAction?.(event)
             })
             .animation({
-                duration: 300
+                duration: UIConfig.ANIM_DURATION
             })
     }
 }

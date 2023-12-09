@@ -1,19 +1,17 @@
 import { navigationTo } from '../extensions/Extensions';
 import { PageRouter } from '../extensions/PageRouter';
-import { DEFAULT_THEME, Theme } from '../theme/Theme';
+import { DEFAULT_THEME, Theme, THEME_COLOR } from '../theme/Theme';
 import { Fab } from '../view/Fab';
 import router from '@ohos.router';
 import { APP_THEME } from '../extensions/LiveData';
 import { UIConfig } from '../config/UIConfig';
 import { ThemeManager } from '../theme/ThemeManager';
-import { UserConfigHelper } from '../base/UserConfigHelper';
+import { UserConfigHelper } from '../config/UserConfigHelper';
 
 @Entry
 @Component
 export struct PageTheme {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    private colorPrimaryList = ["#FF405C", "#007DFF", "#47CC47", "#FF7500",
-        "#E40078", "#00AAEE"]
     @State selectIndex: number = 0
     private scaleSize = 1.25
 
@@ -28,14 +26,14 @@ export struct PageTheme {
                 .width("100%")
                 .textAlign(TextAlign.Center)
                 .padding({ top: 32 })
-                .fontColor(this.colorPrimaryList[this.selectIndex])
+                .fontColor(THEME_COLOR[this.selectIndex])
                 .animation({
-                    duration: 300
+                    duration: UIConfig.ANIM_DURATION
                 })
 
             Scroll() {
                 Row() {
-                    ForEach(this.colorPrimaryList, (color: string, index) => {
+                    ForEach(THEME_COLOR, (color: string, index) => {
                         Stack()
                             .width(40)
                             .height(40)
@@ -47,11 +45,11 @@ export struct PageTheme {
                                 y: this.selectIndex == index ? this.scaleSize : 1
                             })
                             .animation({
-                                duration: 300
+                                duration: UIConfig.ANIM_DURATION
                             })
                             .onClick(() => {
                                 this.selectIndex = index
-                                let theme = new Theme(this.colorPrimaryList[this.selectIndex])
+                                let theme = new Theme(THEME_COLOR[this.selectIndex])
                                 ThemeManager.get().updateTheme(theme)
                             })
                     })
@@ -79,7 +77,7 @@ export struct PageTheme {
     }
 
     private async setTheme() {
-        let theme = new Theme(this.colorPrimaryList[this.selectIndex])
+        let theme = new Theme(THEME_COLOR[this.selectIndex])
         ThemeManager.get().updateTheme(theme)
         await ThemeManager.get().saveTheme(theme)
         await UserConfigHelper.get(getContext(this)).write(UserConfigHelper.CONFIG_INIT_STEP, 1)

@@ -33,12 +33,14 @@ struct PageHome {
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State isPlaying: boolean = false
+    @State playingIndex: number = 0
     @Watch("onLoopModeChanged") @State loopMode: LoopMode = LoopMode.LOOP_ALL
     @State isShowLyric: boolean = false
     @State isShowPlaylist: boolean = false
     @State isNotPlayed: boolean = true
     private mediaSession: MediaSession = MediaSession.get()
-    private historyManager: PlayHistoryManager = PlayHistoryManager.get(getContext(this))
+    private historyManager: PlayHistoryManager = PlayHistoryManager.get()
+    private playlistManager: PlaylistManager = PlaylistManager.get()
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileLyricParser = new FileLyricParser()
     private playlistScroller = new Scroller()
@@ -71,17 +73,17 @@ struct PageHome {
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
                 this.isNotPlayed = false
             }
-        }
-        this.historyManager.readHistory().then((history) => {
-            if (history) {
-                Logger.d(TAG, "read history = " + JSON.stringify(history))
-                setTimeout(() => {
+        } else {
+            this.historyManager.readHistory().then((history) => {
+                if (history) {
+                    Logger.d(TAG, "read history = " + JSON.stringify(history))
                     this.loopMode = history.loopMode
-                }, 300)
-                this.mediaSession.setLoopMode(history.loopMode)
-                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
-            }
-        })
+                    this.mediaSession.setLoopMode(history.loopMode)
+                    LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
+                    this.playingIndex = this.playlistManager.getIndex(history.song)
+                }
+            })
+        }
         this.mediaSession.initAvSession(getContext(this))
         this.mediaSession.onProgressChanged((position) => {
             this.currentPosition = position
@@ -179,7 +181,7 @@ struct PageHome {
                 })
             })
 
-            Divider().width("100%").height(1).margin({ top: 4, bottom: 4 })
+            Divider().width("100%").height(1).margin({ top: 8, bottom: 8 })
             Row() {
                 Image($r("app.media.ic_public_albums")).width(24).height(24).margin({ right: 12 })
                 Text("媒体库").fontSize(16)
@@ -192,7 +194,7 @@ struct PageHome {
                 toast("TODO")
             })
 
-            Divider().width("100%").height(1).margin({ top: 4, bottom: 4 })
+            Divider().width("100%").height(1).margin({ top: 8, bottom: 8 })
             Row() {
                 Image($r("app.media.ic_public_app")).width(24).height(24).margin({ right: 12 })
                 Text("关于").fontSize(16)
@@ -217,18 +219,18 @@ struct PageHome {
                     if (this.currentSong.isFavourite == 1) {
                         this.currentSong.isFavourite = 0
                         this.favouriteIcon = $r("app.media.ic_public_favor")
-                        PlaylistManager.get().updateSong(this.currentSong)
+                        this.playlistManager.updateSong(this.currentSong)
                     } else {
                         this.currentSong.isFavourite = 1
                         this.favouriteIcon = $r("app.media.ic_public_favor_filled")
-                        PlaylistManager.get().updateSong(this.currentSong)
+                        this.playlistManager.updateSong(this.currentSong)
                     }
                 })
-            StatelessImageButton({ image: $r("app.media.ic_public_send") })
-                .onClick(() => {
-                    // todo distribute share
-                    toast("TODO")
-                })
+            // StatelessImageButton({ image: $r("app.media.ic_public_send") })
+            //     .onClick(() => {
+            //         // todo distribute share
+            //         toast("TODO")
+            //     })
             StatefulImageButton({ image: this.timerIcon })
                 .onClick(() => {
                     this.dialogController.open()
@@ -258,13 +260,22 @@ struct PageHome {
     PlaylistContainer() {
         Panel(true) {
             List({ scroller: this.playlistScroller }) {
-                ForEach(this.playlist, (song: Song, _) => {
-                    ListItem() {
-                        PlaylistItemView({ data: song, isHighLight: song.title == this.currentSong.title })
-                    }.onClick(() => {
-                        this.mediaSession.playSong(song)
-                        this.isShowPlaylist = false
-                    })
+                ForEach(this.playlist, (song: Song, index: number) => {
+                    if (this.playingIndex == index) {
+                        ListItem() {
+                            PlaylistItemView({ data: song, isHighLight: true })
+                        }.onClick(() => {
+                            this.mediaSession.playSong(song)
+                            this.isShowPlaylist = false
+                        })
+                    } else {
+                        ListItem() {
+                            PlaylistItemView({ data: song, isHighLight: false })
+                        }.onClick(() => {
+                            this.mediaSession.playSong(song)
+                            this.isShowPlaylist = false
+                        })
+                    }
                 })
             }
             .padding(16)
@@ -272,12 +283,12 @@ struct PageHome {
             .width("100%")
             .height("100%")
             .onAppear(() => {
-                this.playlistScroller.scrollToIndex(PlaylistManager.get().getPlayingIndex())
+                this.playlistScroller.scrollToIndex(this.playingIndex)
             })
         }
         .mode(PanelMode.Full)
         .type(PanelType.Minibar)
-        .fullHeight(600)
+        .fullHeight(500)
         .miniHeight(0)
         .backgroundColor("#fff5f5f5")
         .onChange((_, __, mode) => {
@@ -354,6 +365,7 @@ struct PageHome {
 
     onSongChanged() {
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
+        this.playingIndex = this.playlistManager.getPlayingIndex()
         this.lyricController.setLyric(null)
         let filePath = FileScanner.scanLyricSync(getContext(this).filesDir, this.currentSong.title)
         Logger.d(TAG, "update lyric= " + filePath)

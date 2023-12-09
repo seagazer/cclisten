@@ -55,7 +55,7 @@ export struct TimerDialog {
                             y: this.selectIndex == index ? this.scaleSize : 1
                         })
                         .animation({
-                            duration: 300
+                            duration: UIConfig.ANIM_DURATION
                         })
                         .onClick(() => {
                             this.selectIndex = index

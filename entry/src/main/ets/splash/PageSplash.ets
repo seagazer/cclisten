@@ -5,7 +5,7 @@ import { APP_THEME } from '../extensions/LiveData'
 import { PageRouter } from '../extensions/PageRouter'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { ThemeManager } from '../theme/ThemeManager'
-import { UserConfigHelper } from '../base/UserConfigHelper'
+import { UserConfigHelper } from '../config/UserConfigHelper'
 
 const TAG = "[PageSplash]"
 

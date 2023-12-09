@@ -12,18 +12,20 @@ const TAG = "[PlayHistoryManager]"
 export class PlayHistoryManager {
     private static sInstance: PlayHistoryManager = null
     private sp: PreferenceHelper
-    private fileName = "history"
     private key = "data"
 
-    private constructor(context: common.Context) {
-        this.sp = new PreferenceHelper(context, "PlayHistory")
+    private constructor() {
     }
 
-    public static get(context: common.Context): PlayHistoryManager {
+    public static get(): PlayHistoryManager {
         if (this.sInstance == null) {
-            this.sInstance = new PlayHistoryManager(context)
+            this.sInstance = new PlayHistoryManager()
         }
         return this.sInstance
+    }
+
+    init(context: common.Context) {
+        this.sp = new PreferenceHelper(context, "PlayHistory")
     }
 
     public async saveHistory(history: History) {
