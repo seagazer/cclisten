@@ -66,7 +66,8 @@ export struct AnimCoverView {
                 .objectFit(ImageFit.Contain)
                 .width(this.viewSize - this.animEdge)
                 .height(this.viewSize - this.animEdge)
-                .border({ radius: this.viewSize / 2, width: this.strokeWidth, color: this.theme.colorPrimary })
+                .border({ radius: this.viewSize / 2 })
+                .shadow({ radius: 18, color: this.theme.colorPrimary })
         }
         .width(this.viewSize)
         .height(this.viewSize)
