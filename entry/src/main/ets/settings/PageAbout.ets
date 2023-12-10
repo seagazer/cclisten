@@ -15,6 +15,11 @@ struct PageAbout {
     @State appName: string = "Listen"
     @State appVersion: string = "Version 1.0.0"
 
+    pageTransition() {
+        PageTransitionEnter({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+        PageTransitionExit({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+    }
+
     aboutToAppear() {
         this.getAppInfo()
     }

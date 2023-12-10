@@ -4,27 +4,43 @@ import router from '@ohos.router';
 import { UIConfig } from '../config/UIConfig';
 import { ThemeManager } from '../theme/ThemeManager';
 import { Logger } from '../extensions/Logger';
+import { CustomThemeDialog } from '../view/CustomThemeDialog';
 
 const TAG = "[PageThemeSettings]"
 
 @Entry
 @Component
 export struct PageThemeSettings {
-    @State selectIndex: number = 0
+    @State selectIndex: number = -1
+    @State customColor: string = "#ffffff"
     private scaleSize = 1.25
-    private colorPrimary: string = ""
+    private selectorDialogController = new CustomDialogController({
+        builder: CustomThemeDialog({
+            onColorSelect: (color) => {
+                this.customColor = color
+                this.selectIndex = -1
+            }
+        }),
+        autoCancel: true,
+        customStyle: true
+    })
+
+    pageTransition() {
+        PageTransitionEnter({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+        PageTransitionExit({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+    }
 
     aboutToAppear() {
-        let p = router.getParams() as Record<string, string>
-        if (p) {
-            this.colorPrimary = p.DATA_THEME
+        let params = router.getParams() as Record<string, string>
+        if (params) {
+            this.customColor = params.THEME_COLOR
         }
-        Logger.d(TAG, "router data = " + JSON.stringify(p))
+        Logger.d(TAG, "router data = " + JSON.stringify(params))
     }
 
     @Styles
     normalStyles(){
-        .backgroundColor(THEME_COLOR[this.selectIndex])
+        .backgroundColor(this.customColor)
         .scale({ x: 1, y: 1 })
         .shadow({
             radius: UIConfig.DIMENSION_NORMAL_SHADOW,
@@ -35,7 +51,7 @@ export struct PageThemeSettings {
 
     @Styles
     pressedStyles(){
-        .backgroundColor(dimColor(THEME_COLOR[this.selectIndex]))
+        .backgroundColor(dimColor(this.customColor))
         .scale({ x: 0.95, y: 0.95 })
         .shadow({
             radius: UIConfig.DIMENSION_PRESS_SHADOW,
@@ -51,7 +67,7 @@ export struct PageThemeSettings {
                 .width("100%")
                 .textAlign(TextAlign.Center)
                 .padding({ top: 32 })
-                .fontColor(THEME_COLOR[this.selectIndex])
+                .fontColor(this.customColor)
                 .animation({
                     duration: UIConfig.ANIM_DURATION
                 })
@@ -74,17 +90,21 @@ export struct PageThemeSettings {
                             })
                             .onClick(() => {
                                 this.selectIndex = index
+                                this.customColor = THEME_COLOR[this.selectIndex]
                             })
                     })
-                    Stack()
+                    Image($r("app.media.ic_color_wheel"))
+                        .objectFit(ImageFit.Contain)
                         .width(40)
                         .height(40)
                         .margin({ left: 20 })
-                        .backgroundColor("#ffffff")
-                        .border({ radius: 100, color: Color.Grey, width: 1 })
+                        .border({ radius: 100 ,color :Color.Blue})
+                        .scale({
+                            x: this.selectIndex == -1 ? this.scaleSize : 1,
+                            y: this.selectIndex == -1 ? this.scaleSize : 1
+                        })
                         .onClick(() => {
-                            // todo
-                            toast("ColorWheel")
+                            this.selectorDialogController.open()
                         })
                 }.justifyContent(FlexAlign.SpaceEvenly)
             }
@@ -93,6 +113,7 @@ export struct PageThemeSettings {
             .height(64)
             .width("100%")
             .margin({ top: 48 })
+            .align(Alignment.Center)
 
             Text("确定")
                 .fontSize(UIConfig.FONT_BUTTON)
@@ -119,17 +140,18 @@ export struct PageThemeSettings {
         .padding(32)
         .justifyContent(FlexAlign.Center)
         .onAppear(() => {
-            Logger.d(TAG, "current colorPrimary = " + this.colorPrimary)
+            Logger.d(TAG, "current colorPrimary = " + this.customColor)
             for (let i = 0; i < THEME_COLOR.length; i++) {
-                if (this.colorPrimary == THEME_COLOR[i]) {
+                if (this.customColor == THEME_COLOR[i]) {
                     this.selectIndex = i
+                    break
                 }
             }
         })
     }
 
     private async setTheme() {
-        let theme = new Theme(THEME_COLOR[this.selectIndex])
+        let theme = new Theme(this.customColor)
         ThemeManager.get().updateTheme(theme)
         await ThemeManager.get().saveTheme(theme)
         router.back()

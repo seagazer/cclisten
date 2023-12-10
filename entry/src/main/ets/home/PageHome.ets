@@ -77,6 +77,11 @@ struct PageHome {
     @State timerIcon: Resource = $r("app.media.ic_public_clock")
     @State lyricIcon: Resource = $r("app.media.ic_public_text")
 
+    pageTransition() {
+        PageTransitionEnter({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+        PageTransitionExit({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+    }
+
     aboutToAppear() {
         router.clear()
         let param = router.getParams() as Record<string, Object>
@@ -191,7 +196,7 @@ struct PageHome {
             .alignItems(VerticalAlign.Center)
             .onClick(() => {
                 navigationTo(PageRouter.PAGE_SETTINGS_THEME, {
-                    DATA_THEME: this.theme.colorPrimary
+                    THEME_COLOR: this.theme.colorPrimary
                 })
             })
 

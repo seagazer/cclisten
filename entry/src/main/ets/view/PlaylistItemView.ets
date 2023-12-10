@@ -28,7 +28,7 @@ export struct PlaylistItemView {
     build() {
         Row() {
             Row() {
-                Text(this.index + ". " + this.data?.title + " - ")
+                Text(this.index + " " + this.data?.title + " - ")
                     .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)

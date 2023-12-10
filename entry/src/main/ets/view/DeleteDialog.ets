@@ -20,10 +20,16 @@ export struct DeleteDialog {
                 .width("100%")
                 .textAlign(TextAlign.Start)
 
-            Text("<" + this.song.title + ">")
-                .fontSize(UIConfig.FONT_CONTENT)
-                .fontWeight(FontWeight.Bold)
-                .margin({ top: 32, bottom: 8 })
+            Row() {
+                Image($r("app.media.ic_normal_white_grid_audio"))
+                    .width(32).height(36)
+                Text(this.song.title)
+                    .fontSize(UIConfig.FONT_CONTENT)
+                    .fontWeight(FontWeight.Bold)
+                    .margin({ left: 12 })
+            }
+            .margin({ top: 32, bottom: 8 })
+            .justifyContent(FlexAlign.Center)
 
             Row() {
                 Fab({
