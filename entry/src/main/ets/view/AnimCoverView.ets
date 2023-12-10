@@ -1,6 +1,7 @@
 import Animator, { AnimatorResult } from '@ohos.animator'
 import { APP_THEME } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
+import { UIConfig } from '../config/UIConfig'
 
 @Component
 export struct AnimCoverView {
@@ -71,6 +72,8 @@ export struct AnimCoverView {
         }
         .width(this.viewSize)
         .height(this.viewSize)
+        .scale({ x: this.isAnim ? 1 : 0.95, y: this.isAnim ? 1 : 0.95 })
+        .animation({ duration: UIConfig.ANIM_DURATION })
     }
 
     stateChanged() {
