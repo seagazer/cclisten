@@ -37,6 +37,7 @@ export struct DeleteDialog {
                     textSize: UIConfig.FONT_BUTTON,
                     onAction: () => {
                         this.onAction(this.song)
+                        this.controller.close()
                     }
                 })
                 Fab({

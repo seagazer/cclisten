@@ -19,7 +19,6 @@ export class MediaSession {
     private static sInstance: MediaSession = null
     private player: CcPlayer = null
     private isSeeking = false
-    private loopMode: LoopMode = LoopMode.LOOP_ALL
     private playlist: PlaylistManager = PlaylistManager.get()
     private session: avSession.AVSession
     private context: common.Context
@@ -90,7 +89,7 @@ export class MediaSession {
     }
 
     setLoopMode(mode: LoopMode) {
-        this.loopMode = mode
+        this.playlist.setLoopMode(mode)
     }
 
     isPlaying(): boolean {
@@ -115,13 +114,15 @@ export class MediaSession {
     }
 
     playNext() {
-        let next = this.playlist.getNext(this.loopMode)
+        let next = this.playlist.getNext()
         Logger.d(TAG, "play next= " + JSON.stringify(next))
-        this.playSong(next)
+        if (next) {
+            this.playSong(next)
+        }
     }
 
     playPre() {
-        let pre = this.playlist.getPre(this.loopMode)
+        let pre = this.playlist.getPre()
         Logger.d(TAG, "play pre= " + JSON.stringify(pre))
         this.playSong(pre)
     }
@@ -136,7 +137,7 @@ export class MediaSession {
 
     async playSong(song: Song) {
         Logger.d(TAG, "start play= " + JSON.stringify(song))
-        this.playlist.updateCurrentSong(song)
+        this.playlist.setPlayingSong(song)
         let fd = await parseUri(song.url)
         let source = MediaSourceFactory.createUrl("fd://" + fd, song.title)
         this.player.setMediaSource(source, () => {

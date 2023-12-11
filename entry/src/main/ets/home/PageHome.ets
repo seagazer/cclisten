@@ -66,7 +66,12 @@ struct PageHome {
         builder: DeleteDialog({
             song: this.deleteSong,
             onAction: (song: Song) => {
+                if (this.currentSong.url == song.url) {
+                    this.playlistManager.setPlayingSong(null)
+                    this.mediaSession.playNext()
+                }
                 this.playlistManager.remove(song)
+                this.playingIndex = this.playlistManager.getPlayingIndex()
             }
         }),
         autoCancel: true,
@@ -98,8 +103,9 @@ struct PageHome {
             if (history) {
                 Logger.d(TAG, "read history = " + JSON.stringify(history))
                 this.loopMode = history.loopMode
-                this.mediaSession.setLoopMode(history.loopMode)
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
+                this.mediaSession.setLoopMode(history.loopMode)
+                this.playlistManager.setPlayingSong(history.song)
                 this.playingIndex = this.playlistManager.getIndex(history.song)
             }
         }
@@ -117,7 +123,7 @@ struct PageHome {
             .setTextSize(vp2px(18))
             .setCacheSize(10)
             .setAnimationDuration(400)
-            .setTextColor("#e6acacac")
+            .setTextColor("#ccc1c1c1")
             .setHighlightColor(this.theme.colorPrimary)
             .setLineSpace(vp2px(16))
             .setHighlightStyle(false)
@@ -298,11 +304,9 @@ struct PageHome {
                                 ListItem() {
                                     PlaylistItemView({
                                         data: song,
-                                        index: index,
                                         isHighLight: true,
                                         onAction: (song: Song) => {
                                             this.mediaSession.playSong(song)
-                                            // this.isShowPlaylist = false
                                         },
                                         onDelete: (song: Song) => {
                                             this.deleteAction(song)
@@ -313,11 +317,9 @@ struct PageHome {
                                 ListItem() {
                                     PlaylistItemView({
                                         data: song,
-                                        index: index,
                                         isHighLight: false,
                                         onAction: (song: Song) => {
                                             this.mediaSession.playSong(song)
-                                            // this.isShowPlaylist = false
                                         },
                                         onDelete: (song: Song) => {
                                             this.deleteAction(song)
@@ -339,15 +341,13 @@ struct PageHome {
 
                 TabContent() {
                     List({ scroller: this.playlistScroller }) {
-                        ForEach(this.playlist, (song: Song) => {
+                        ForEach(this.playlistManager.getFavouriteList(), (song: Song) => {
                             ListItem() {
                                 FavouriteItemView({ data: song, isHighLight: false,
                                     onAction: (song: Song) => {
                                         this.mediaSession.playSong(song)
-                                        this.isShowPlaylist = false
                                     },
-                                    onDelete: (song: Song) => {
-                                        this.deleteAction(song)
+                                    onFavourite: (song: Song) => {
                                     }
                                 })
                             }
@@ -479,6 +479,7 @@ struct PageHome {
 
     onLoopModeChanged() {
         this.mediaSession.setLoopMode(this.loopMode)
+        this.playingIndex = this.playlistManager.getPlayingIndex()
     }
 
     aboutToDisappear() {

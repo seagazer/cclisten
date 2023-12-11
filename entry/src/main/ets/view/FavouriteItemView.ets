@@ -10,7 +10,7 @@ export struct FavouriteItemView {
     isHighLight: boolean = false
     onAction = (song: Song) => {
     }
-    onDelete = (song: Song) => {
+    onFavourite = (song: Song) => {
     }
 
     @Styles
@@ -52,7 +52,7 @@ export struct FavouriteItemView {
                 .padding(6)
                 .fillColor("#ffa4a4a4")
                 .onClick(() => {
-                    this.onDelete(this.data)
+                    this.onFavourite(this.data)
                 })
         }
         .width("100%")

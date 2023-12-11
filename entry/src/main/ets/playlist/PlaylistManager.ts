@@ -18,8 +18,11 @@ const TAG = "[PlaylistManager]"
 export class PlaylistManager {
     private static sInstance: PlaylistManager = null
     private songList = new Array<Song>()
-    private currentIndex = 0
+    private shuttleList = new Array<Song>()
+    private playingIndex = 0
+    private playingSong: Song = null
     private playlistDb: PlaylistDb
+    private loopMode = LoopMode.LOOP_ALL
 
     private constructor() {
         this.playlistDb = new PlaylistDb()
@@ -32,18 +35,23 @@ export class PlaylistManager {
         return this.sInstance
     }
 
-    updateCurrentSong(song: Song) {
-        let index = -1
-        for (let i = 0; i < this.songList.length; i++) {
-            let cur = this.songList[i]
-            if (cur.url == song.url) {
-                index = i
-                break
-            }
+    setLoopMode(mode: LoopMode) {
+        this.loopMode = mode
+        if (mode == LoopMode.SHUFFLE) {
+            this.shuttleList = []
+            this.songList.forEach((song) => {
+                this.shuttleList.push(song)
+            })
+            this.shuttleSort(this.shuttleList)
         }
-        this.currentIndex = index
+        this.onPlaylistChanged()
+    }
+
+    setPlayingSong(song: Song) {
+        this.playingSong = song
+        this.updateIndex()
         LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
-        Logger.d(TAG, "current index= " + this.currentIndex)
+        Logger.d(TAG, "current index= " + this.playingIndex)
     }
 
     async init(context: common.Context) {
@@ -63,12 +71,6 @@ export class PlaylistManager {
         this.playlistDb.update(song)
     }
 
-    add(song: Song) {
-        this.songList.push(song)
-        this.onPlaylistChanged()
-        this.playlistDb.addSong(song)
-    }
-
     addList(songs: Array<Song>) {
         this.songList = this.songList.concat(songs)
         this.playlistDb.addSongList(songs)
@@ -76,16 +78,56 @@ export class PlaylistManager {
     }
 
     remove(song: Song) {
-        let index = this.indexOf(song)
+        let index = this.indexOf(song, this.songList)
+        let index2 = this.indexOf(song, this.shuttleList)
+        Logger.d(TAG, "remove " + index + ", " + index2)
         if (index >= 0) {
             this.songList.splice(index, 1)
+            this.shuttleList.splice(index2, 1)
             this.playlistDb.removeSong(song)
-            this.onPlaylistChanged()
         }
+        this.onPlaylistChanged()
+    }
+
+    private indexOf(song: Song, list: Array<Song>) {
+        for (let i = 0; i < list.length; i++) {
+            let url = list[i].url
+            if (url == song.url) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    private shuttleSort(list: Array<Song>) {
+        list.sort(() => {
+            return Math.random() - 0.5
+        })
     }
 
     private onPlaylistChanged() {
-        LiveData.setValue(MEDIA_SESSION_PLAYLIST, this.songList)
+        this.updateIndex()
+        if (this.loopMode == LoopMode.SHUFFLE) {
+            LiveData.setValue(MEDIA_SESSION_PLAYLIST, this.shuttleList)
+        } else {
+            LiveData.setValue(MEDIA_SESSION_PLAYLIST, this.songList)
+        }
+    }
+
+    private updateIndex() {
+        if (!this.playingSong) {
+            return
+        }
+        let index = -1
+        let list = this.loopMode == LoopMode.SHUFFLE ? this.shuttleList : this.songList
+        for (let i = 0; i < list.length; i++) {
+            let url = list[i].url
+            if (url == this.playingSong.url) {
+                index = i
+                break
+            }
+        }
+        this.playingIndex = index
     }
 
     getSong(index: number): Song {
@@ -96,25 +138,42 @@ export class PlaylistManager {
     }
 
     getIndex(song: Song): number {
-        let index = this.indexOf(song)
-        Logger.d(TAG, "song index= " + index)
-        return index
+        let list = this.loopMode == LoopMode.SHUFFLE ? this.shuttleList : this.songList
+        for (let i = 0; i < list.length; i++) {
+            let url = list[i].url
+            if (url == song.url) {
+                return i
+            }
+        }
+        return -1
     }
 
     getPlayingIndex(): number {
-        return this.currentIndex
+        return this.playingIndex
     }
 
-    getNext(mode: LoopMode): Song {
-        switch (mode) {
+    getNext(): Song {
+        switch (this.loopMode) {
             case LoopMode.LOOP_SINGLE:
-                return this.songList[this.currentIndex]
+                if (this.playingSong) {
+                    return this.playingSong
+                } else {
+                    let nextIndex = ++this.playingIndex
+                    if (nextIndex > this.songList.length - 1) {
+                        nextIndex = 0
+                    }
+                    Logger.d(TAG, "get next index= " + nextIndex)
+                    return this.songList[nextIndex]
+                }
             case LoopMode.SHUFFLE:
-            // todo get the shuffle next
-                let random = Math.round(Math.random() * this.songList.length)
-                return this.songList[random]
+                let nextSIndex = ++this.playingIndex
+                if (nextSIndex > this.shuttleList.length - 1) {
+                    nextSIndex = 0
+                }
+                Logger.d(TAG, "get next shuttle index= " + nextSIndex)
+                return this.shuttleList[nextSIndex]
             case LoopMode.LOOP_ALL:
-                let nextIndex = ++this.currentIndex
+                let nextIndex = ++this.playingIndex
                 if (nextIndex > this.songList.length - 1) {
                     nextIndex = 0
                 }
@@ -123,17 +182,19 @@ export class PlaylistManager {
         }
     }
 
-
-    getPre(mode: LoopMode): Song {
-        switch (mode) {
+    getPre(): Song {
+        switch (this.loopMode) {
             case LoopMode.LOOP_SINGLE:
-                return this.songList[this.currentIndex]
+                return this.playingSong
             case LoopMode.SHUFFLE:
-            // todo get the shuffle pre
-                let random = Math.round(Math.random() * this.songList.length)
-                return this.songList[random]
+                let preSIndex = --this.playingIndex
+                if (preSIndex < 0) {
+                    preSIndex = this.shuttleList.length - 1
+                }
+                Logger.d(TAG, "get pre shuttle index= " + preSIndex)
+                return this.shuttleList[preSIndex]
             case LoopMode.LOOP_ALL:
-                let preIndex = --this.currentIndex
+                let preIndex = --this.playingIndex
                 if (preIndex < 0) {
                     preIndex = this.songList.length - 1
                 }
@@ -142,21 +203,10 @@ export class PlaylistManager {
         }
     }
 
-    size(): number {
-        return this.songList.length
-    }
-
-    current(): Song {
-        return this.songList[this.currentIndex]
-    }
-
-    private indexOf(song: Song) {
-        for (let i = 0; i < this.songList.length; i++) {
-            let id = this.songList[i].url
-            if (id == song.url) {
-                return i
-            }
-        }
-        return -1
+    getFavouriteList(): Array<Song> {
+        let favouriteList = this.songList.filter((song) => {
+            return song.isFavourite == 1
+        })
+        return favouriteList
     }
 }

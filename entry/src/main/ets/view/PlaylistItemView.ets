@@ -7,7 +7,6 @@ import { UIConfig } from '../config/UIConfig'
 export struct PlaylistItemView {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     data?: Song = undefined
-    index: number = 0
     isHighLight: boolean = false
     onAction = (song: Song) => {
     }
@@ -28,7 +27,7 @@ export struct PlaylistItemView {
     build() {
         Row() {
             Row() {
-                Text(this.index + " " + this.data?.title + " - ")
+                Text(this.data?.title + " - ")
                     .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
