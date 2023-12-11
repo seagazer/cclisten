@@ -1,11 +1,11 @@
 {
-  "license": "MIT License",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@ohos/hypium": "1.0.11"
   },
   "author": "seagazer",
-  "name": "myapplication",
-  "description": "Please describe the basic information.",
+  "name": "Listen",
+  "description": "A lite music player for OpenHarmony & HarmonyOS.",
   "main": "",
   "version": "1.0.0",
   "dependencies": {
