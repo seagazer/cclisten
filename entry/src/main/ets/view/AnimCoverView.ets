@@ -81,8 +81,8 @@ export struct AnimCoverView {
             this.anim?.play()
             this.anim2?.play()
         } else {
-            this.anim?.pause()
-            this.anim2?.pause()
+            this.anim?.finish()
+            this.anim2?.finish()
         }
     }
 

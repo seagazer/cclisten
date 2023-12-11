@@ -23,6 +23,7 @@ import { TimerDialog } from '../view/TimerDialog';
 import { PageRouter } from '../extensions/PageRouter';
 import { DeleteDialog } from '../view/DeleteDialog';
 import { FavouriteItemView } from '../view/FavouriteItemView';
+import { SelectableImageButton } from '../view/SelectableImageButton';
 
 const TAG = "[PageHome]"
 
@@ -53,8 +54,10 @@ struct PageHome {
             onAction: (minute) => {
                 if (minute > 0) {
                     this.timerIcon = $r("app.media.ic_public_clock_filled")
+                    this.isTiming = true
                 } else {
                     this.timerIcon = $r("app.media.ic_public_clock")
+                    this.isTiming = false
                 }
             }
         }),
@@ -236,31 +239,30 @@ struct PageHome {
         .padding(8)
     }
 
+    @State isFavourite: boolean = false
+    @State isTiming: boolean = false
+
     @Builder
     ActionContainer() {
         Row() {
-            StatefulImageButton({ image: this.favouriteIcon })
+            SelectableImageButton({ image: this.favouriteIcon, isSelected: this.isFavourite })
                 .onClick(() => {
                     if (this.currentSong.isFavourite == 1) {
                         this.currentSong.isFavourite = 0
+                        this.isFavourite = false
                         this.favouriteIcon = $r("app.media.ic_public_favor")
-                        this.playlistManager.updateSong(this.currentSong)
                     } else {
                         this.currentSong.isFavourite = 1
+                        this.isFavourite = true
                         this.favouriteIcon = $r("app.media.ic_public_favor_filled")
-                        this.playlistManager.updateSong(this.currentSong)
                     }
+                    this.playlistManager.updateSong(this.currentSong)
                 })
-            // StatelessImageButton({ image: $r("app.media.ic_public_send") })
-            //     .onClick(() => {
-            //         // todo distribute share
-            //         toast("TODO")
-            //     })
-            StatefulImageButton({ image: this.timerIcon })
+            SelectableImageButton({ image: this.timerIcon, isSelected: this.isTiming })
                 .onClick(() => {
                     this.timerDialogController.open()
                 })
-            StatefulImageButton({ image: this.lyricIcon })
+            SelectableImageButton({ image: this.lyricIcon, isSelected: this.isShowLyric })
                 .onClick(() => {
                     if (this.isShowLyric) {
                         this.isShowLyric = false
@@ -466,8 +468,10 @@ struct PageHome {
         // refresh favourite ui
         if (this.currentSong.isFavourite == 1) {
             this.favouriteIcon = $r("app.media.ic_public_favor_filled")
+            this.isFavourite = true
         } else {
             this.favouriteIcon = $r("app.media.ic_public_favor")
+            this.isFavourite = false
         }
     }
 
