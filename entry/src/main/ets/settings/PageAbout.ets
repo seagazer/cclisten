@@ -33,7 +33,7 @@ struct PageAbout {
     build() {
         Column() {
             Column() {
-                Image($r("app.media.ic_launcher_large")).width(96).height(96)
+                Image($r("app.media.ic_launcher")).width(96).height(96)
 
                 Text(this.appName).fontWeight(FontWeight.Bold).fontSize(UIConfig.FONT_TITLE).margin({ top: 32 })
 

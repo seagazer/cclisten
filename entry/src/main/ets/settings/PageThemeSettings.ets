@@ -98,7 +98,7 @@ export struct PageThemeSettings {
                         .width(40)
                         .height(40)
                         .margin({ left: 20 })
-                        .border({ radius: 100 ,color :Color.Blue})
+                        .border({ radius: 100, color: Color.Black, width: this.selectIndex == -1 ? 1 : 0 })
                         .scale({
                             x: this.selectIndex == -1 ? this.scaleSize : 1,
                             y: this.selectIndex == -1 ? this.scaleSize : 1

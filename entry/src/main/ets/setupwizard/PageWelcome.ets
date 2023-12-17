@@ -34,7 +34,7 @@ export struct PageWelcome {
                     }
                 })
 
-            Text("欢迎使用Listen")
+            Text("欢迎使用轻听")
                 .fontSize(UIConfig.FONT_HEADER)
                 .fontWeight(FontWeight.Medium)
                 .fontColor(this.theme.colorPrimary)

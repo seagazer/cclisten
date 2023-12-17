@@ -27,12 +27,12 @@ export struct PlaylistItemView {
     build() {
         Row() {
             Row() {
-                Text(this.data?.title + " - ")
+                Text(this.data!.title + " - ")
                     .fontSize(18)
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#000000")
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(this.data?.artist ? this.data?.artist : "未知")
+                Text(this.data!.artist ? this.data!.artist : "未知")
                     .fontColor(this.isHighLight ? this.theme.colorPrimary : "#ffa4a4a4")
                     .fontSize(16)
                     .maxLines(1)

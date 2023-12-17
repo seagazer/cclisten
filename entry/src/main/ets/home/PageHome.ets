@@ -7,7 +7,13 @@ import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
 import { Song } from '../bean/Song';
-import { APP_THEME, LiveData, MEDIA_SESSION_CURRENT_SONG, MEDIA_SESSION_PLAYLIST } from '../extensions/LiveData';
+import {
+    APP_THEME,
+    LiveData,
+    MEDIA_SESSION_CURRENT_SONG,
+    MEDIA_SESSION_FAVOURITE_LIST,
+    MEDIA_SESSION_PLAYLIST
+} from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import { PlaylistItemView } from '../view/PlaylistItemView';
 import { PlaylistManager } from '../playlist/PlaylistManager';
@@ -17,7 +23,6 @@ import { History } from '../bean/History';
 import { LoopMode } from '../player/LoopMode';
 import { AnimCoverView } from '../view/AnimCoverView';
 import { MediaProgressView } from '../view/MediaProgressView';
-import { StatefulImageButton } from '../view/StatefulImageButton';
 import { StatelessImageButton } from '../view/StatelessImageButton';
 import { TimerDialog } from '../view/TimerDialog';
 import { PageRouter } from '../extensions/PageRouter';
@@ -34,6 +39,7 @@ struct PageHome {
     @StorageLink(APP_THEME) @Watch("onThemeChanged") theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("", "", "", 0)
     @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
+    @StorageLink(MEDIA_SESSION_FAVOURITE_LIST) favouriteList: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State isPlaying: boolean = false
     @State playingIndex: number = 0
@@ -106,9 +112,11 @@ struct PageHome {
             if (history) {
                 Logger.d(TAG, "read history = " + JSON.stringify(history))
                 this.loopMode = history.loopMode
-                LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, history.song)
+                // the history song is not the same object as the song in playlist
+                let index = this.playlistManager.getIndex(history.song)
+                let song = this.playlistManager.getSong(index)
                 this.mediaSession.setLoopMode(history.loopMode)
-                this.playlistManager.setPlayingSong(history.song)
+                this.playlistManager.setPlayingSong(song)
                 this.playingIndex = this.playlistManager.getIndex(history.song)
             }
         }
@@ -251,12 +259,13 @@ struct PageHome {
                         this.currentSong.isFavourite = 0
                         this.isFavourite = false
                         this.favouriteIcon = $r("app.media.ic_public_favor")
+                        this.playlistManager.setFavouriteState(this.currentSong, false)
                     } else {
                         this.currentSong.isFavourite = 1
                         this.isFavourite = true
                         this.favouriteIcon = $r("app.media.ic_public_favor_filled")
+                        this.playlistManager.setFavouriteState(this.currentSong, true)
                     }
-                    this.playlistManager.updateSong(this.currentSong)
                 })
             SelectableImageButton({ image: this.timerIcon, isSelected: this.isTiming })
                 .onClick(() => {
@@ -308,10 +317,12 @@ struct PageHome {
                                         data: song,
                                         isHighLight: true,
                                         onAction: (song: Song) => {
-                                            this.mediaSession.playSong(song)
+                                            let realSong = this.playlistManager.getRealSong(song)
+                                            this.mediaSession.playSong(realSong)
                                         },
                                         onDelete: (song: Song) => {
-                                            this.deleteAction(song)
+                                            let realSong = this.playlistManager.getRealSong(song)
+                                            this.deleteAction(realSong)
                                         }
                                     })
                                 }
@@ -321,10 +332,12 @@ struct PageHome {
                                         data: song,
                                         isHighLight: false,
                                         onAction: (song: Song) => {
-                                            this.mediaSession.playSong(song)
+                                            let realSong = this.playlistManager.getRealSong(song)
+                                            this.mediaSession.playSong(realSong)
                                         },
                                         onDelete: (song: Song) => {
-                                            this.deleteAction(song)
+                                            let realSong = this.playlistManager.getRealSong(song)
+                                            this.deleteAction(realSong)
                                         }
                                     })
                                 }
@@ -343,13 +356,15 @@ struct PageHome {
 
                 TabContent() {
                     List({ scroller: this.playlistScroller }) {
-                        ForEach(this.playlistManager.getFavouriteList(), (song: Song) => {
+                        ForEach(this.favouriteList, (song: Song) => {
                             ListItem() {
                                 FavouriteItemView({ data: song, isHighLight: false,
                                     onAction: (song: Song) => {
-                                        this.mediaSession.playSong(song)
+                                        let realSong = this.playlistManager.getRealSong(song)
+                                        this.mediaSession.playSong(realSong)
                                     },
                                     onFavourite: (song: Song) => {
+                                        // todo
                                     }
                                 })
                             }
