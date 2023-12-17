@@ -27,17 +27,25 @@ struct PageAbout {
     async getAppInfo() {
         let bundleInfo = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT)
         this.appVersion = "Version " + bundleInfo.versionName
+        this.appName = await getContext(this).resourceManager.getStringValue($r("app.string.EntryAbility_label"))
         Logger.d(TAG, "The app version is " + this.appVersion + ", app name is " + this.appName)
     }
 
     build() {
         Column() {
             Column() {
-                Image($r("app.media.ic_launcher")).width(96).height(96)
+                Image($r("app.media.logo"))
+                    .width(96)
+                    .height(96)
 
-                Text(this.appName).fontWeight(FontWeight.Bold).fontSize(UIConfig.FONT_TITLE).margin({ top: 32 })
+                Text(this.appName)
+                    .fontWeight(FontWeight.Bold)
+                    .fontSize(UIConfig.FONT_TITLE)
+                    .margin({ top: 32 })
 
-                Text(this.appVersion).fontSize(UIConfig.FONT_SUB_TITLE).margin({ top: 4 })
+                Text(this.appVersion)
+                    .fontSize(UIConfig.FONT_SUB_TITLE)
+                    .margin({ top: 4 })
             }
             .width("100%")
             .layoutWeight(1)
@@ -45,10 +53,12 @@ struct PageAbout {
 
             Text(Developer)
                 .fontStyle(FontStyle.Italic)
-                .textAlign(TextAlign.Center).fontSize(UIConfig.FONT_CONTENT)
+                .textAlign(TextAlign.Center)
+                .fontSize(UIConfig.FONT_CONTENT)
             Text(Github)
                 .fontColor("#cc8a8a8a")
-                .textAlign(TextAlign.Center).fontSize(UIConfig.FONT_SUB_CONTENT)
+                .textAlign(TextAlign.Center)
+                .fontSize(UIConfig.FONT_SUB_CONTENT)
                 .margin({ top: 4, bottom: 16 })
         }
         .width('100%')
