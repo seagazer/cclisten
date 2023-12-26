@@ -2,7 +2,7 @@ import router from '@ohos.router';
 import { DEFAULT_THEME, Theme } from '../theme/Theme';
 import { MediaController } from '../view/MediaController';
 import { LyricController, LyricView } from '@seagazer/cclyric';
-import { dimColor, navigationTo, toast } from '../extensions/Extensions';
+import { dimColor } from '../extensions/Extensions';
 import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
@@ -15,7 +15,6 @@ import {
     MEDIA_SESSION_PLAYLIST
 } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
-import { PlaylistItemView } from '../view/PlaylistItemView';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { PlayHistoryManager } from '../history/PlayHistoryManager';
 import { UIConfig } from '../config/UIConfig';
@@ -23,15 +22,16 @@ import { History } from '../bean/History';
 import { LoopMode } from '../player/LoopMode';
 import { AnimCoverView } from '../view/AnimCoverView';
 import { MediaProgressView } from '../view/MediaProgressView';
-import { StatelessImageButton } from '../view/StatelessImageButton';
 import { TimerDialog } from '../view/TimerDialog';
-import { PageRouter } from '../extensions/PageRouter';
 import { DeleteDialog } from '../view/DeleteDialog';
-import { FavouriteItemView } from '../view/FavouriteItemView';
 import { SelectableImageButton } from '../view/SelectableImageButton';
+import common from '@ohos.app.ability.common';
+import { CountDownManager } from './CountDownManager';
+import { PlaylistContainer } from '../view/PlaylistContainer';
+import { MenuMoreButton } from '../view/MenuMoreButton';
+import { LyricButton } from '../view/LyricButton';
 
 const TAG = "[PageHome]"
-
 
 @Entry
 @Component
@@ -49,21 +49,32 @@ struct PageHome {
     @State isNotPlayed: boolean = true
     @State deleteSong?: Song = undefined
     @State curTabIndex: number = 0
+    @State isFavourite: boolean = false
+    @State isCountDowning: boolean = false
+    @State favouriteIcon: Resource = $r("app.media.ic_public_favor")
+    @State timerIcon: Resource = $r("app.media.ic_public_clock")
+    @State countDownText: string = ""
     private mediaSession: MediaSession = MediaSession.get()
     private historyManager: PlayHistoryManager = PlayHistoryManager.get()
     private playlistManager: PlaylistManager = PlaylistManager.get()
     private lyricController: LyricController = new LyricController()
     private lyricParser: FileLyricParser = new FileLyricParser()
-    private playlistScroller = new Scroller()
+    private countDownManager: CountDownManager = new CountDownManager((time) => {
+        this.countDownText = time
+    })
     private timerDialogController = new CustomDialogController({
         builder: TimerDialog({
+            countDown: $countDownText,
             onAction: (minute) => {
+                Logger.i(TAG, "count down minute= " + minute)
                 if (minute > 0) {
                     this.timerIcon = $r("app.media.ic_public_clock_filled")
-                    this.isTiming = true
+                    this.isCountDowning = true
+                    this.countDownManager.startCountDownThread(getContext(this) as common.UIAbilityContext, minute)
                 } else {
                     this.timerIcon = $r("app.media.ic_public_clock")
-                    this.isTiming = false
+                    this.isCountDowning = false
+                    this.countDownManager.stopCountDownThread()
                 }
             }
         }),
@@ -87,39 +98,34 @@ struct PageHome {
         alignment: DialogAlignment.Bottom,
         offset: { dx: 0, dy: -32 }
     })
-    @State favouriteIcon: Resource = $r("app.media.ic_public_favor")
-    @State timerIcon: Resource = $r("app.media.ic_public_clock")
-    @State lyricIcon: Resource = $r("app.media.ic_public_text")
-
-    pageTransition() {
-        PageTransitionEnter({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
-        PageTransitionExit({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
-    }
 
     aboutToAppear() {
         router.clear()
         let param = router.getParams() as Record<string, Object>
         Logger.d(TAG, "router param= " + JSON.stringify(param))
-        if (param.song) {
+        if (param.song) { // app init play
             let song = param.song as Song
             if (song) {
                 this.mediaSession.playSong(song)
                 LiveData.setValue(MEDIA_SESSION_CURRENT_SONG, song)
                 this.isNotPlayed = false
             }
-        } else if (param.history) {
+        } else if (param.history) { // app secondly play
             let history = param.history as History
             if (history) {
                 Logger.d(TAG, "read history = " + JSON.stringify(history))
                 this.loopMode = history.loopMode
-                // the history song is not the same object as the song in playlist
-                let index = this.playlistManager.getIndex(history.song)
-                let song = this.playlistManager.getSong(index)
                 this.mediaSession.setLoopMode(history.loopMode)
-                this.playlistManager.setPlayingSong(song)
+                // the history song is not the same object as the song in playlist
                 this.playingIndex = this.playlistManager.getIndex(history.song)
+                let song = this.playlistManager.getSong(this.playingIndex)
+                this.playlistManager.setPlayingSong(song)
             }
         }
+        this.initPlayer()
+    }
+
+    private initPlayer() {
         this.mediaSession.initAvSession(getContext(this))
         this.mediaSession.onProgressChanged((position) => {
             this.currentPosition = position
@@ -173,82 +179,19 @@ struct PageHome {
         }
     }
 
-    @Builder
-    MediaCoverView() {
-        Column() {
-            // cover image
-            AnimCoverView({
-                isAnim: this.isPlaying && !this.isShowLyric,
-                viewSize: 360,
-                animEdge: 64,
-                animDuration: 4000
-            })
-        }
-        .width("100%")
-        .height("100%")
-        .justifyContent(FlexAlign.SpaceAround)
-        .visibility(this.isShowLyric ? Visibility.Hidden : Visibility.Visible)
+    private favourite() {
+        this.currentSong.isFavourite = 1
+        this.isFavourite = true
+        this.favouriteIcon = $r("app.media.ic_public_favor_filled")
+        this.playlistManager.setFavouriteState(this.currentSong, true)
     }
 
-    @Builder
-    LyricContainer() {
-        Column() {
-            LyricView({ lyricController: this.lyricController })
-        }
-        .width("100%")
-        .height("100%")
-        .visibility(this.isShowLyric ? Visibility.Visible : Visibility.Hidden)
+    private unFavourite() {
+        this.currentSong.isFavourite = 0
+        this.isFavourite = false
+        this.favouriteIcon = $r("app.media.ic_public_favor")
+        this.playlistManager.setFavouriteState(this.currentSong, false)
     }
-
-    @Builder
-    MenuMore() {
-        Column() {
-            Row() {
-                Image($r("app.media.ic_public_themes")).width(24).height(24).margin({ right: 12 })
-                Text("主题设置").fontSize(16)
-            }
-            .width('100%')
-            .height(32)
-            .justifyContent(FlexAlign.Start)
-            .alignItems(VerticalAlign.Center)
-            .onClick(() => {
-                navigationTo(PageRouter.PAGE_SETTINGS_THEME, {
-                    THEME_COLOR: this.theme.colorPrimary
-                })
-            })
-
-            Divider().width("100%").height(1).margin({ top: 8, bottom: 8 })
-            Row() {
-                Image($r("app.media.ic_public_albums")).width(24).height(24).margin({ right: 12 })
-                Text("媒体库").fontSize(16)
-            }
-            .width('100%')
-            .height(32)
-            .justifyContent(FlexAlign.Start)
-            .alignItems(VerticalAlign.Center)
-            .onClick(() => {
-                toast("TODO")
-            })
-
-            Divider().width("100%").height(1).margin({ top: 8, bottom: 8 })
-            Row() {
-                Image($r("app.media.ic_public_app")).width(24).height(24).margin({ right: 12 })
-                Text("关于").fontSize(16)
-            }
-            .width('100%')
-            .height(32)
-            .justifyContent(FlexAlign.Start)
-            .alignItems(VerticalAlign.Center)
-            .onClick(() => {
-                navigationTo(PageRouter.PAGE_SETTINGS_ABOUT)
-            })
-        }
-        .width(160)
-        .padding(8)
-    }
-
-    @State isFavourite: boolean = false
-    @State isTiming: boolean = false
 
     @Builder
     ActionContainer() {
@@ -256,147 +199,52 @@ struct PageHome {
             SelectableImageButton({ image: this.favouriteIcon, isSelected: this.isFavourite })
                 .onClick(() => {
                     if (this.currentSong.isFavourite == 1) {
-                        this.currentSong.isFavourite = 0
-                        this.isFavourite = false
-                        this.favouriteIcon = $r("app.media.ic_public_favor")
-                        this.playlistManager.setFavouriteState(this.currentSong, false)
+                        this.unFavourite()
                     } else {
-                        this.currentSong.isFavourite = 1
-                        this.isFavourite = true
-                        this.favouriteIcon = $r("app.media.ic_public_favor_filled")
-                        this.playlistManager.setFavouriteState(this.currentSong, true)
+                        this.favourite()
                     }
                 })
-            SelectableImageButton({ image: this.timerIcon, isSelected: this.isTiming })
+            SelectableImageButton({ image: this.timerIcon, isSelected: this.isCountDowning })
                 .onClick(() => {
                     this.timerDialogController.open()
                 })
-            SelectableImageButton({ image: this.lyricIcon, isSelected: this.isShowLyric })
-                .onClick(() => {
-                    if (this.isShowLyric) {
-                        this.isShowLyric = false
-                        this.lyricIcon = $r('app.media.ic_public_text')
-                    } else {
-                        if (this.isShowPlaylist) {
-                            return
-                        }
-                        this.isShowLyric = true
-                        this.lyricController.updatePosition(this.currentPosition)
-                        this.lyricIcon = $r('app.media.ic_public_text_filled')
-                    }
-                })
-            StatelessImageButton({ image: $r("app.media.ic_public_more") })
-                .bindMenu(this.MenuMore)
+            LyricButton({ isShowLyric: $isShowLyric, isShowPlaylist: $isShowPlaylist, onAction: () => {
+                this.lyricController.updatePosition(this.currentPosition)
+            } })
+            MenuMoreButton()
         }
         .width("100%")
         .justifyContent(FlexAlign.SpaceBetween)
         .margin({ top: 8, bottom: 12 })
     }
 
-    private deleteAction(song: Song) {
-        this.deleteSong = song
-        this.deleteDialogController.open()
-    }
-
     @Builder
-    TabTitle(title: string, index: number) {
-        Text(title).fontSize(UIConfig.FONT_SUB_TITLE)
-            .fontColor(this.curTabIndex == index ? this.theme.colorPrimary : "#cc3e3e3e")
-    }
-
-    @Builder
-    PlaylistContainer() {
-        Panel(true) {
-            Tabs() {
-                TabContent() {
-                    List({ scroller: this.playlistScroller }) {
-                        ForEach(this.playlist, (song: Song, index: number) => {
-                            if (this.playingIndex == index) {
-                                ListItem() {
-                                    PlaylistItemView({
-                                        data: song,
-                                        isHighLight: true,
-                                        onAction: (song: Song) => {
-                                            let realSong = this.playlistManager.getRealSong(song)
-                                            this.mediaSession.playSong(realSong)
-                                        },
-                                        onDelete: (song: Song) => {
-                                            let realSong = this.playlistManager.getRealSong(song)
-                                            this.deleteAction(realSong)
-                                        }
-                                    })
-                                }
-                            } else {
-                                ListItem() {
-                                    PlaylistItemView({
-                                        data: song,
-                                        isHighLight: false,
-                                        onAction: (song: Song) => {
-                                            let realSong = this.playlistManager.getRealSong(song)
-                                            this.mediaSession.playSong(realSong)
-                                        },
-                                        onDelete: (song: Song) => {
-                                            let realSong = this.playlistManager.getRealSong(song)
-                                            this.deleteAction(realSong)
-                                        }
-                                    })
-                                }
-                            }
-                        })
-                    }
-                    .padding({ left: 16, right: 16, top: 8 })
-                    .scrollBar(BarState.Auto)
-                    .width("100%")
-                    .height("100%")
-                    .onAppear(() => {
-                        this.playlistScroller.scrollToIndex(this.playingIndex)
-                    })
-                }.tabBar(this.TabTitle("播放列表", 0))
-                .tabIndex(0)
-
-                TabContent() {
-                    List({ scroller: this.playlistScroller }) {
-                        ForEach(this.favouriteList, (song: Song) => {
-                            ListItem() {
-                                FavouriteItemView({ data: song, isHighLight: false,
-                                    onAction: (song: Song) => {
-                                        let realSong = this.playlistManager.getRealSong(song)
-                                        this.mediaSession.playSong(realSong)
-                                    },
-                                    onFavourite: (song: Song) => {
-                                        // todo
-                                    }
-                                })
-                            }
-                        })
-                    }
-                    .padding({ left: 16, right: 16, top: 8 })
-                    .scrollBar(BarState.Auto)
-                    .width("100%")
-                    .height("100%")
-                }.tabBar(this.TabTitle("我的收藏", 1))
-                .tabIndex(1)
+    CenterContainer() {
+        Stack() {
+            // cover
+            Column() {
+                AnimCoverView({
+                    isAnim: this.isPlaying && !this.isShowLyric,
+                    viewSize: 360,
+                    animEdge: 64,
+                    animDuration: 4000
+                })
             }
-            .barMode(BarMode.Fixed)
-            .barHeight(32)
-            .animationDuration(300)
-            .onChange((index) => {
-                this.curTabIndex = index
-            })
-            .onAppear(() => {
-                this.curTabIndex = 0
-            })
+            .width("100%")
+            .height("100%")
+            .justifyContent(FlexAlign.SpaceAround)
+            .visibility(this.isShowLyric ? Visibility.Hidden : Visibility.Visible)
+
+            // lyricView
+            Column() {
+                LyricView({ lyricController: this.lyricController })
+            }
+            .width("100%")
+            .height("100%")
+            .visibility(this.isShowLyric ? Visibility.Visible : Visibility.Hidden)
         }
-        .mode(PanelMode.Full)
-        .type(PanelType.Minibar)
-        .fullHeight(500)
-        .miniHeight(0)
-        .backgroundColor("#fff8f8f8")
-        .onChange((_, __, mode) => {
-            if (mode == PanelMode.Mini) {
-                this.isShowPlaylist = false
-            }
-        })
+        .width("100%")
+        .layoutWeight(1)
     }
 
     build() {
@@ -404,15 +252,8 @@ struct PageHome {
             Column() {
                 // media title
                 this.MediaTitle()
-                Stack() {
-                    // cover
-                    this.MediaCoverView()
-                    // lyricView
-                    this.LyricContainer()
-                }
-                .width("100%")
-                .layoutWeight(1)
-
+                // center
+                this.CenterContainer()
                 // actions buttons
                 this.ActionContainer()
                 // progress
@@ -456,12 +297,28 @@ struct PageHome {
 
             // playlist
             if (this.isShowPlaylist) {
-                this.PlaylistContainer()
+                PlaylistContainer({
+                    isShow: this.isShowPlaylist,
+                    playingIndex: this.playingIndex,
+                    onAction: (song: Song) => {
+                        let realSong = this.playlistManager.getRealSong(song.url)
+                        this.mediaSession.playSong(realSong)
+                    },
+                    onDelete: (song: Song) => {
+                        let realSong = this.playlistManager.getRealSong(song.url)
+                        this.deleteAction(realSong)
+                    }
+                })
             }
         }
         .alignContent(Alignment.Bottom)
         .width('100%')
         .height('100%')
+    }
+
+    private deleteAction(song: Song) {
+        this.deleteSong = song
+        this.deleteDialogController.open()
     }
 
     onSongChanged() {
@@ -490,12 +347,6 @@ struct PageHome {
         }
     }
 
-    private async saveHistory() {
-        let history = new History(this.loopMode, this.currentSong)
-        Logger.d(TAG, "save play history= " + JSON.stringify(history))
-        await this.historyManager.saveHistory(history)
-    }
-
     onLoopModeChanged() {
         this.mediaSession.setLoopMode(this.loopMode)
         this.playingIndex = this.playlistManager.getPlayingIndex()
@@ -503,5 +354,17 @@ struct PageHome {
 
     aboutToDisappear() {
         this.saveHistory()
+        this.countDownManager.stopCountDownThread()
+    }
+
+    private async saveHistory() {
+        let history = new History(this.loopMode, this.currentSong)
+        Logger.d(TAG, "save play history= " + JSON.stringify(history))
+        await this.historyManager.saveHistory(history)
+    }
+
+    pageTransition() {
+        PageTransitionEnter({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
+        PageTransitionExit({ duration: 300 }).opacity(0).scale({ x: 0.75, y: 0.75 })
     }
 }

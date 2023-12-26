@@ -1,6 +1,5 @@
 import { UIConfig } from '../config/UIConfig'
-import { toast } from '../extensions/Extensions'
-import { APP_THEME } from '../extensions/LiveData'
+import { APP_THEME, COUNT_DOWN_TIMER, LiveData } from '../extensions/LiveData'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 import { Fab } from './Fab'
 
@@ -8,14 +7,21 @@ import { Fab } from './Fab'
 @CustomDialog
 export struct TimerDialog {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
-    private scaleSize = 1.1
+    @StorageLink(COUNT_DOWN_TIMER) selectIndex: number = -1
+    @Link countDown: string
+    @State isCountDowning: boolean = false
+    @State selectTime: string = "选择时间"
+    private timeList: Array<number> = [10, 20, 30, 45, 60, 90]
+    private scaleSize = 1.15
     controller: CustomDialogController
     onAction: (minute: number) => void = () => {
     }
-    @State timeList: Array<number> = [10, 20, 30, 45, 60, 90]
-    @State selectIndex: number = -1
-    @State selectTime: string = "选择时间"
     private currentSelectDuration: number = -1
+
+    aboutToAppear() {
+        this.isCountDowning = this.countDown != ""
+        this.currentSelectDuration = this.timeList[this.selectIndex]
+    }
 
     build() {
         Column() {
@@ -23,7 +29,11 @@ export struct TimerDialog {
                 .fontSize(UIConfig.FONT_SUB_TITLE)
 
             Row() {
-                Text(this.selectTime).fontSize(UIConfig.FONT_CONTENT).layoutWeight(1)
+                if (this.isCountDowning) {
+                    Text(this.countDown).fontSize(UIConfig.FONT_CONTENT).layoutWeight(1)
+                } else {
+                    Text(this.selectTime).fontSize(UIConfig.FONT_CONTENT).layoutWeight(1)
+                }
                 Toggle({ type: ToggleType.Switch, isOn: this.selectIndex != -1 }).selectedColor(this.theme.colorPrimary)
                     .onChange((isOn) => {
                         if (isOn) {
@@ -36,6 +46,7 @@ export struct TimerDialog {
                             this.selectIndex = -1
                             this.currentSelectDuration = -1
                             this.selectTime = "选择时间"
+                            this.isCountDowning = false
                         }
                     })
             }.padding(16)
@@ -72,12 +83,9 @@ export struct TimerDialog {
                     text: "确认",
                     textSize: UIConfig.FONT_BUTTON,
                     onAction: () => {
-                        if (this.currentSelectDuration > 0) {
-                            this.onAction(this.currentSelectDuration)
-                            this.controller.close()
-                        } else {
-                            toast("请选择时间")
-                        }
+                        LiveData.setValue<number>(COUNT_DOWN_TIMER, this.selectIndex)
+                        this.onAction(this.currentSelectDuration)
+                        this.controller.close()
                     }
                 })
                 Fab({
@@ -85,7 +93,6 @@ export struct TimerDialog {
                     textSize: UIConfig.FONT_BUTTON,
                     marginSize: { left: 32 },
                     onAction: () => {
-                        this.onAction(0)
                         this.controller.close()
                     }
                 })

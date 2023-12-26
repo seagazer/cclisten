@@ -1,11 +1,15 @@
 {
   "apiType": 'stageMode',
   "buildOption": {
+    "sourceOption": {
+      "workers": [
+        './src/main/ets/workers/TimerWorker.ts'
+      ]
+    }
   },
   "targets": [
     {
       "name": "default",
-      //"runtimeOS": "OpenHarmony"
     },
     {
       "name": "ohosTest",

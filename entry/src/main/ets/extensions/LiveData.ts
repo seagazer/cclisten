@@ -12,7 +12,10 @@ export class LiveData {
 
 export const APP_THEME = "APP_THEME"
 
+export const COUNT_DOWN_TIMER = "countDownIndex"
+
 export const MEDIA_SESSION_CURRENT_SONG = "CURRENT_SONG"
 
 export const MEDIA_SESSION_PLAYLIST = "PLAYLIST"
+
 export const MEDIA_SESSION_FAVOURITE_LIST = "FAVOURITE_LIST"

@@ -50,7 +50,7 @@ export struct FavouriteItemView {
                 .width(36)
                 .height(36)
                 .padding(6)
-                .fillColor("#ffa4a4a4")
+                .fillColor(this.theme.colorPrimary)
                 .onClick(() => {
                     this.onFavourite(this.data)
                 })

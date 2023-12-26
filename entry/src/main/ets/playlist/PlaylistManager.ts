@@ -10,9 +10,7 @@ import { LoopMode } from '../player/LoopMode'
 import { PlaylistDb } from './PlaylistDb'
 import common from '@ohos.app.ability.common'
 
-
 const TAG = "[PlaylistManager]"
-
 
 /**
  * The manager to manage a playlist of user.
@@ -22,6 +20,7 @@ const TAG = "[PlaylistManager]"
  */
 export class PlaylistManager {
     private static sInstance: PlaylistManager = null
+    private songMap = new Map<string, Song>()
     private songList = new Array<Song>()
     private shuttleList = new Array<Song>()
     private favouriteList = new Array<Song>()
@@ -66,9 +65,13 @@ export class PlaylistManager {
             let songList = await this.playlistDb.getPlaylist()
             if (songList) {
                 this.songList = songList
-                this.favouriteList = this.songList.filter((song) => {
-                    return song.isFavourite == 1
-                })
+                for (let i = 0; i < this.songList.length; i++) {
+                    let song = this.songList[i]
+                    this.songMap.set(song.url, song)
+                    if (song.isFavourite == 1) {
+                        this.favouriteList.push(song)
+                    }
+                }
                 this.onPlaylistChanged()
             }
         } catch (err) {
@@ -93,34 +96,38 @@ export class PlaylistManager {
 
     addList(songs: Array<Song>) {
         this.songList = this.songList.concat(songs)
+        for (let i = 0; i < this.songList.length; i++) {
+            let song = this.songList[i]
+            this.songMap.set(song.url, song)
+            if (song.isFavourite == 1) {
+                this.favouriteList.push(song)
+            }
+        }
         this.playlistDb.addSongList(songs)
         this.onPlaylistChanged()
     }
 
     remove(song: Song) {
+        Logger.d(TAG, "remove song = " + song.title)
         let index = this.indexOf(song, this.songList)
         let index2 = this.indexOf(song, this.shuttleList)
+        this.songMap.delete(song.url)
         if (song.isFavourite == 1) {
             let index3 = this.indexOf(song, this.favouriteList)
             this.favouriteList.splice(index3, 1)
         }
-        Logger.d(TAG, "remove " + index + ", " + index2)
-        if (index >= 0 && index2 >= 0) {
+        if (index >= 0) {
             this.songList.splice(index, 1)
-            this.shuttleList.splice(index2, 1)
-            this.playlistDb.removeSong(song)
         }
+        if (index2 >= 0) {
+            this.shuttleList.splice(index2, 1)
+        }
+        this.playlistDb.removeSong(song)
         this.onPlaylistChanged()
     }
 
-    getRealSong(song: Song): Song {
-        for (let i = 0; i < this.songList.length; i++) {
-            let cur = this.songList[i]
-            if (cur.url == song.url) {
-                return cur
-            }
-        }
-        return null
+    getRealSong(url: string): Song {
+        return this.songMap.get(url)
     }
 
     private indexOf(song: Song, list: Array<Song>) {
