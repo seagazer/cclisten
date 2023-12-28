@@ -4,6 +4,8 @@ import common from '@ohos.app.ability.common'
 
 const TAG = "[CountDownManager]"
 
+export const MSG_SHUTDOWN = "shutDown"
+
 /**
  * The manager to create or destroy a thread to do auto shut down task.
  *
@@ -23,7 +25,7 @@ export class CountDownManager {
         this.stopCountDownThread()
         this.countDownThread = new worker.ThreadWorker("entry/ets/workers/TimerWorker.ts")
         this.countDownThread!.onmessage = (event: MessageEvents) => {
-            if (event.data == "shutDown") {
+            if (event.data == MSG_SHUTDOWN) {
                 Logger.w(TAG, "count down finish, going shutDown!")
                 this.stopCountDownThread()
                 context.terminateSelf()

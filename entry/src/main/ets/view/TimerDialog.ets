@@ -17,6 +17,7 @@ export struct TimerDialog {
     onAction: (minute: number) => void = () => {
     }
     private currentSelectDuration: number = -1
+    private isUserChanged = false
 
     aboutToAppear() {
         this.isCountDowning = this.countDown != ""
@@ -36,6 +37,7 @@ export struct TimerDialog {
                 }
                 Toggle({ type: ToggleType.Switch, isOn: this.selectIndex != -1 }).selectedColor(this.theme.colorPrimary)
                     .onChange((isOn) => {
+                        this.isUserChanged = true
                         if (isOn) {
                             if (this.selectIndex == -1) {
                                 this.selectIndex = 0
@@ -68,6 +70,8 @@ export struct TimerDialog {
                             duration: UIConfig.ANIM_DURATION
                         })
                         .onClick(() => {
+                            this.isUserChanged = true
+                            this.isCountDowning = false
                             this.selectIndex = index
                             this.currentSelectDuration = this.timeList[this.selectIndex]
                             this.selectTime = this.currentSelectDuration + "min"
@@ -83,8 +87,10 @@ export struct TimerDialog {
                     text: "确认",
                     textSize: UIConfig.FONT_BUTTON,
                     onAction: () => {
-                        LiveData.setValue<number>(COUNT_DOWN_TIMER, this.selectIndex)
-                        this.onAction(this.currentSelectDuration)
+                        if (this.isUserChanged) {
+                            LiveData.setValue<number>(COUNT_DOWN_TIMER, this.selectIndex)
+                            this.onAction(this.currentSelectDuration)
+                        }
                         this.controller.close()
                     }
                 })

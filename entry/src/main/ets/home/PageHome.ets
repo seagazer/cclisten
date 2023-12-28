@@ -78,7 +78,7 @@ struct PageHome {
                 }
             }
         }),
-        autoCancel: false,
+        autoCancel: true,
         alignment: DialogAlignment.Bottom,
         offset: { dx: 0, dy: -32 }
     })

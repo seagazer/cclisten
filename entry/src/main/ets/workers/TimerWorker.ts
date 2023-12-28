@@ -1,4 +1,5 @@
 import worker, { ThreadWorkerGlobalScope, MessageEvents, ErrorEvent } from '@ohos.worker';
+import { MSG_SHUTDOWN } from '../home/CountDownManager';
 
 
 /**
@@ -28,13 +29,13 @@ workerPort.onmessage = function (e: MessageEvents) {
     clearInterval(timer)
     timer = setInterval(() => {
         seconds--
+        workerPort.postMessage(seconds2text(seconds))
         if (seconds == 0) {
             clearInterval(timer)
-            workerPort.postMessage("shutDown")
+            workerPort.postMessage(MSG_SHUTDOWN)
             return
         }
-        let str = seconds2text(seconds)
-        workerPort.postMessage(str)
+        workerPort.postMessage(seconds2text(seconds))
     }, 1000)
 }
 
