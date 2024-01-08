@@ -6,6 +6,7 @@
     "setupwizard/PageMediaLibrary",
     "home/PageHome",
     "settings/PageThemeSettings",
+    "settings/PageMediaLibrarySettings",
     "settings/PageAbout"
   ]
 }

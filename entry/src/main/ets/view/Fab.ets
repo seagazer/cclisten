@@ -58,5 +58,6 @@ export struct Fab {
             .animation({
                 duration: UIConfig.ANIM_DURATION
             })
+            .clickEffect({ level: ClickEffectLevel.LIGHT, scale: 0.8 })
     }
 }

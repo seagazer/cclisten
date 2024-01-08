@@ -9,5 +9,6 @@ export enum PageRouter {
     PAGE_SETUPWIZARD_MEDIA_LIBRARY = "setupwizard/PageMediaLibrary",
     PAGE_HOME = "home/PageHome",
     PAGE_SETTINGS_THEME = "settings/PageThemeSettings",
+    PAGE_SETTINGS_MEDIA_LIBRARY = "settings/PageMediaLibrarySettings",
     PAGE_SETTINGS_ABOUT = "settings/PageAbout",
 }

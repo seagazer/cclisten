@@ -17,7 +17,7 @@ struct PageSplash {
     @StorageLink(APP_THEME) theme: Theme = DEFAULT_THEME
     private logoName = ["L", "i", "s", "t", "e", "n"]
     @State alphas: Array<number> = new Array()
-    private duration = 500
+    private duration = 300
     private delay = 200
     private isAppInit: number = 0
     private history?: History | null = null

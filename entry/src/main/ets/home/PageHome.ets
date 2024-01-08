@@ -90,8 +90,9 @@ struct PageHome {
                     this.playlistManager.setPlayingSong(null)
                     this.mediaSession.playNext()
                 }
-                this.playlistManager.remove(song)
-                this.playingIndex = this.playlistManager.getPlayingIndex()
+                this.playlistManager.remove(song).then(() => {
+                    this.playingIndex = this.playlistManager.getPlayingIndex()
+                })
             }
         }),
         autoCancel: true,
@@ -137,12 +138,12 @@ struct PageHome {
             this.isPlaying = isPlaying
         })
         this.lyricController
-            .setTextSize(vp2px(18))
+            .setTextSize(vp2px(UIConfig.FONT_CONTENT))
             .setCacheSize(10)
             .setAnimationDuration(400)
-            .setTextColor("#ccc1c1c1")
+            .setTextColor("#80000000")
             .setHighlightColor(this.theme.colorPrimary)
-            .setLineSpace(vp2px(16))
+            .setLineSpace(vp2px(UIConfig.FONT_CONTENT))
             .setHighlightStyle(false)
             .setEmptyHint("暂无歌词")
             .setLyric(null)
@@ -151,6 +152,7 @@ struct PageHome {
 
     onThemeChanged() {
         this.lyricController.setHighlightColor(this.theme.colorPrimary)
+        this.lyricController.invalidate()
         this.lyricController.updatePosition(this.currentPosition)
     }
 
@@ -233,15 +235,20 @@ struct PageHome {
             .width("100%")
             .height("100%")
             .justifyContent(FlexAlign.SpaceAround)
+            .animation({ duration: UIConfig.ANIM_DURATION_LONG })
             .visibility(this.isShowLyric ? Visibility.Hidden : Visibility.Visible)
+            .opacity(this.isShowLyric ? 0.2 : 1)
 
             // lyricView
             Column() {
-                LyricView({ lyricController: this.lyricController })
+                LyricView({ controller: this.lyricController })
             }
             .width("100%")
             .height("100%")
+            .padding({ top: UIConfig.DIMENSION_PADDING })
+            .animation({ duration: UIConfig.ANIM_DURATION_LONG })
             .visibility(this.isShowLyric ? Visibility.Visible : Visibility.Hidden)
+            .opacity(this.isShowLyric ? 1 : 0.2)
         }
         .width("100%")
         .layoutWeight(1)

@@ -20,23 +20,23 @@ export class PlaylistDb {
         await this.db.create(context, "playlist")
     }
 
-    public addSong(song: Song) {
-        this.db.insert(song)
+    public async addSong(song: Song) {
+        await this.db.insert(song)
     }
 
-    public addSongList(songList: Array<Song>) {
-        this.db.insertArray(songList)
+    public async addSongList(songList: Array<Song>) {
+        await this.db.insertArray(songList)
     }
 
-    public removeSong(song: Song) {
-        this.db.delete("url", song)
+    public async removeSong(song: Song) {
+        await this.db.delete("url", song)
     }
 
-    public update(song: Song) {
-        this.db.update("url", song)
+    public async update(song: Song) {
+        await this.db.update("url", song)
     }
 
-    public getPlaylist() {
+    public async getPlaylist() {
         return this.db.query()
     }
 }

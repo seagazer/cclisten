@@ -23,12 +23,19 @@ export async function parseUri(uri: string) {
     return file.fd
 }
 
-export function navigationTo(pageUrl: PageRouter, param?: Object) {
+export function navigationTo(pageUrl: PageRouter, param?: Object, replace: boolean = false) {
     Logger.d(TAG, "navigation to <" + pageUrl.toString() + ">, param= " + JSON.stringify(param))
-    router.pushUrl({
-        url: pageUrl.toString(),
-        params: param
-    })
+    if (!replace) {
+        router.pushUrl({
+            url: pageUrl.toString(),
+            params: param
+        })
+    } else {
+        router.replaceUrl({
+            url: pageUrl.toString(),
+            params: param
+        })
+    }
 }
 
 export function duration2text(duration: number): string {

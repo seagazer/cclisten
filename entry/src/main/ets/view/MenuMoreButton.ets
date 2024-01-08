@@ -35,7 +35,7 @@ export struct MenuMoreButton {
             .justifyContent(FlexAlign.Start)
             .alignItems(VerticalAlign.Center)
             .onClick(() => {
-                toast("TODO")
+                navigationTo(PageRouter.PAGE_SETTINGS_MEDIA_LIBRARY)
             })
 
             Divider().width("100%").height(1).margin({ top: 8, bottom: 8 })
@@ -58,7 +58,5 @@ export struct MenuMoreButton {
     build() {
         StatelessImageButton({ image: $r("app.media.ic_public_more") })
             .bindMenu(this.MenuMore)
-
-
     }
 }

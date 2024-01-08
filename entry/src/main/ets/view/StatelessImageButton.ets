@@ -39,6 +39,7 @@ export struct StatelessImageButton {
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
+                .clickEffect({ level: ClickEffectLevel.LIGHT, scale: 0.8 })
         } else {
             Image(this.image)
                 .btnStyle(this.widthSize, this.heightSize, this.paddingSize)
@@ -46,6 +47,7 @@ export struct StatelessImageButton {
                     pressed: this.pressedStyles,
                     normal: this.normalStyles
                 })
+                .clickEffect({ level: ClickEffectLevel.LIGHT, scale: 0.8 })
         }
     }
 }
