@@ -1,8 +1,8 @@
-import { Logger } from '@seagazer/ccplayer'
 import { Song } from '../bean/Song'
 import { UIConfig } from '../config/UIConfig'
 import { duration2text } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
+import { Logger } from '../extensions/Logger'
 import { DEFAULT_THEME, Theme } from '../theme/Theme'
 
 const TAG = "[MediaProgressView]"

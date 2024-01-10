@@ -1,4 +1,3 @@
-import { Logger } from '@seagazer/ccplayer'
 import { UIConfig } from '../config/UIConfig'
 import { navigationTo } from '../extensions/Extensions'
 import { APP_THEME } from '../extensions/LiveData'
@@ -8,6 +7,7 @@ import { ThemeManager } from '../theme/ThemeManager'
 import { UserConfigHelper } from '../config/UserConfigHelper'
 import { PlayHistoryManager } from '../history/PlayHistoryManager'
 import { History } from '../bean/History'
+import { Logger } from '../extensions/Logger'
 
 const TAG = "[PageSplash]"
 

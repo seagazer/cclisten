@@ -1,5 +1,6 @@
-import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer/ccplayer'
 import { BackgroundTask } from '../extensions/BackgroundTask'
+// @ts-ignore
+import { CcPlayer, MediaSourceFactory, PlayerState, PlayerType } from '@seagazer/ccplayer'
 import { Song } from '../bean/Song'
 import { parseUri } from '../extensions/Extensions'
 import { Logger } from '../extensions/Logger'
@@ -24,6 +25,7 @@ export class MediaSession {
     private context: common.Context
     private progressListeners: Array<(position: number) => void> = new Array()
     private stateChangedListeners: Array<(isPlaying: boolean) => void> = new Array()
+    private playingSongId = ""
 
     private progressChangedListener = (position: number) => {
         if (!this.isSeeking) {
@@ -143,6 +145,15 @@ export class MediaSession {
         this.player.setMediaSource(source, () => {
             this.start()
         })
+        this.setPlayingId(song.url)
+    }
+
+    setPlayingId(id: string) {
+        this.playingSongId = id
+    }
+
+    getPlayingId() {
+        return this.playingSongId
     }
 
     release() {

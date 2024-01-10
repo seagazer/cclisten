@@ -7,13 +7,7 @@ import { Logger } from '../extensions/Logger';
 import { FileScanner } from '../extensions/FileScanner';
 import { FileLyricParser } from '../player/FileLyricParser';
 import { Song } from '../bean/Song';
-import {
-    APP_THEME,
-    LiveData,
-    MEDIA_SESSION_CURRENT_SONG,
-    MEDIA_SESSION_FAVOURITE_LIST,
-    MEDIA_SESSION_PLAYLIST
-} from '../extensions/LiveData';
+import { APP_THEME, LiveData, MEDIA_SESSION_CURRENT_SONG, } from '../extensions/LiveData';
 import { MediaSession } from '../player/MediaSession';
 import { PlaylistManager } from '../playlist/PlaylistManager';
 import { PlayHistoryManager } from '../history/PlayHistoryManager';
@@ -38,8 +32,6 @@ const TAG = "[PageHome]"
 struct PageHome {
     @StorageLink(APP_THEME) @Watch("onThemeChanged") theme: Theme = DEFAULT_THEME
     @StorageLink(MEDIA_SESSION_CURRENT_SONG) @Watch("onSongChanged") currentSong: Song = new Song("", "", "", 0)
-    @StorageLink(MEDIA_SESSION_PLAYLIST) playlist: Array<Song> = new Array()
-    @StorageLink(MEDIA_SESSION_FAVOURITE_LIST) favouriteList: Array<Song> = new Array()
     @State currentPosition: number = 0
     @State isPlaying: boolean = false
     @State playingIndex: number = 0
@@ -120,6 +112,7 @@ struct PageHome {
                 // the history song is not the same object as the song in playlist
                 this.playingIndex = this.playlistManager.getIndex(history.song)
                 let song = this.playlistManager.getSong(this.playingIndex)
+                this.mediaSession.setPlayingId(song.url)
                 this.playlistManager.setPlayingSong(song)
             }
         }
@@ -245,7 +238,7 @@ struct PageHome {
             }
             .width("100%")
             .height("100%")
-            .padding({ top: UIConfig.DIMENSION_PADDING })
+            .padding({ top: UIConfig.DIMENSION_PADDING, bottom: UIConfig.DIMENSION_PADDING })
             .animation({ duration: UIConfig.ANIM_DURATION_LONG })
             .visibility(this.isShowLyric ? Visibility.Visible : Visibility.Hidden)
             .opacity(this.isShowLyric ? 1 : 0.2)
@@ -329,6 +322,9 @@ struct PageHome {
     }
 
     onSongChanged() {
+        if (this.mediaSession.getPlayingId() == this.currentSong.url) {
+            return
+        }
         Logger.d(TAG, "onSongChanged= " + JSON.stringify(this.currentSong))
         this.playingIndex = this.playlistManager.getPlayingIndex()
         this.lyricController.setLyric(null)
